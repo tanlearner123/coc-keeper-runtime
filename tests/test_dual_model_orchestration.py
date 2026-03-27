@@ -216,6 +216,45 @@ def test_turn_runner_includes_guidance_context_from_gameplay() -> None:
     assert "guidance" in client.narrator_requests[0].user_prompt
 
 
+def test_turn_runner_includes_player_specific_panel_and_story_context() -> None:
+    from dm_bot.adventures.loader import load_adventure
+    from dm_bot.orchestrator.gameplay import CharacterRegistry, GameplayOrchestrator
+    from dm_bot.rules.compendium import FixtureCompendium
+    from dm_bot.rules.engine import RulesEngine
+
+    gameplay = GameplayOrchestrator(
+        importer=None,
+        registry=CharacterRegistry(),
+        rules_engine=RulesEngine(compendium=FixtureCompendium(baseline="2014", fixtures={})),
+    )
+    gameplay.load_adventure(load_adventure("fuzhe"))
+    gameplay.ensure_investigator_panel(user_id="user-1", display_name="Alice", role="magical_girl")
+    gameplay.seed_role_knowledge(user_id="user-1", role="magical_girl")
+
+    client = StubOllamaClient(
+        router_content='{"mode":"dm","tool_calls":[],"state_intents":[],"narration_brief":"brief"}',
+        narrator_content="你意识到聊天室中的任务提示与你眼前的异常有关。",
+    )
+    runner = TurnRunner(router=RouterService(client), narrator=NarrationService(client), gameplay=gameplay)
+
+    asyncio.run(
+        runner.run_turn(
+            TurnEnvelope(
+                campaign_id="camp-1",
+                channel_id="chan-1",
+                user_id="user-1",
+                trace_id="trace-1",
+                content="我回想瓦尔和聊天室给我的提示。",
+            )
+        )
+    )
+
+    payload = client.narrator_requests[0].user_prompt
+    assert "magical_girl" in payload
+    assert "聊天室" in payload
+    assert "investigator_intro" in payload
+
+
 def test_model_snapshot_reports_router_and_narrator_readiness(monkeypatch) -> None:
     monkeypatch.setattr(
         "dm_bot.runtime.model_checks.list_ollama_models",

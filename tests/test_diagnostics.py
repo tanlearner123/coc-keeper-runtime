@@ -45,7 +45,9 @@ def test_diagnostics_service_reports_adventure_state_summary(tmp_path: Path) -> 
             "adventure_state": {
                 "scene_id": "blood_hall",
                 "location_id": "blood_hall",
+                "story_node_id": "wetland_ambush",
                 "clues_found": ["blood_exit_rule", "clock_countdown"],
+                "knowledge_log": [{"scope": "player", "recipient_user_id": "user-1", "title": "论坛照片", "content": "你认出了那个少女。"}],
                 "objectives": ["找到出口"],
                 "module_state": {
                     "time_remaining": 120,
@@ -54,6 +56,7 @@ def test_diagnostics_service_reports_adventure_state_summary(tmp_path: Path) -> 
                     "san_pressure": 2,
                     "danger_level": "high",
                     "pending_push": "life_library_research",
+                    "module_rule_mode": "fuzhe",
                 },
                 "pending_roll": {"id": "life_library_research", "action": "ability_check"},
                 "ending_id": None,
@@ -65,11 +68,14 @@ def test_diagnostics_service_reports_adventure_state_summary(tmp_path: Path) -> 
     summary = service.recent_summary("camp-1")
 
     assert "blood_hall" in summary
+    assert "story_node=wetland_ambush" in summary
     assert "120" in summary
     assert "blood_exit_rule" in summary
+    assert "knowledge_entries=1" in summary
     assert "pending_roll=life_library_research" in summary
     assert "san_pressure=2" in summary
     assert "danger_level=high" in summary
+    assert "module_rule_mode=fuzhe" in summary
 
 
 def test_debug_command_surfaces_recent_events(tmp_path: Path) -> None:

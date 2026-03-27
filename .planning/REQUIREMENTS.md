@@ -7,28 +7,28 @@
 
 ### Investigator Panels
 
-- [ ] **PANEL-01**: Each player should have a persistent investigator panel that surfaces canonical COC investigator data and scenario-linked mutable state.
-- [ ] **PANEL-02**: Investigator panels should support both standard investigators and structured alternate templates such as `覆辙`'s investigation and magical-girl tracks.
-- [ ] **PANEL-03**: Scenario outcomes such as SAN changes, injuries, resource shifts, and explicit module-specific effects should write back into the investigator panel.
-- [ ] **PANEL-04**: Investigator panel fields should map back to local COC rules or explicit module metadata rather than freeform prompt invention.
+- [x] **PANEL-01**: Each player should have a persistent investigator panel that surfaces canonical COC investigator data and scenario-linked mutable state.
+- [x] **PANEL-02**: Investigator panels should support both standard investigators and structured alternate templates such as `覆辙`'s investigation and magical-girl tracks.
+- [x] **PANEL-03**: Scenario outcomes such as SAN changes, injuries, resource shifts, and explicit module-specific effects should write back into the investigator panel.
+- [x] **PANEL-04**: Investigator panel fields should map back to local COC rules or explicit module metadata rather than freeform prompt invention.
 
 ### Private Knowledge And Complex Module Graphs
 
-- [ ] **GRAPH-01**: The runtime should support mixed room/scene/event graphs so more complex COC modules are not forced into a room-only shape.
-- [ ] **GRAPH-02**: The runtime should support private and group-scoped clues, truths, and tasking so different players can know different things.
-- [ ] **GRAPH-03**: Multiple entry tracks and role-specific onboarding should be expressible structurally rather than hard-coded into one adventure.
-- [ ] **GRAPH-04**: All added graph and knowledge features should stay reusable across future COC modules, not only `覆辙`.
+- [x] **GRAPH-01**: The runtime should support mixed room/scene/event graphs so more complex COC modules are not forced into a room-only shape.
+- [x] **GRAPH-02**: The runtime should support private and group-scoped clues, truths, and tasking so different players can know different things.
+- [x] **GRAPH-03**: Multiple entry tracks and role-specific onboarding should be expressible structurally rather than hard-coded into one adventure.
+- [x] **GRAPH-04**: All added graph and knowledge features should stay reusable across future COC modules, not only `覆辙`.
 
 ### COC Rule Discipline
 
-- [ ] **RULE-01**: New runtime mechanics should be grounded in the supplied local COC 7th rulebooks wherever the base system covers them.
-- [ ] **RULE-02**: When a module introduces special behavior not covered by base COC rules, that behavior should be recorded as explicit module-specific rules rather than implied prompt behavior.
-- [ ] **RULE-03**: Diagnostics and operator surfaces should distinguish canonical COC rules from module-specific overrides.
+- [x] **RULE-01**: New runtime mechanics should be grounded in the supplied local COC 7th rulebooks wherever the base system covers them.
+- [x] **RULE-02**: When a module introduces special behavior not covered by base COC rules, that behavior should be recorded as explicit module-specific rules rather than implied prompt behavior.
+- [x] **RULE-03**: Diagnostics and operator surfaces should distinguish canonical COC rules from module-specific overrides.
 
 ### 覆辙 Migration
 
-- [ ] **FUZHE-01**: `覆辙` should be migrated as the first complex-module sample, including its dual entry tracks, asymmetrical truths, and scenario-specific long-state consequences.
-- [ ] **FUZHE-02**: The migration should reveal any missing runtime primitives needed for future complex COC modules and fold them back into reusable abstractions.
+- [x] **FUZHE-01**: `覆辙` should be migrated as the first complex-module sample, including its dual entry tracks, asymmetrical truths, and scenario-specific long-state consequences.
+- [x] **FUZHE-02**: The migration should reveal any missing runtime primitives needed for future complex COC modules and fold them back into reusable abstractions.
 
 ## v2 Requirements
 
@@ -52,25 +52,25 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PANEL-01 | Phase 25 | Planned |
-| PANEL-02 | Phase 25 | Planned |
-| PANEL-03 | Phase 25 | Planned |
-| PANEL-04 | Phase 25 | Planned |
-| GRAPH-01 | Phase 26 | Planned |
-| GRAPH-02 | Phase 26 | Planned |
-| GRAPH-03 | Phase 26 | Planned |
-| GRAPH-04 | Phase 26 | Planned |
-| RULE-01 | Phase 26 | Planned |
-| RULE-02 | Phase 26 | Planned |
-| RULE-03 | Phase 26 | Planned |
-| FUZHE-01 | Phase 27 | Planned |
-| FUZHE-02 | Phase 27 | Planned |
+| PANEL-01 | Phase 25 | Completed |
+| PANEL-02 | Phase 25 | Completed |
+| PANEL-03 | Phase 25 | Completed |
+| PANEL-04 | Phase 25 | Completed |
+| GRAPH-01 | Phase 26 | Completed |
+| GRAPH-02 | Phase 26 | Completed |
+| GRAPH-03 | Phase 26 | Completed |
+| GRAPH-04 | Phase 26 | Completed |
+| RULE-01 | Phase 26 | Completed |
+| RULE-02 | Phase 26 | Completed |
+| RULE-03 | Phase 26 | Completed |
+| FUZHE-01 | Phase 27 | Completed |
+| FUZHE-02 | Phase 27 | Completed |
 
 **Coverage:**
 - v1.7 requirements: 13 total
-- Completed: 0
+- Completed: 13
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after milestone v1.7 kickoff*
+*Last updated: 2026-03-28 after milestone v1.7 execution*

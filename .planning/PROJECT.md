@@ -40,7 +40,7 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ### Active
 
-- [ ] The next milestone should add bot-based investigator panels, private knowledge handling, and complex-module runtime support so `覆辙`-class COC modules can run cleanly inside Discord.
+- [ ] The next milestone should build on the new panel/private-knowledge runtime with better Keeper-facing control surfaces, richer player UX, and broader complex-module coverage.
 
 ### Out of Scope
 
@@ -53,7 +53,7 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ## Current State
 
-`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. The runtime now includes COC-style percentile resolution, a reviewable asset discovery layer for local rulebooks and pregens, and keeper-facing prompts and diagnostics. The Discord, room-graph, trigger, persistence, and streaming foundations remain intact, but the project’s default mental model is now Call of Cthulhu rather than D&D.
+`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. The runtime can now carry both canonical COC investigator state and explicit module-specific truths without collapsing them into a single public scene summary.
 
 ## Context
 
@@ -90,9 +90,11 @@ The first releases proved the core Discord gameplay loop end-to-end: player inpu
 | The default narrator should fit 8GB-class local GPUs | Lower deployment friction matters more than marginal prose quality gains from larger local models | `qwen3:4b-instruct-2507-q4_K_M` selected |
 | Router and narrator should remain separate | Roleplay-tuned narration models are not trusted as the sole authority for structured tool routing | `qwen3:1.7b` router retained |
 | Formal adventures must be structured data, not raw uploaded prose | Hidden-state modules need deterministic triggers, reveal control, and reusable runtime hooks | ✓ Good |
-| The project should now pivot to COC/Keeper-first runtime semantics | The available local rulebooks, pregens, and target module ecosystem are all COC-centric | v1.6 should replace D&D-first assumptions with COC structures |
+| The project should now pivot to COC/Keeper-first runtime semantics | The available local rulebooks, pregens, and target module ecosystem are all COC-centric | v1.6 replaced D&D-first assumptions with COC structures |
 | Local COC books and pregenerated characters are first-class project assets | They provide the canonical basis for rules, roles, and module handling | v1.6 should build extraction and intake paths around them |
 | Community COC references should supplement, not replace, canonical local assets | Websites are useful for ecosystem patterns and metadata, but runtime truth must remain reviewable and local-first | v1.6 should use curated references as secondary inputs |
+| Complex COC modules require player-private state and mixed graph structure | Modules like `覆辙` include asymmetrical truths, multiple tracks, and event-driven progression that public room summaries cannot express alone | v1.7 added investigator panels, private knowledge flow, and mixed room/scene/event graph support |
+| Discord native bot UI should be the first delivery target, with Activity reserved for later | Native slash commands, ephemeral replies, threads, and streaming are enough for a first practical panel flow; full custom UI can follow | v1.7 focused on bot-native investigator panels and left Activity for a future milestone |
 | `疯狂之馆` is the first official module target | It is rich enough to force a real schema while still being a bounded first module | ✓ Good |
 | New runtime subsystems should reuse mature prior art where possible | This reduces debugging cost and keeps the bot aligned with proven Discord D&D workflows | `d20`-style dice integration prioritized for v1.2 |
 | Live-play feel now matters more than new runtime primitives | The next milestone should polish judgement, hinting, and scene presentation before expanding breadth | `疯狂之馆` experience polish prioritized for v1.3 |
@@ -121,4 +123,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-28 after milestone v1.6 execution*
+*Last updated: 2026-03-28 after milestone v1.7 execution*

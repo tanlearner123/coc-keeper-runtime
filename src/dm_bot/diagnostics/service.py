@@ -13,6 +13,8 @@ class DiagnosticsService:
             lines.append(f"scene={adventure_state.get('scene_id', 'unknown')}")
             if adventure_state.get("location_id"):
                 lines.append(f"location={adventure_state['location_id']}")
+            if adventure_state.get("story_node_id"):
+                lines.append(f"story_node={adventure_state['story_node_id']}")
             onboarding = dict(adventure_state.get("onboarding", {}))
             if onboarding:
                 ready = onboarding.get("ready_user_ids", [])
@@ -21,6 +23,8 @@ class DiagnosticsService:
                 lines.append(f"objectives={', '.join(adventure_state['objectives'])}")
             if adventure_state.get("clues_found"):
                 lines.append(f"clues={', '.join(adventure_state['clues_found'])}")
+            if adventure_state.get("knowledge_log"):
+                lines.append(f"knowledge_entries={len(adventure_state['knowledge_log'])}")
             if "time_remaining" in module_state:
                 lines.append(f"time_remaining={module_state['time_remaining']}")
             if "blood_collected" in module_state and "blood_required" in module_state:
@@ -31,6 +35,8 @@ class DiagnosticsService:
                 lines.append(f"danger_level={module_state['danger_level']}")
             if "pending_push" in module_state:
                 lines.append(f"pending_push={module_state['pending_push']}")
+            if "module_rule_mode" in module_state:
+                lines.append(f"module_rule_mode={module_state['module_rule_mode']}")
             pending_roll = dict(adventure_state.get("pending_roll", {}))
             if pending_roll:
                 lines.append(f"pending_roll={pending_roll.get('id', 'unknown')} action={pending_roll.get('action', 'unknown')}")

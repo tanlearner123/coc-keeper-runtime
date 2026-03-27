@@ -2,7 +2,7 @@
 
 ## Overview
 
-Milestone `v1.0` established the Discord-first local-DM runtime with deterministic rules, persistence, diagnostics, and a starter packaged adventure. Milestone `v1.1` introduced a formal module runtime and shipped `疯狂之馆` as the first structured full-length module. Milestone `v1.2` added ready-gated startup, mature dice integration, and true Discord streaming. Milestone `v1.3` polished live-play feel through structured judgement, bounded guidance, and keeper-style scene framing. Milestone `v1.4` introduced room graphs, AI-first extraction drafts, and location-driven play. Milestone `v1.5` completed the missing execution layer with a reusable trigger tree and consequence engine. Milestone `v1.6` pivots that foundation into a COC/Keeper-first runtime using local rulebooks, investigator assets, and COC module semantics. Milestone `v1.7` extends that base with persistent investigator panels and richer runtime support for complex modules such as `覆辙`.
+Milestone `v1.0` established the Discord-first local-DM runtime with deterministic rules, persistence, diagnostics, and a starter packaged adventure. Milestone `v1.1` introduced a formal module runtime and shipped `疯狂之馆` as the first structured full-length module. Milestone `v1.2` added ready-gated startup, mature dice integration, and true Discord streaming. Milestone `v1.3` polished live-play feel through structured judgement, bounded guidance, and keeper-style scene framing. Milestone `v1.4` introduced room graphs, AI-first extraction drafts, and location-driven play. Milestone `v1.5` completed the missing execution layer with a reusable trigger tree and consequence engine. Milestone `v1.6` pivots that foundation into a COC/Keeper-first runtime using local rulebooks, investigator assets, and COC module semantics. Milestone `v1.7` extends that base with persistent investigator panels, private knowledge flow, mixed room/scene/event graphs, and the first `覆辙`-class complex module sample.
 
 ## Phases
 
@@ -36,26 +36,26 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 22: COC Runtime Foundations** - Add COC 7th keeper-facing checks, SAN-aware resolution, and non-D&D runtime semantics on top of the existing engine.
 - [x] **Phase 23: COC Asset And Character Intake** - Build reviewable knowledge and investigator intake paths from local rulebooks, pregens, templates, and curated COC references.
 - [x] **Phase 24: COC Module And Keeper Experience Migration** - Reframe prompts, diagnostics, and module extraction around COC investigation flow and reusable keeper-style play.
-- [ ] **Phase 25: Investigator Panel Runtime** - Add persistent per-player investigator panels and panel-linked scenario state grounded in COC rules and explicit module metadata.
-- [ ] **Phase 26: Private Knowledge And Complex Module Graphs** - Extend runtime structure to support mixed room/scene/event graphs plus player- or group-scoped truths for complex investigations.
-- [ ] **Phase 27: 覆辙 Complex Module Migration** - Migrate `覆辙` as the first complex COC module sample and fold any needed primitives back into reusable runtime abstractions.
+- [x] **Phase 25: Investigator Panel Runtime** - Add persistent per-player investigator panels and panel-linked scenario state grounded in COC rules and explicit module metadata.
+- [x] **Phase 26: Private Knowledge And Complex Module Graphs** - Extend runtime structure to support mixed room/scene/event graphs plus player- or group-scoped truths for complex investigations.
+- [x] **Phase 27: 覆辙 Complex Module Migration** - Migrate `覆辙` as the first complex COC module sample and fold any needed primitives back into reusable runtime abstractions.
 
 ## Milestone v1.7 Delivery Plan
 
 ### Phase 25: Investigator Panel Runtime
-**Planned**:
+**Delivered**:
 - Add persistent per-player panels inspired by mature COC character generators, but backed by the project's own structured runtime and local rules.
 - Support multiple investigator templates and mutable scenario-linked state such as SAN, HP, MP, Luck, injuries, and explicit module effects.
 - Ensure panel fields remain grounded in local COC rulebooks or reviewable module metadata.
 
 ### Phase 26: Private Knowledge And Complex Module Graphs
-**Planned**:
+**Delivered**:
 - Support mixed room/scene/event graphs so complex modules do not collapse into room-only navigation.
 - Add player-private and group-scoped clues, truths, and prompts for asymmetrical investigations.
 - Distinguish canonical COC rules from explicit module-specific rules in diagnostics and runtime handling.
 
 ### Phase 27: 覆辙 Complex Module Migration
-**Planned**:
+**Delivered**:
 - Migrate `覆辙` as the first complex-module sample with dual entry tracks, asymmetrical truths, module-specific consequences, and longer-form state.
 - Use the migration to expose which new primitives are genuinely reusable and which must remain explicit scenario rules.
 - Keep all added mechanics constrained either to local COC rules or reviewable module rules, never to hidden prompt invention.
@@ -91,6 +91,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 22. COC Runtime Foundations | 1/1 | Completed | 2026-03-28 |
 | 23. COC Asset And Character Intake | 1/1 | Completed | 2026-03-28 |
 | 24. COC Module And Keeper Experience Migration | 1/1 | Completed | 2026-03-28 |
-| 25. Investigator Panel Runtime | 0/0 | Not started | — |
-| 26. Private Knowledge And Complex Module Graphs | 0/0 | Not started | — |
-| 27. 覆辙 Complex Module Migration | 0/0 | Not started | — |
+| 25. Investigator Panel Runtime | 1/1 | Completed | 2026-03-28 |
+| 26. Private Knowledge And Complex Module Graphs | 1/1 | Completed | 2026-03-28 |
+| 27. 覆辙 Complex Module Migration | 1/1 | Completed | 2026-03-28 |

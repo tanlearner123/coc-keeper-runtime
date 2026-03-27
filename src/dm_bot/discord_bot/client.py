@@ -58,6 +58,11 @@ class DiscordDmBot(commands.Bot):
         async def leave_campaign(interaction: discord.Interaction) -> None:
             await self.handlers.leave_campaign(interaction)
 
+        @self.tree.command(name="set_role", description="Set your scenario role or template")
+        @app_commands.describe(role="Role such as investigator or magical_girl")
+        async def set_role(interaction: discord.Interaction, role: str) -> None:
+            await self.handlers.set_role(interaction, role=role)
+
         @self.tree.command(name="turn", description="Submit a player turn into the active campaign")
         @app_commands.describe(content="Player action text")
         async def turn(interaction: discord.Interaction, content: str) -> None:
@@ -204,6 +209,10 @@ class DiscordDmBot(commands.Bot):
         @self.tree.command(name="coc_assets", description="Show discovered local COC assets")
         async def coc_assets(interaction: discord.Interaction) -> None:
             await self.handlers.coc_assets_summary(interaction)
+
+        @self.tree.command(name="sheet", description="Show your investigator panel")
+        async def sheet(interaction: discord.Interaction) -> None:
+            await self.handlers.show_sheet(interaction)
 
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or not message.content or message.guild is None:

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: 调查员面板与复杂 COC 模组运行时
-status: defining requirements
-stopped_at: Started milestone v1.7 for investigator panels and 覆辙-class complex module support
-last_updated: "2026-03-28T17:10:00.000Z"
-last_activity: 2026-03-28 - Milestone v1.7 started
+status: completed
+stopped_at: Completed milestone v1.7 execution for investigator panels, private knowledge graphs, and 覆辙 migration
+last_updated: "2026-03-28T18:35:00.000Z"
+last_activity: 2026-03-28 - Milestone v1.7 executed and verified
 progress:
   total_phases: 27
-  completed_phases: 24
-  total_plans: 53
-  completed_plans: 50
-  percent: 89
+  completed_phases: 27
+  total_plans: 56
+  completed_plans: 56
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keeper can narrate, roleplay multiple characters, and enforce investigation-heavy rules flow without constant manual bookkeeping.
-**Current focus:** Defining v1.7 for investigator panels, private knowledge flow, and complex COC module migration
+**Current focus:** v1.7 complete; next work can build richer Keeper UX on top of persistent investigator panels and complex-module runtime
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: -
-Status: Defining requirements
-Last activity: 2026-03-28 - Milestone v1.7 started
+Phase: Milestone complete
+Plan: All planned v1.7 phases executed
+Status: Completed
+Last activity: 2026-03-28 - Milestone v1.7 executed and verified
 
-Progress: [████████░░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -79,17 +79,16 @@ None yet.
 
 ### Roadmap Evolution
 
-- Roadmap now extends through Phases 25-27 for milestone v1.7.
+- Roadmap now marks Phases 25-27 complete for milestone v1.7.
 
 ### Blockers/Concerns
 
-- Dynamic-form investigator PDFs may need a non-text-extraction intake path.
-- Community COC sites are useful ecosystem references, but canonical runtime truth should stay local and reviewable.
-- New complex-module mechanics must stay anchored to the supplied COC rulebooks or explicit scenario rules instead of silent prompt invention.
-- Complex modules like `覆辙` will require richer private knowledge and mixed graph support than `疯狂之馆`.
+- Dynamic-form investigator PDFs may still need a non-text-extraction intake path for broader character import.
+- Community COC sites remain useful ecosystem references, but canonical runtime truth should stay local and reviewable.
+- Future UI work should distinguish what fits native bot interactions from what warrants a Discord Activity.
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:10:00.000Z
-Stopped at: Started milestone v1.7 for investigator panels and 覆辙-class complex module support
+Last session: 2026-03-28T18:35:00.000Z
+Stopped at: Completed milestone v1.7 execution for investigator panels, private knowledge graphs, and 覆辙 migration
 Resume file: .planning/PROJECT.md

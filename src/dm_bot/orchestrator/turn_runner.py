@@ -73,7 +73,7 @@ class TurnRunner:
             computed_tool_results = [*computed_tool_results, *self._gameplay.resolve_plan(plan)]
             guidance = self._gameplay.evaluate_scene_action(envelope.content) if self._gameplay.adventure is not None else None
             if self._gameplay.adventure is not None:
-                computed_state_snapshot["adventure"] = self._gameplay.adventure_snapshot()
+                computed_state_snapshot["adventure"] = self._gameplay.adventure_snapshot(user_id=envelope.user_id)
             if guidance and guidance.get("kind") != "none":
                 computed_state_snapshot["guidance"] = guidance
         request = NarrationRequest(

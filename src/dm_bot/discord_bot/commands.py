@@ -69,6 +69,19 @@ class BotCommands:
             ephemeral=True,
         )
 
+    async def set_role(self, interaction, *, role: str) -> None:
+        if self._session_store is None or self._gameplay is None:
+            await interaction.response.send_message("gameplay is not configured", ephemeral=True)
+            return
+        self._session_store.bind_role(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id), role=role)
+        self._persist_sessions()
+        self._gameplay.ensure_investigator_panel(
+            user_id=str(interaction.user.id),
+            display_name=getattr(interaction.user, "display_name", f"玩家{interaction.user.id}"),
+            role=role,
+        )
+        await interaction.response.send_message(f"角色定位已设为 `{role}`", ephemeral=True)
+
     async def take_turn(self, interaction, *, content: str) -> None:
         session = self._session_store.get_by_channel(str(interaction.channel_id))
         if session is None:
@@ -232,12 +245,25 @@ class BotCommands:
                 character_name=character_name.strip(),
             )
             self._persist_sessions()
+        role = self._session_store.active_role_for(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id)) or "investigator"
+        self._gameplay.ensure_investigator_panel(
+            user_id=str(interaction.user.id),
+            display_name=character_name.strip() or getattr(interaction.user, "display_name", f"玩家{interaction.user.id}"),
+            role=role,
+        )
+        seeded = self._gameplay.seed_role_knowledge(user_id=str(interaction.user.id), role=role)
         onboarding = self._gameplay.mark_adventure_ready(user_id=str(interaction.user.id))
         ready_ids = set(onboarding.get("ready_user_ids", []))
         await interaction.response.send_message(
             f"已就位 ({len(ready_ids)}/{len(session.member_ids)})",
             ephemeral=True,
         )
+        track = self._gameplay.onboarding_track_for_role(role)
+        if track:
+            private_lines = [f"【{track['title']}】", track["opening_text"]]
+            if seeded:
+                private_lines.append("私人导入：" + "；".join(item.get("title", "") for item in seeded if item.get("title")))
+            await interaction.followup.send("\n".join(private_lines), ephemeral=True)
         if session.member_ids and ready_ids.issuperset(session.member_ids):
             self._gameplay.begin_adventure()
             self._save_state_for_channel(str(interaction.channel_id))
@@ -369,6 +395,21 @@ class BotCommands:
             f"rulebooks: {rulebooks}\ninvestigators: {investigators}\nreferences: {refs}",
             ephemeral=True,
         )
+
+    async def show_sheet(self, interaction) -> None:
+        if self._gameplay is None:
+            await interaction.response.send_message("gameplay is not configured", ephemeral=True)
+            return
+        snapshot = self._gameplay.investigator_panel_snapshot(str(interaction.user.id))
+        knowledge_titles = [item.get("title", "") for item in snapshot.get("knowledge", []) if item.get("title")]
+        panel = self._gameplay.panels.get(str(interaction.user.id))
+        if panel is None:
+            panel = self._gameplay.ensure_investigator_panel(
+                user_id=str(interaction.user.id),
+                display_name=getattr(interaction.user, "display_name", f"玩家{interaction.user.id}"),
+                role=self._session_store.active_role_for(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id)) if self._session_store else "investigator",
+            )
+        await interaction.response.send_message(panel.summary(knowledge_titles=knowledge_titles), ephemeral=True)
 
     async def handle_channel_message(
         self,

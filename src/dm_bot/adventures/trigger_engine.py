@@ -32,7 +32,7 @@ class TriggerEngine:
             if not self._matches(trigger=trigger, adventure_state=adventure_state, event=event):
                 continue
             resolution.matched_trigger_ids.append(trigger.id)
-            self._apply_effects(trigger=trigger, package=package, adventure_state=adventure_state, resolution=resolution)
+            self._apply_effects(trigger=trigger, package=package, adventure_state=adventure_state, event=event, resolution=resolution)
             if trigger.table_summary:
                 resolution.table_summaries.append(trigger.table_summary)
             if trigger.gm_summary:
@@ -78,7 +78,7 @@ class TriggerEngine:
             return False
         return True
 
-    def _apply_effects(self, *, trigger, package, adventure_state: dict[str, object], resolution: TriggerResolution) -> None:
+    def _apply_effects(self, *, trigger, package, adventure_state: dict[str, object], event: dict[str, object], resolution: TriggerResolution) -> None:
         module_state = dict(adventure_state.get("module_state", {}))
         location_state = dict(adventure_state.get("location_state", {}))
         for effect in trigger.effects:
@@ -100,11 +100,30 @@ class TriggerEngine:
                     clues.append(effect.clue_id)
                     adventure_state["clues_found"] = clues
                 resolution.events.append(TriggerRuntimeEvent("trigger.effect_applied", {"trigger_id": trigger.id, "effect": effect.kind, "clue_id": effect.clue_id}))
+            elif effect.kind == "record_knowledge":
+                knowledge_log = list(adventure_state.get("knowledge_log", []))
+                recipient_user_id = str(event.get("user_id", ""))
+                if effect.scope != "player":
+                    recipient_user_id = ""
+                knowledge_log.append(
+                    {
+                        "scope": effect.scope,
+                        "title": effect.title,
+                        "content": effect.content,
+                        "recipient_user_id": recipient_user_id,
+                        "group_id": effect.group_id,
+                    }
+                )
+                adventure_state["knowledge_log"] = knowledge_log
+                resolution.events.append(TriggerRuntimeEvent("trigger.effect_applied", {"trigger_id": trigger.id, "effect": effect.kind, "title": effect.title, "scope": effect.scope}))
             elif effect.kind == "move_location":
                 location = package.location_by_id(effect.location_id)
                 adventure_state["location_id"] = location.id
                 adventure_state["scene_id"] = location.scene_id
                 resolution.events.append(TriggerRuntimeEvent("trigger.effect_applied", {"trigger_id": trigger.id, "effect": effect.kind, "location_id": location.id}))
+            elif effect.kind == "move_story_node":
+                adventure_state["story_node_id"] = effect.key
+                resolution.events.append(TriggerRuntimeEvent("trigger.effect_applied", {"trigger_id": trigger.id, "effect": effect.kind, "story_node_id": effect.key}))
             elif effect.kind == "set_pending_roll":
                 adventure_state["pending_roll"] = {
                     "id": effect.roll_id,

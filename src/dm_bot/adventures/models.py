@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 
 Visibility = Literal["public", "discoverable", "secret", "gm_only"]
 JudgementKind = Literal["auto", "roll", "clarify"]
+KnowledgeScope = Literal["public", "player", "group"]
 
 
 class AdventureStateField(BaseModel):
@@ -56,6 +57,22 @@ class AdventureEnding(BaseModel):
     summary: str
 
 
+class AdventureOnboardingTrack(BaseModel):
+    role: str
+    title: str
+    opening_text: str
+    seeded_knowledge: list[dict[str, str]] = Field(default_factory=list)
+
+
+class AdventureStoryNode(BaseModel):
+    id: str
+    kind: Literal["room", "scene", "event"]
+    title: str
+    summary: str
+    location_id: str = ""
+    next_node_ids: list[str] = Field(default_factory=list)
+
+
 class AdventureLocationConnection(BaseModel):
     to_location_id: str
     keywords: list[str] = Field(default_factory=list)
@@ -90,7 +107,9 @@ class TriggerEffect(BaseModel):
         "increment_module_state",
         "set_location_state",
         "add_clue",
+        "record_knowledge",
         "move_location",
+        "move_story_node",
         "set_pending_roll",
         "clear_pending_roll",
     ]
@@ -103,6 +122,10 @@ class TriggerEffect(BaseModel):
     roll_action: str = ""
     roll_label: str = ""
     prompt: str = ""
+    title: str = ""
+    content: str = ""
+    scope: KnowledgeScope = "public"
+    group_id: str = ""
 
 
 class AdventureTrigger(BaseModel):
@@ -128,6 +151,9 @@ class AdventurePackage(BaseModel):
     state_fields: list[AdventureStateField] = Field(default_factory=list)
     scenes: list[AdventureScene] = Field(default_factory=list)
     locations: list[AdventureLocation] = Field(default_factory=list)
+    onboarding_tracks: list[AdventureOnboardingTrack] = Field(default_factory=list)
+    story_nodes: list[AdventureStoryNode] = Field(default_factory=list)
+    start_story_node_id: str | None = None
     triggers: list[AdventureTrigger] = Field(default_factory=list)
     endings: list[AdventureEnding] = Field(default_factory=list)
 
@@ -150,6 +176,12 @@ class AdventurePackage(BaseModel):
                 raise ValueError("start_location_id must reference an existing location")
         elif self.start_location_id is None:
             self.start_location_id = self.start_scene_id
+        if self.story_nodes:
+            node_ids = {node.id for node in self.story_nodes}
+            if self.start_story_node_id is None:
+                self.start_story_node_id = self.story_nodes[0].id
+            if self.start_story_node_id not in node_ids:
+                raise ValueError("start_story_node_id must reference an existing story node")
         return self
 
     def scene_by_id(self, scene_id: str) -> AdventureScene:
@@ -178,6 +210,12 @@ class AdventurePackage(BaseModel):
             if trigger.id == trigger_id:
                 return trigger
         raise KeyError(trigger_id)
+
+    def story_node_by_id(self, node_id: str) -> AdventureStoryNode:
+        for node in self.story_nodes:
+            if node.id == node_id:
+                return node
+        raise KeyError(node_id)
 
     def state_defaults(self) -> dict[str, int | bool | str | list[str]]:
         return {field.key: field.default for field in self.state_fields}

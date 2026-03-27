@@ -2,6 +2,7 @@ from dm_bot.gameplay.combat import CombatEncounter, Combatant
 from dm_bot.gameplay.modes import GameModeState
 from dm_bot.adventures.trigger_engine import TriggerEngine
 from dm_bot.characters.models import CharacterRecord
+from dm_bot.coc.panels import InvestigatorPanel
 from dm_bot.router.contracts import TurnPlan
 from dm_bot.rules.actions import LookupAction, RuleAction, StatBlock
 from dm_bot.adventures.models import AdventureLocationConnection, AdventurePackage
@@ -27,12 +28,14 @@ class GameplayOrchestrator:
         self.combat: CombatEncounter | None = None
         self.adventure: AdventurePackage | None = None
         self.adventure_state: dict[str, object] = {}
+        self.panels: dict[str, InvestigatorPanel] = {}
         self._trigger_engine = TriggerEngine()
         self._pending_trigger_events: list[dict[str, object]] = []
 
     def import_character(self, *, user_id: str, provider: str, external_id: str) -> CharacterRecord:
         character = self._importer.import_character(provider, external_id)
         self.registry.put(user_id, character)
+        self.sync_panel_from_character(user_id)
         return character
 
     def enter_scene(self, *, speakers: list[str]) -> None:
@@ -73,10 +76,12 @@ class GameplayOrchestrator:
             "adventure_slug": adventure.slug,
             "scene_id": adventure.start_scene_id,
             "location_id": adventure.start_location_id or adventure.start_scene_id,
+            "story_node_id": adventure.start_story_node_id or "",
             "clues_found": [],
             "objectives": list(adventure.objectives),
             "module_state": adventure.state_defaults(),
             "location_state": {},
+            "knowledge_log": [],
             "ending_id": None,
             "onboarding": {
                 "status": "awaiting_ready",
@@ -85,19 +90,20 @@ class GameplayOrchestrator:
             },
         }
 
-    def adventure_snapshot(self) -> dict[str, object]:
+    def adventure_snapshot(self, *, user_id: str | None = None) -> dict[str, object]:
         if self.adventure is None:
             return {}
         scene_id = self._current_scene_id()
         scene = self.adventure.scene_by_id(scene_id)
         location = self._current_location()
         module_state = dict(self.adventure_state.get("module_state", {}))
-        return {
+        snapshot = {
             "public": {
                 "slug": self.adventure.slug,
                 "title": self.adventure.title,
                 "current_scene": scene.model_dump(),
                 "current_location": location.model_dump(),
+                "current_story_node": self._current_story_node().model_dump() if self.adventure.story_nodes else None,
                 "reachable_locations": [connection.model_dump() for connection in location.connections],
                 "objectives": list(self.adventure_state.get("objectives", [])),
                 "state": self.adventure.public_state(module_state),
@@ -110,6 +116,9 @@ class GameplayOrchestrator:
                 "pending_roll": dict(self.adventure_state.get("pending_roll", {})),
             },
         }
+        if user_id is not None:
+            snapshot["player"] = self.player_runtime_context(user_id)
+        return snapshot
 
     def adventure_guidance_snapshot(self) -> dict[str, object]:
         if self.adventure is None:
@@ -205,6 +214,103 @@ class GameplayOrchestrator:
             f"{self.scene_frame_text()}\n"
             "先描述你们第一轮的观察、站位或试探动作。"
         )
+
+    def onboarding_track_for_role(self, role: str) -> dict[str, object] | None:
+        if self.adventure is None:
+            return None
+        for track in self.adventure.onboarding_tracks:
+            if track.role == role:
+                return track.model_dump()
+        return None
+
+    def seed_role_knowledge(self, *, user_id: str, role: str) -> list[dict[str, str]]:
+        track = self.onboarding_track_for_role(role)
+        if not track:
+            return []
+        seeded = []
+        knowledge_log = list(self.adventure_state.get("knowledge_log", []))
+        existing_titles = {(item.get("recipient_user_id"), item.get("title")) for item in knowledge_log}
+        for item in track.get("seeded_knowledge", []):
+            pair = (user_id, item.get("title"))
+            if pair in existing_titles:
+                continue
+            entry = {
+                "scope": "player",
+                "recipient_user_id": user_id,
+                "group_id": role,
+                "title": item.get("title", ""),
+                "content": item.get("content", ""),
+            }
+            knowledge_log.append(entry)
+            seeded.append(item)
+        self.adventure_state["knowledge_log"] = knowledge_log
+        return seeded
+
+    def ensure_investigator_panel(self, *, user_id: str, display_name: str, role: str = "investigator") -> InvestigatorPanel:
+        if user_id not in self.panels:
+            defaults = {"investigator": {"san": 50, "hp": 10, "mp": 10, "luck": 50}, "magical_girl": {"san": 60, "hp": 12, "mp": 14, "luck": 55}}
+            base = defaults.get(role, defaults["investigator"])
+            self.panels[user_id] = InvestigatorPanel(user_id=user_id, name=display_name, role=role, **base)
+        else:
+            self.panels[user_id].role = role or self.panels[user_id].role
+            if display_name:
+                self.panels[user_id].name = display_name
+        return self.panels[user_id]
+
+    def sync_panel_from_character(self, user_id: str) -> None:
+        character = self.registry.get(user_id)
+        if character is None:
+            return
+        if character.coc is not None:
+            existing_role = self.panels[user_id].role if user_id in self.panels else "investigator"
+            panel = self.ensure_investigator_panel(user_id=user_id, display_name=character.name, role=existing_role)
+            panel.name = character.name
+            panel.occupation = character.coc.occupation
+            panel.san = character.coc.san
+            panel.hp = character.coc.hp
+            panel.mp = character.coc.mp
+            panel.luck = character.coc.luck
+            panel.skills = dict(character.coc.skills)
+
+    def apply_panel_update(self, *, user_id: str, san: int = 0, hp: int = 0, mp: int = 0, luck: int = 0, note: str = "") -> None:
+        existing_name = self.panels[user_id].name if user_id in self.panels else f"玩家{user_id}"
+        panel = self.ensure_investigator_panel(user_id=user_id, display_name=existing_name)
+        panel.san += san
+        panel.hp += hp
+        panel.mp += mp
+        panel.luck += luck
+        if note:
+            panel.journal.append(note)
+
+    def visible_knowledge(self, *, user_id: str, role: str = "") -> list[dict[str, object]]:
+        entries = []
+        for item in list(self.adventure_state.get("knowledge_log", [])):
+            scope = item.get("scope", "public")
+            if scope == "public":
+                entries.append(item)
+            elif scope == "player" and item.get("recipient_user_id") == user_id:
+                entries.append(item)
+            elif scope == "group" and role and item.get("group_id") == role:
+                entries.append(item)
+        return entries
+
+    def investigator_panel_snapshot(self, user_id: str) -> dict[str, object]:
+        panel = self.panels.get(user_id)
+        if panel is None:
+            panel = self.ensure_investigator_panel(user_id=user_id, display_name=f"玩家{user_id}")
+        visible_knowledge = self.visible_knowledge(user_id=user_id, role=panel.role)
+        snapshot = panel.model_dump()
+        snapshot["knowledge"] = visible_knowledge
+        return snapshot
+
+    def player_runtime_context(self, user_id: str) -> dict[str, object]:
+        snapshot = self.investigator_panel_snapshot(user_id)
+        story_node = self._current_story_node()
+        return {
+            "panel": snapshot,
+            "knowledge_titles": [item.get("title", "") for item in snapshot.get("knowledge", []) if item.get("title")],
+            "story_node": story_node.model_dump() if story_node is not None else None,
+        }
 
     def onboarding_block_message(self) -> str | None:
         onboarding = self.adventure_onboarding()
@@ -470,6 +576,7 @@ class GameplayOrchestrator:
         return {
             "mode": self.mode_state.model_dump(),
             "combat": self.combat.model_dump() if self.combat else None,
+            "panels": {user_id: panel.model_dump() for user_id, panel in self.panels.items()},
             "registry": {
                 user_id: character.model_dump()
                 for user_id, character in self.registry._characters.items()
@@ -485,6 +592,10 @@ class GameplayOrchestrator:
         for user_id, payload in dict(state.get("registry", {})).items():
             registry[user_id] = CharacterRecord.model_validate(payload)
         self.registry._characters = registry
+        self.panels = {
+            user_id: InvestigatorPanel.model_validate(payload)
+            for user_id, payload in dict(state.get("panels", {})).items()
+        }
         self.adventure_state = dict(state.get("adventure_state", {}))
         slug = self.adventure_state.get("adventure_slug")
         if slug:
@@ -509,6 +620,7 @@ class GameplayOrchestrator:
                 "pending_roll_id": pending_roll.get("id", ""),
                 "roll_action": result.get("action", ""),
                 "roll_total": result.get("total"),
+                "user_id": pending_roll.get("user_id", ""),
             },
         )
         if resolution.matched_trigger_ids:
@@ -520,6 +632,14 @@ class GameplayOrchestrator:
         events = list(self._pending_trigger_events)
         self._pending_trigger_events.clear()
         return events
+
+    def _current_story_node(self):
+        if self.adventure is None or not self.adventure.story_nodes:
+            return None
+        node_id = str(self.adventure_state.get("story_node_id") or self.adventure.start_story_node_id or "")
+        if not node_id:
+            return None
+        return self.adventure.story_node_by_id(node_id)
 
     def resolve_plan(self, plan: TurnPlan) -> list[dict[str, object]]:
         results: list[dict[str, object]] = []

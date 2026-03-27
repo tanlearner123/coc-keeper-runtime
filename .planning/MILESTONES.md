@@ -1,10 +1,18 @@
 # Milestones
 
-## v1.7 调查员面板与复杂 COC 模组运行时 (In Progress)
+## v1.7 调查员面板与复杂 COC 模组运行时 (Shipped: 2026-03-28)
 
 **Goal:**
 
 - Add per-player investigator panels, private knowledge handling, and reusable runtime support for more complex COC modules such as `覆辙`, while keeping all new mechanics grounded in local COC rulebooks or explicit module rules.
+
+**Phases completed:** 3 phases total
+
+**Key accomplishments:**
+
+- Added persistent investigator panels with bot-native `/sheet` and role-aware panel seeding for standard investigators and alternate templates such as `magical_girl`.
+- Extended the runtime with player-private and group-scoped knowledge, plus mixed room/scene/event graph primitives and story-node tracking.
+- Shipped the first structured `覆辙` sample module to validate dual onboarding tracks, asymmetrical truths, and reusable complex-module abstractions.
 
 ---
 

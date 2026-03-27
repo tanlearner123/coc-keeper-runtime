@@ -8,6 +8,7 @@ class CampaignSession(BaseModel):
     owner_id: str
     member_ids: set[str] = Field(default_factory=set)
     active_characters: dict[str, str] = Field(default_factory=dict)
+    active_roles: dict[str, str] = Field(default_factory=dict)
 
 
 class SessionStore:
@@ -41,11 +42,22 @@ class SessionStore:
         session.active_characters[user_id] = character_name
         return session
 
+    def bind_role(self, *, channel_id: str, user_id: str, role: str) -> CampaignSession:
+        session = self._sessions[channel_id]
+        session.active_roles[user_id] = role
+        return session
+
     def active_character_for(self, *, channel_id: str, user_id: str) -> str | None:
         session = self._sessions.get(channel_id)
         if session is None:
             return None
         return session.active_characters.get(user_id)
+
+    def active_role_for(self, *, channel_id: str, user_id: str) -> str | None:
+        session = self._sessions.get(channel_id)
+        if session is None:
+            return None
+        return session.active_roles.get(user_id)
 
     def get_by_channel(self, channel_id: str) -> CampaignSession | None:
         return self._sessions.get(channel_id)
@@ -59,6 +71,7 @@ class SessionStore:
                 "owner_id": session.owner_id,
                 "member_ids": sorted(session.member_ids),
                 "active_characters": dict(session.active_characters),
+                "active_roles": dict(session.active_roles),
             }
             for channel_id, session in self._sessions.items()
         }
@@ -73,5 +86,6 @@ class SessionStore:
                 owner_id=str(raw["owner_id"]),
                 member_ids=set(raw.get("member_ids", [])),
                 active_characters=dict(raw.get("active_characters", {})),
+                active_roles=dict(raw.get("active_roles", {})),
             )
             self._sessions[channel_id] = session
