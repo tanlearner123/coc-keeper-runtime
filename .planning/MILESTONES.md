@@ -1,5 +1,21 @@
 # Milestones
 
+## v2.1 交付检查与角色治理 (Planned: 2026-03-28)
+
+**Goal:**
+
+- Add a hard local smoke-check gate before delivery, enforce a single active long-lived character per account by default, and introduce administrator-facing role management with a preferred admin channel.
+
+**Planned phases:** 3 phases total
+
+**Planned focus:**
+
+- Add a repeatable local startup smoke check that must pass before work is declared ready.
+- Reshape archive identity rules so each account has one active profile by default, with explicit archive/replace flows.
+- Add admin-role character visibility and management commands, with defaults that guide usage into a dedicated management channel.
+
+---
+
 ## v2.0 Archive 系统与人物卡面板完善 (Planned: 2026-03-28)
 
 **Goal:**

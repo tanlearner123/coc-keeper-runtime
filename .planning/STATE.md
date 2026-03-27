@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Archive 系统与人物卡面板完善
+milestone: v2.1
+milestone_name: 交付检查与角色治理
 status: planning
-stopped_at: Defined milestone v2.0 for richer archive schema, better presentation, and COC-bounded finishing logic
-last_updated: "2026-03-28T23:45:00.000Z"
-last_activity: 2026-03-28 - Milestone v2.0 initialized
+stopped_at: Defined milestone v2.1 for local smoke checks, single-active archive profiles, and admin character governance
+last_updated: "2026-03-28T23:59:00.000Z"
+last_activity: 2026-03-28 - Milestone v2.1 initialized
 progress:
   total_phases: 36
   completed_phases: 33
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keeper can narrate, roleplay multiple characters, and enforce investigation-heavy rules flow without constant manual bookkeeping.
-**Current focus:** v2.0 planning; turn the richer archive data into a fuller investigator-card system with better schema, detail views, and rule-bounded finishing logic
+**Current focus:** v2.1 planning; add a real local delivery smoke check, single-active profile governance, and admin-facing character management
 
 ## Current Position
 
 Phase: Milestone planning
-Plan: Define and execute Phases 34-36
+Plan: Define and execute Phases 37-39
 Status: Active
-Last activity: 2026-03-28 - Milestone v2.0 initialized
+Last activity: 2026-03-28 - Milestone v2.1 initialized
 
 Progress: [█████████░] 92%
 
@@ -82,6 +82,7 @@ None yet.
 - Roadmap now marks Phases 28-30 complete for milestone v1.8.
 - Roadmap now marks Phases 31-33 complete for milestone v1.9, covering adaptive builder interviews, richer identity capture, and archive writeback.
 - Phases 34-36 were added for milestone v2.0 to deepen archive schema, archive presentation, and COC-bounded finishing logic.
+- Phases 37-39 were added for milestone v2.1 to harden delivery checks and govern long-lived character identity.
 
 ### Blockers/Concerns
 
@@ -90,10 +91,11 @@ None yet.
 - Future UI work should distinguish what fits native bot interactions from what warrants a Discord Activity.
 - Conversational character generation must remain anchored to canonical COC generation rules rather than replacing them.
 - Richer panel UX may eventually fit better in a Discord Activity, but the current bot-native archive/builder flow is the supported baseline.
-- Richer archive identity now exists, but Discord surfaces still show only a subset of that information; v2.0 should expose it and structure it more clearly.
+- Richer archive identity now exists, but release confidence is still weak if the bot process is not verified alive after launch.
+- Archive ownership and governance rules are still too loose; the next milestone should prevent multiple active identities by default and add admin controls.
 
 ## Session Continuity
 
 Last session: 2026-03-28T23:45:00.000Z
-Stopped at: Defined milestone v2.0 for richer archive schema, better presentation, and COC-bounded finishing logic
+Stopped at: Defined milestone v2.1 for local smoke checks, single-active archive profiles, and admin character governance
 Resume file: .planning/PROJECT.md

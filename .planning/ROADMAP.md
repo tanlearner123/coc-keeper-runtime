@@ -2,7 +2,7 @@
 
 ## Overview
 
-Milestone `v1.0` established the Discord-first local-DM runtime with deterministic rules, persistence, diagnostics, and a starter packaged adventure. Milestone `v1.1` introduced a formal module runtime and shipped `疯狂之馆` as the first structured full-length module. Milestone `v1.2` added ready-gated startup, mature dice integration, and true Discord streaming. Milestone `v1.3` polished live-play feel through structured judgement, bounded guidance, and keeper-style scene framing. Milestone `v1.4` introduced room graphs, AI-first extraction drafts, and location-driven play. Milestone `v1.5` completed the missing execution layer with a reusable trigger tree and consequence engine. Milestone `v1.6` pivots that foundation into a COC/Keeper-first runtime using local rulebooks, investigator assets, and COC module semantics. Milestone `v1.7` extends that base with persistent investigator panels, private knowledge flow, mixed room/scene/event graphs, and the first `覆辙`-class complex module sample. Milestone `v1.8` turns those systems into a clearer player product through channel-scoped command discipline, rules-grounded conversational character creation, and a clean split between archive profiles and campaign projections, and ships the first archive/builder flow. Milestone `v1.9` transformed that builder into a more game-like character-shaping experience driven by adaptive follow-up questions and richer archive identity. Milestone `v2.0` should now make the archive itself feel like a real investigator-card system with richer schema, stronger normalization, better detail views, and explicit COC-bounded finishing logic.
+Milestone `v1.0` established the Discord-first local-DM runtime with deterministic rules, persistence, diagnostics, and a starter packaged adventure. Milestone `v1.1` introduced a formal module runtime and shipped `疯狂之馆` as the first structured full-length module. Milestone `v1.2` added ready-gated startup, mature dice integration, and true Discord streaming. Milestone `v1.3` polished live-play feel through structured judgement, bounded guidance, and keeper-style scene framing. Milestone `v1.4` introduced room graphs, AI-first extraction drafts, and location-driven play. Milestone `v1.5` completed the missing execution layer with a reusable trigger tree and consequence engine. Milestone `v1.6` pivots that foundation into a COC/Keeper-first runtime using local rulebooks, investigator assets, and COC module semantics. Milestone `v1.7` extends that base with persistent investigator panels, private knowledge flow, mixed room/scene/event graphs, and the first `覆辙`-class complex module sample. Milestone `v1.8` turns those systems into a clearer player product through channel-scoped command discipline, rules-grounded conversational character creation, and a clean split between archive profiles and campaign projections, and ships the first archive/builder flow. Milestone `v1.9` transformed that builder into a more game-like character-shaping experience driven by adaptive follow-up questions and richer archive identity. Milestone `v2.0` makes the archive itself feel like a real investigator-card system with richer schema, stronger normalization, better detail views, and explicit COC-bounded finishing logic. Milestone `v2.1` should harden operational delivery and player governance through a repeatable startup smoke check, a single-active-profile rule, and admin-facing character management.
 
 ## Phases
 
@@ -48,6 +48,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 34: Rich Archive Schema And Normalization** - Expand archive fields and normalize interview answers into structured long-lived investigator-card data.
 - [ ] **Phase 35: Archive Presentation And Detail Views** - Improve Discord-facing archive browsing and add richer profile detail presentation.
 - [ ] **Phase 36: COC-Bounded Archive Finishing And Module Reuse** - Add rules-bounded finishing logic and ensure richer archive data projects cleanly into modules.
+- [ ] **Phase 37: Local Delivery Smoke Check** - Add a repeatable local handoff gate that proves tests pass, the bot reaches `READY`, and the launched process stays alive.
+- [ ] **Phase 38: Single Active Profile Lifecycle** - Enforce one active long-lived profile per account, with explicit archive/replace promotion flows.
+- [ ] **Phase 39: Admin Character Governance** - Add admin-facing profile visibility and mutation commands plus preferred admin-channel guidance.
 
 ## Milestone v1.8 Delivery Plan
 
@@ -108,6 +111,26 @@ Decimal phases appear between their surrounding integers in numeric order.
 - Let interview signals influence finishing choices only through explicit legal COC paths and bounded supported modes.
 - Preserve reviewable trace of any interview-driven finishing recommendations instead of hiding them in prompt behavior.
 - Ensure richer archive data can be consumed by future modules, onboarding hooks, and role overlays without mutating the archive base.
+
+## Milestone v2.1 Delivery Plan
+
+### Phase 37: Local Delivery Smoke Check
+**Planned**:
+- Add a local smoke-check script or command that runs tests, starts the bot, waits for `READY`, and confirms the process remains alive.
+- Eliminate false positives from stale logs or duplicate background bot instances.
+- Treat smoke-check success as a release gate before claiming work is ready.
+
+### Phase 38: Single Active Profile Lifecycle
+**Planned**:
+- Extend archive profiles with explicit lifecycle state such as active, archived, and replaced.
+- Ensure each account has exactly one active long-lived investigator by default.
+- Require explicit archive/replace actions when promoting a new main character.
+
+### Phase 39: Admin Character Governance
+**Planned**:
+- Add admin commands to inspect, activate, archive, replace, and delete player profiles.
+- Support these commands anywhere while steering operators toward a preferred admin channel.
+- Keep governance actions auditable and distinct from ordinary player-facing archive flows.
 
 ## Progress
 

@@ -43,9 +43,9 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ### Active
 
-- [ ] The next milestone should turn the archive into a richer long-lived investigator card system, with clearer detail views and more structured fields instead of a thin profile list.
-- [ ] Builder output should normalize more concrete traits such as specialty, career arc, core belief, desire, and fear into explicit archive fields rather than leaving them buried in freeform text.
-- [ ] Interview-driven finishing touches may influence legal character outcomes only through explicit COC-compatible rules and bounded generation modes, never by arbitrary prompt-side bonuses.
+- [ ] Delivery should require a repeatable local smoke check that proves the bot can start, reach `READY`, and stay alive long enough to count as a valid handoff.
+- [ ] Each account should default to exactly one active long-lived archive profile, with explicit archive/replace flows instead of silently accumulating multiple active personas.
+- [ ] Administrators should be able to inspect and manage all player profiles, with both ad hoc commands and a preferred admin-management channel.
 
 ### Out of Scope
 
@@ -58,7 +58,7 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ## Current State
 
-`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. `v1.8` then separated archive channels from live-play channels, added a rules-grounded conversational character builder, and split long-lived investigator identities from campaign-specific module instances. `v1.9` completed the next layer by making interviews adaptive and writing richer life-goal / weakness / past-event identity into long-lived archive profiles. `v2.0` should now make those archive profiles feel like real investigator cards: richer schema, clearer detail views, stronger normalization of interview answers, and explicit COC-rule-bounded finishing logic.
+`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. `v1.8` then separated archive channels from live-play channels, added a rules-grounded conversational character builder, and split long-lived investigator identities from campaign-specific module instances. `v1.9` completed the next layer by making interviews adaptive and writing richer life-goal / weakness / past-event identity into long-lived archive profiles. `v2.0` is focused on making those archive profiles feel like real investigator cards. `v2.1` should close the operational and governance gap around those systems by adding a hard local smoke-check gate, a single-active-profile lifecycle, and admin-facing character management.
 
 ## Context
 
@@ -108,6 +108,9 @@ The first releases proved the core Discord gameplay loop end-to-end: player inpu
 | Archive identities should retain narrative anchors beyond the numeric sheet | Future modules and onboarding tracks become stronger when the system knows not just stats, but what the character wants, fears, and carries from the past | v1.9 writes life goal, weakness, and key event into archive profiles |
 | Archive presentation should feel closer to a real investigator card than a debug list | Players need a persistent identity surface they can actually read and care about, not just an ID/occupation/SAN row | v2.0 should improve archive schema and detail presentation |
 | Interview output may bias finishing choices only through explicit legal COC paths | Roleplay-driven tuning is useful, but it must be implemented as bounded rule-aware generation, not arbitrary stat invention | v2.0 should add COC-bounded archive finishing logic |
+| Delivery claims must be backed by a local startup smoke check | Passing tests alone is not enough if the bot fails to stay alive after launch | v2.1 should add a repeatable startup verification script and handoff gate |
+| Each account should default to one active long-lived archive profile | Players need a stable identity anchor; profile sprawl should require explicit archive or replace actions | v2.1 should add active/archive lifecycle rules to archive profiles |
+| Admins need explicit character-management authority and a preferred management channel | Moderation and cleanup should not depend on ad hoc database edits or crowding live-play channels | v2.1 should add admin profile visibility, mutation commands, and admin-channel guidance |
 | `疯狂之馆` is the first official module target | It is rich enough to force a real schema while still being a bounded first module | ✓ Good |
 | New runtime subsystems should reuse mature prior art where possible | This reduces debugging cost and keeps the bot aligned with proven Discord D&D workflows | `d20`-style dice integration prioritized for v1.2 |
 | Live-play feel now matters more than new runtime primitives | The next milestone should polish judgement, hinting, and scene presentation before expanding breadth | `疯狂之馆` experience polish prioritized for v1.3 |

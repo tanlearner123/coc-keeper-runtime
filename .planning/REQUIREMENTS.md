@@ -3,6 +3,26 @@
 **Defined:** 2026-03-28
 **Core Value:** Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keeper can narrate, roleplay multiple characters, and enforce investigation-heavy rules flow without constant manual bookkeeping.
 
+## v2.1 Requirements
+
+### Delivery Smoke Check
+
+- [ ] **SMOKE-01**: The project should include a repeatable local smoke-check command or script that runs tests, starts the bot, waits for `READY`, and verifies the process remains alive for a bounded window.
+- [ ] **SMOKE-02**: Delivery claims should be blocked when the smoke check fails, even if unit tests pass.
+- [ ] **SMOKE-03**: The smoke check should avoid false positives caused by stale logs or duplicate background bot processes.
+
+### Single Active Archive Profile
+
+- [ ] **ROLE-01**: Each player account should default to exactly one active long-lived archive profile.
+- [ ] **ROLE-02**: Creating or promoting a new main character should require an explicit archive/replace action for the previous active profile rather than silently leaving multiple active profiles.
+- [ ] **ROLE-03**: Archive profile lifecycle should be visible and reviewable, with statuses such as active, archived, or replaced.
+
+### Admin Profile Governance
+
+- [ ] **ADMIN-01**: Administrators should be able to inspect all player archive profiles, not only their own.
+- [ ] **ADMIN-02**: Administrators should be able to archive, replace, activate, or delete profiles through explicit commands.
+- [ ] **ADMIN-03**: Admin profile-management commands should work from any channel but prefer and guide toward a dedicated admin-management channel.
+
 ## v2.0 Requirements
 
 ### Rich Archive Schema
@@ -142,13 +162,23 @@
 | MODARCH-01 | Phase 36 | Planned |
 | MODARCH-02 | Phase 36 | Planned |
 | MODARCH-03 | Phase 36 | Planned |
+| SMOKE-01 | Phase 37 | Planned |
+| SMOKE-02 | Phase 37 | Planned |
+| SMOKE-03 | Phase 37 | Planned |
+| ROLE-01 | Phase 38 | Planned |
+| ROLE-02 | Phase 38 | Planned |
+| ROLE-03 | Phase 38 | Planned |
+| ADMIN-01 | Phase 39 | Planned |
+| ADMIN-02 | Phase 39 | Planned |
+| ADMIN-03 | Phase 39 | Planned |
 
 **Coverage:**
 - v1.8 requirements: 13 total
 - v1.9 requirements: 12 total
 - v2.0 requirements: 12 total
+- v2.1 requirements: 9 total
 - Completed: 25
-- Planned: 12
+- Planned: 21
 - Unmapped: 0
 
 ---
