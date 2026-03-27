@@ -1,0 +1,54 @@
+import asyncio
+from pathlib import Path
+
+from dm_bot.diagnostics.service import DiagnosticsService
+from dm_bot.discord_bot.commands import BotCommands
+from dm_bot.persistence.store import PersistenceStore
+
+
+class FakeResponse:
+    def __init__(self) -> None:
+        self.messages: list[tuple[str, bool]] = []
+
+    async def send_message(self, content: str, ephemeral: bool = False) -> None:
+        self.messages.append((content, ephemeral))
+
+
+class FakeInteraction:
+    def __init__(self, *, channel_id: str = "chan-1", guild_id: str = "guild-1", user_id: str = "user-1") -> None:
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+        self.user = type("User", (), {"id": user_id})()
+        self.response = FakeResponse()
+
+
+class StubTurnRunner:
+    async def run_turn(self, envelope):
+        return type("TurnResult", (), {"reply": "战斗开始。"})()
+
+
+def test_diagnostics_service_returns_recent_trace_summary(tmp_path: Path) -> None:
+    store = PersistenceStore(tmp_path / "diag.sqlite3")
+    store.append_event(campaign_id="camp-1", trace_id="trace-1", event_type="turn.completed", payload={"reply": "ok"})
+    service = DiagnosticsService(store)
+
+    summary = service.recent_summary("camp-1")
+
+    assert "trace-1" in summary
+
+
+def test_debug_command_surfaces_recent_events(tmp_path: Path) -> None:
+    store = PersistenceStore(tmp_path / "diag.sqlite3")
+    store.append_event(campaign_id="camp-1", trace_id="trace-1", event_type="turn.completed", payload={"reply": "ok"})
+    commands = BotCommands(
+        settings=None,
+        session_store=None,
+        turn_coordinator=None,
+        gameplay=None,
+        diagnostics=DiagnosticsService(store),
+    )
+    interaction = FakeInteraction()
+
+    asyncio.run(commands.debug_status(interaction, campaign_id="camp-1"))
+
+    assert "trace-1" in interaction.response.messages[0][0]

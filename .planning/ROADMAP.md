@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Discord Runtime & Dual-Model Control** - Establish the Discord session surface, async interaction flow, and local dual-model orchestration.
 - [x] **Phase 2: Character Import & Rules Authority** - Add one low-friction character path and a deterministic 2014 SRD rules backbone.
 - [x] **Phase 3: Gameplay Loop & Combat Play** - Deliver DM narration, multi-character scenes, and heavy-rules combat inside Discord.
-- [ ] **Phase 4: Persistence, Recovery & Diagnostics** - Harden the runtime for campaign reuse, replayability, and operator visibility.
+- [x] **Phase 4: Persistence, Recovery & Diagnostics** - Harden the runtime for campaign reuse, replayability, and operator visibility.
 
 ## Phase Details
 
@@ -73,7 +73,10 @@ Plans:
   2. Every turn records a replayable event trail linking the user action, router decision, tool execution, state mutations, and outbound Discord response.
   3. Operators can inspect Discord, model, tool, and recent rules failures from a compact debug surface or command and trace a player action end-to-end with stable identifiers.
   4. The system can generate prompt-ready summaries or projections from canonical stored state rather than relying on raw Discord history as the only source of truth.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 04-01-PLAN.md - Add durable campaign state storage and append-only turn events.
+- [x] 04-02-PLAN.md - Expose compact diagnostics and trace inspection through the runtime.
 
 ## Progress
 
@@ -85,4 +88,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 | 1. Discord Runtime & Dual-Model Control | 3/3 | Completed | 2026-03-27 |
 | 2. Character Import & Rules Authority | 3/3 | Completed | 2026-03-27 |
 | 3. Gameplay Loop & Combat Play | 3/3 | Completed | 2026-03-27 |
-| 4. Persistence, Recovery & Diagnostics | 0/TBD | Not started | - |
+| 4. Persistence, Recovery & Diagnostics | 2/2 | Completed | 2026-03-27 |

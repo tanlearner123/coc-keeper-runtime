@@ -42,6 +42,25 @@ class GameplayOrchestrator:
         self.mode_state.mode = "combat"
         return encounter
 
+    def export_state(self) -> dict[str, object]:
+        return {
+            "mode": self.mode_state.model_dump(),
+            "combat": self.combat.model_dump() if self.combat else None,
+            "registry": {
+                user_id: character.model_dump()
+                for user_id, character in self.registry._characters.items()
+            },
+        }
+
+    def import_state(self, state: dict[str, object]) -> None:
+        self.mode_state = GameModeState.model_validate(state.get("mode", {"mode": "dm", "scene_speakers": []}))
+        combat = state.get("combat")
+        self.combat = CombatEncounter.model_validate(combat) if combat else None
+        registry = {}
+        for user_id, payload in dict(state.get("registry", {})).items():
+            registry[user_id] = CharacterRecord.model_validate(payload)
+        self.registry._characters = registry
+
     def resolve_plan(self, plan: TurnPlan) -> list[dict[str, object]]:
         results: list[dict[str, object]] = []
         for call in plan.tool_calls:

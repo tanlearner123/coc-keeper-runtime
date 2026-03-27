@@ -20,8 +20,9 @@ class TurnRequest(BaseModel):
 
 
 class TurnCoordinator:
-    def __init__(self, *, turn_runner) -> None:
+    def __init__(self, *, turn_runner, persistence_store=None) -> None:
         self._turn_runner = turn_runner
+        self._persistence_store = persistence_store
         self._locks: dict[str, asyncio.Lock] = {}
 
     async def handle_turn(
@@ -50,5 +51,12 @@ class TurnCoordinator:
                     trace_id=trace_id,
                     content=request.content,
                 )
+            )
+        if self._persistence_store is not None:
+            self._persistence_store.append_event(
+                campaign_id=request.campaign_id,
+                trace_id=trace_id,
+                event_type="turn.completed",
+                payload={"reply": result.reply, "channel_id": request.channel_id, "user_id": request.user_id},
             )
         return TurnDispatchResult(trace_id=trace_id, reply=result.reply)

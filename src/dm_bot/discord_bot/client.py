@@ -44,6 +44,11 @@ class DiscordDmBot(commands.Bot):
         async def start_combat(interaction: discord.Interaction, combatants: str) -> None:
             await self.handlers.start_combat(interaction, combatants=combatants)
 
+        @self.tree.command(name="debug_status", description="Show recent trace-linked runtime events")
+        @app_commands.describe(campaign_id="Campaign identifier")
+        async def debug_status(interaction: discord.Interaction, campaign_id: str) -> None:
+            await self.handlers.debug_status(interaction, campaign_id=campaign_id)
+
 
 def create_discord_bot(*, handlers) -> commands.Bot:
     return DiscordDmBot(handlers=handlers)

@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from dm_bot.characters.importer import CharacterImporter
 from dm_bot.characters.sources import DicecloudSnapshotSource
 from dm_bot.config import Settings, get_settings
+from dm_bot.diagnostics.service import DiagnosticsService
 from dm_bot.discord_bot.client import create_discord_bot
 from dm_bot.discord_bot.commands import BotCommands
 from dm_bot.models.ollama_client import OllamaClient
@@ -11,6 +13,7 @@ from dm_bot.orchestrator.gameplay import CharacterRegistry, GameplayOrchestrator
 from dm_bot.orchestrator.session_store import SessionStore
 from dm_bot.orchestrator.turn_runner import TurnRunner
 from dm_bot.orchestrator.turns import TurnCoordinator
+from dm_bot.persistence.store import PersistenceStore
 from dm_bot.router.service import RouterService
 from dm_bot.rules.compendium import FixtureCompendium
 from dm_bot.rules.engine import RulesEngine
@@ -27,6 +30,7 @@ class RuntimeBundle:
 def build_runtime(settings: Settings | None = None) -> RuntimeBundle:
     settings = settings or get_settings()
     model_client = OllamaClient(settings)
+    persistence_store = PersistenceStore(Path("dm_bot.sqlite3"))
     gameplay = GameplayOrchestrator(
         importer=CharacterImporter(sources={"dicecloud_snapshot": DicecloudSnapshotSource(fixtures={})}),
         registry=CharacterRegistry(),
@@ -38,12 +42,13 @@ def build_runtime(settings: Settings | None = None) -> RuntimeBundle:
         gameplay=gameplay,
     )
     session_store = SessionStore()
-    turn_coordinator = TurnCoordinator(turn_runner=turn_runner)
+    turn_coordinator = TurnCoordinator(turn_runner=turn_runner, persistence_store=persistence_store)
     handlers = BotCommands(
         settings=settings,
         session_store=session_store,
         turn_coordinator=turn_coordinator,
         gameplay=gameplay,
+        diagnostics=DiagnosticsService(persistence_store),
     )
     return RuntimeBundle(
         settings=settings,

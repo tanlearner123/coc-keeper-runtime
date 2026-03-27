@@ -5,11 +5,12 @@ from dm_bot.runtime.health import build_health_snapshot
 
 
 class BotCommands:
-    def __init__(self, *, settings: Settings | None, session_store, turn_coordinator, gameplay=None) -> None:
+    def __init__(self, *, settings: Settings | None, session_store, turn_coordinator, gameplay=None, diagnostics=None) -> None:
         self._settings = settings or get_settings()
         self._session_store = session_store
         self._turn_coordinator = turn_coordinator
         self._gameplay = gameplay
+        self._diagnostics = diagnostics
 
     async def setup_check(self, interaction) -> None:
         snapshot = build_health_snapshot(self._settings)
@@ -106,5 +107,14 @@ class BotCommands:
         encounter = self._gameplay.start_combat(combatants=parsed)
         await interaction.response.send_message(
             f"combat started; active turn: {encounter.active_combatant.name}",
+            ephemeral=True,
+        )
+
+    async def debug_status(self, interaction, *, campaign_id: str) -> None:
+        if self._diagnostics is None:
+            await interaction.response.send_message("diagnostics are not configured", ephemeral=True)
+            return
+        await interaction.response.send_message(
+            self._diagnostics.recent_summary(campaign_id),
             ephemeral=True,
         )
