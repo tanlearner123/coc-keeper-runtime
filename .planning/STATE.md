@@ -1,102 +1,85 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: 交付检查与角色治理
+milestone: v2.2
+milestone_name: GSD Track 化治理重构
 status: planning
-stopped_at: Defined milestone v2.1 for local smoke checks, single-active archive profiles, and admin character governance
-last_updated: "2026-03-29T00:20:00.000Z"
-last_activity: 2026-03-29 - Project-wide milestone summary and README architecture refresh
+active_track: governance
+stopped_at: Defining track-aware planning structure so future milestones can be chosen by layer without losing GSD continuity
+last_updated: "2026-03-28T18:30:00.000Z"
+last_activity: 2026-03-28 - Reframed project planning around persistent tracks and global rules
 progress:
-  total_phases: 36
-  completed_phases: 33
-  total_plans: 56
+  total_phases: 39
+  completed_phases: 39
+  total_plans: 59
   completed_plans: 59
-  percent: 92
+  percent: 100
 ---
 
 # Project State
 
-## Project Reference
-
-See: .planning/PROJECT.md (updated 2026-03-28)
-
-**Core value:** Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keeper can narrate, roleplay multiple characters, and enforce investigation-heavy rules flow without constant manual bookkeeping.
-**Current focus:** v2.1 planning; add a real local delivery smoke check, single-active profile governance, and admin-facing character management
-
 ## Current Position
 
-Phase: Milestone planning
-Plan: Define and execute Phases 37-39
-Status: Active
-Last activity: 2026-03-29 - Project-wide milestone summary and README architecture refresh
+- Active milestone: `v2.2`
+- Active track: `Governance`
+- Current mode: restructure planning so any GSD agent can understand the project by reading `.planning`
 
-Progress: [█████████░] 92%
+## What Just Completed
 
-## Performance Metrics
+`v2.1` completed the operational baseline for:
+- local smoke-check delivery gating
+- single-active archive profile lifecycle
+- first-pass admin profile governance
 
-**Velocity:**
+That means the next step is not another feature by default. The next step is making the repository structure legible enough that collaborators can safely pick the next milestone by track.
 
-- Total plans completed: 17
-- Average duration: -
-- Total execution time: 0.0 hours
+## Active Tracks
 
-**By Phase:**
+- `Track A`: 模组与规则运行层
+- `Track B`: 人物构建与管理层
+- `Track C`: Discord 交互层
+- `Track D`: 游戏呈现层
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1 | 3 | - | - |
-| 2 | 3 | - | - |
-| 3 | 3 | - | - |
-| 4 | 2 | - | - |
-| 5 | 2 | - | - |
-| 19 | 2 | - | - |
-| 20 | 2 | - | - |
-| 21 | 2 | - | - |
-| 22 | 1 | - | - |
-| 23 | 1 | - | - |
-| 24 | 1 | - | - |
+## Current Governance Priorities
 
-**Recent Trend:**
+1. Make tracks explicit in `PROJECT.md`.
+2. Move future planning into track-aware `ROADMAP.md`.
+3. Add track labels to milestone history in `MILESTONES.md`.
+4. Keep README aligned so GitHub collaborators can follow the same structure.
 
-- Last 5 plans: -
-- Trend: Stable
+## Next Candidate Milestones By Track
 
-## Accumulated Context
+- `Track A`: `A1 Complex COC Module Runtime Stabilization`
+- `Track B`: `B1 Archive And Builder Normalization`
+- `Track C`: `C1 Channel Governance And Command Discipline Hardening`
+- `Track D`: `D1 Keeper Presentation And Guidance Pass`
 
-### Decisions
+## Global Rules Reminder
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+All active and future work should respect these repository-level rules:
 
-- The runtime has already pivoted to COC/Keeper-first semantics and should stay anchored to the local COC rulebooks.
-- New complex-module mechanics must be represented either as canonical COC rules or explicit module-specific rules, not hidden prompt invention.
-- `覆辙` is the first target complex COC module because it exercises multiple entry tracks, asymmetrical truths, and longer-form scenario state.
-- The next milestone should add persistent investigator panels and private knowledge flow before attempting broader complex-module migration.
+1. Each milestone must have one primary track.
+2. Rule and state truth must come from deterministic code, local rulebooks, or explicit module rules.
+3. Critical state must be durable and auditable.
+4. Delivery claims require local smoke-check verification.
+5. Planning docs must remain sufficient for AI handoff after a fresh fork.
 
-### Pending Todos
+## Open Local-Only Files
 
-None yet.
+These files currently exist locally and are not formal project artifacts:
 
-### Roadmap Evolution
+- `.planning/config.json`
+- `bot.smoke.log`
+- `run-bot-bg.cmd`
+- `tmp_mansion.md`
 
-- Roadmap now marks Phases 28-30 complete for milestone v1.8.
-- Roadmap now marks Phases 31-33 complete for milestone v1.9, covering adaptive builder interviews, richer identity capture, and archive writeback.
-- Phases 34-36 were added for milestone v2.0 to deepen archive schema, archive presentation, and COC-bounded finishing logic.
-- Phases 37-39 were added for milestone v2.1 to harden delivery checks and govern long-lived character identity.
-- A project-wide summary report and GitHub-facing README architecture overview were generated to support external collaborators.
+## Resume Guidance
 
-### Blockers/Concerns
+When resuming:
 
-- Dynamic-form investigator PDFs may still need a non-text-extraction intake path for broader character import.
-- Community COC sites remain useful ecosystem references, but canonical runtime truth should stay local and reviewable.
-- Future UI work should distinguish what fits native bot interactions from what warrants a Discord Activity.
-- Conversational character generation must remain anchored to canonical COC generation rules rather than replacing them.
-- Richer panel UX may eventually fit better in a Discord Activity, but the current bot-native archive/builder flow is the supported baseline.
-- Richer archive identity now exists, but release confidence is still weak if the bot process is not verified alive after launch.
-- Archive ownership and governance rules are still too loose; the next milestone should prevent multiple active identities by default and add admin controls.
+1. Read `PROJECT.md` for track definitions and global rules.
+2. Read `ROADMAP.md` for the next milestone choices by track.
+3. Use `MILESTONES.md` for historical context.
+4. Keep `v2.2` focused on governance/document structure only.
 
-## Session Continuity
-
-Last session: 2026-03-29T00:20:00.000Z
-Stopped at: Generated project-wide milestone summary and rewrote README for GitHub collaboration onboarding
-Resume file: .planning/PROJECT.md
+---
+*Last updated: 2026-03-28 for milestone v2.2 planning restructure*

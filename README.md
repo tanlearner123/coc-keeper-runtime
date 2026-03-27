@@ -85,6 +85,33 @@ flowchart TD
 - **优先复用成熟方案**
   骰子、Discord 调度、TRPG 交互模式优先参考成熟项目，不做无意义重造。
 
+## Product Tracks
+
+为了让协作者和 GSD 类 AI 在 fork 仓库后也能快速判断“下一步该做什么”，项目现在按 4 条长期 Track 理解：
+
+- **Track A: 模组与规则运行层**
+  - 负责 COC 规则、模组 schema、room/scene/event graph、trigger、consequence、reveal policy。
+- **Track B: 人物构建与管理层**
+  - 负责 builder、archive、profile lifecycle、campaign projection、管理员角色治理。
+- **Track C: Discord 交互层**
+  - 负责 slash commands、频道职责、自然消息、ephemeral/DM、启动与交付检查。
+- **Track D: 游戏呈现层**
+  - 负责 Keeper 风格呈现、提示边界、线索板/历史板/角色板的可读性和沉浸感。
+
+新 milestone 应该优先归属到其中一条 Track，而不是混成一个宽而散的 feature 包。
+
+## Global Rules
+
+无论推进哪条 Track，都要遵守这些全局规则：
+
+1. 每个 milestone 必须有一个主 Track。
+2. 数值真相、规则真相、状态真相不能只靠 prompt，必须来自本地规则书、确定性代码或显式模组特规。
+3. 关键状态变化必须可持久化、可审计。
+4. 宣称“可交付”前，至少要通过：
+   - `uv run pytest -q`
+   - `uv run python -m dm_bot.main smoke-check`
+5. 新功能优先做成可复用 runtime 能力，而不是单模组硬编码。
+
 ## Milestone History
 
 ### v1.0 Foundations
@@ -305,6 +332,9 @@ uv run python -m dm_bot.main run-bot
 
 这个仓库之后会上 GitHub 供多人协作，所以推荐协作者先理解这几点：
 
+- 先看 `.planning/PROJECT.md` 里的 Track 和 Global Rules，再决定当前工作属于哪一层
+- 再看 `.planning/ROADMAP.md` 选择该 Track 的下一个 milestone
+- 用 `.planning/STATE.md` 判断当前激活的是哪条 Track，避免多人同时改同一层
 - 不要把 prompt 当真相来源，真相在结构化状态里
 - 规则变化要先看本地 COC 规则边界，不要直接让模型自由发挥
 - 优先补通用 runtime，不要急着对单个模组打大量专属补丁

@@ -3,6 +3,27 @@
 **Defined:** 2026-03-28
 **Core Value:** Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keeper can narrate, roleplay multiple characters, and enforce investigation-heavy rules flow without constant manual bookkeeping.
 
+## v2.2 Requirements
+
+### Track Governance
+
+- [ ] **TRACK-01**: The planning system should define the long-lived product tracks explicitly so future work can be classified without relying on chat history.
+- [ ] **TRACK-02**: Each future milestone should declare one primary track, even when it has cross-track effects.
+- [ ] **TRACK-03**: The repository should document how a collaborator or GSD agent chooses the correct track before starting a new milestone.
+
+### Global Rules
+
+- [ ] **GOV-01**: Repository-wide rules such as smoke-check gating, canonical COC rule truth, auditability, and documentation expectations should be documented once as global constraints instead of re-derived ad hoc.
+- [ ] **GOV-02**: Those global rules should be visible from core planning files so they remain hard to miss during future milestone creation.
+- [ ] **GOV-03**: README-level collaboration guidance should align with the same governance model used in `.planning`.
+
+### Planning Restructure
+
+- [ ] **PLAN-01**: `PROJECT.md` should describe the track model and global rules as the top-level project map.
+- [ ] **PLAN-02**: `ROADMAP.md` should group future work by track so AI agents can choose a layer first and then a milestone.
+- [ ] **PLAN-03**: `STATE.md` should expose the current active track and the next milestone candidates by track.
+- [ ] **PLAN-04**: `MILESTONES.md` should preserve the linear history while labeling historical milestones by their primary track(s).
+
 ## v2.1 Requirements
 
 ### Delivery Smoke Check
@@ -171,14 +192,25 @@
 | ADMIN-01 | Phase 39 | Planned |
 | ADMIN-02 | Phase 39 | Planned |
 | ADMIN-03 | Phase 39 | Planned |
+| TRACK-01 | Phase 40 | Planned |
+| TRACK-02 | Phase 40 | Planned |
+| TRACK-03 | Phase 40 | Planned |
+| GOV-01 | Phase 40 | Planned |
+| GOV-02 | Phase 40 | Planned |
+| GOV-03 | Phase 42 | Planned |
+| PLAN-01 | Phase 41 | Planned |
+| PLAN-02 | Phase 41 | Planned |
+| PLAN-03 | Phase 41 | Planned |
+| PLAN-04 | Phase 41 | Planned |
 
 **Coverage:**
 - v1.8 requirements: 13 total
 - v1.9 requirements: 12 total
 - v2.0 requirements: 12 total
 - v2.1 requirements: 9 total
+- v2.2 requirements: 10 total
 - Completed: 25
-- Planned: 21
+- Planned: 31
 - Unmapped: 0
 
 ---

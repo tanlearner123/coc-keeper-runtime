@@ -1,6 +1,24 @@
 # Milestones
 
-## v2.1 交付检查与角色治理 (Planned: 2026-03-28)
+Historical milestones remain linear for GSD continuity. Each milestone now includes a primary track label so collaborators can understand where it belongs in the long-term product map.
+
+## v2.2 [Governance] GSD Track 化治理重构 (Planned: 2026-03-28)
+
+**Goal:**
+
+- Formalize track-based project governance so any GSD-driven collaborator can recover the product structure, global rules, and next-milestone choices directly from repository planning docs.
+
+**Planned phases:** 3 phases total
+
+**Planned focus:**
+
+- Define the four persistent product tracks and repository-wide global rules.
+- Restructure `PROJECT.md`, `ROADMAP.md`, and `STATE.md` so active work is track-aware.
+- Align README and collaboration notes with the new track model.
+
+---
+
+## v2.1 [Track B / Track C] 交付检查与角色治理 (Shipped: 2026-03-28)
 
 **Goal:**
 
@@ -16,7 +34,7 @@
 
 ---
 
-## v2.0 Archive 系统与人物卡面板完善 (Planned: 2026-03-28)
+## v2.0 [Track B] Archive 系统与人物卡面板完善 (Shipped: 2026-03-28)
 
 **Goal:**
 
@@ -32,7 +50,7 @@
 
 ---
 
-## v1.9 沉浸式人物构建层 (Shipped: 2026-03-28)
+## v1.9 [Track B] 沉浸式人物构建层 (Shipped: 2026-03-28)
 
 **Goal:**
 
@@ -48,7 +66,7 @@
 
 ---
 
-## v1.8 角色档案分层与 COC 对话建卡系统 (Shipped: 2026-03-28)
+## v1.8 [Track B / Track C] 角色档案分层与 COC 对话建卡系统 (Shipped: 2026-03-28)
 
 **Goal:**
 
@@ -64,7 +82,7 @@
 
 ---
 
-## v1.7 调查员面板与复杂 COC 模组运行时 (Shipped: 2026-03-28)
+## v1.7 [Track A / Track B] 调查员面板与复杂 COC 模组运行时 (Shipped: 2026-03-28)
 
 **Goal:**
 
@@ -80,7 +98,7 @@
 
 ---
 
-## v1.6 COC/KP 基础运行时与模组资产接入 (Shipped: 2026-03-28)
+## v1.6 [Track A] COC/KP 基础运行时与模组资产接入 (Shipped: 2026-03-28)
 
 **Phases completed:** 3 phases total
 
@@ -92,7 +110,7 @@
 
 ---
 
-## v1.5 通用 Trigger Tree 与后果引擎 (Shipped: 2026-03-28)
+## v1.5 [Track A] 通用 Trigger Tree 与后果引擎 (Shipped: 2026-03-28)
 
 **Phases completed:** 3 phases total, 6 plans total, 0 tasks
 
@@ -104,7 +122,7 @@
 
 ---
 
-## v1.4 房间图驱动的剧本理解与运行时 (Shipped: 2026-03-28)
+## v1.4 [Track A] 房间图驱动的剧本理解与运行时 (Shipped: 2026-03-28)
 
 **Phases completed:** 3 phases total, 6 plans total, 0 tasks
 
@@ -116,7 +134,7 @@
 
 ---
 
-## v1.3 剧本主持体验打磨 (Shipped: 2026-03-27)
+## v1.3 [Track D] 剧本主持体验打磨 (Shipped: 2026-03-27)
 
 **Phases completed:** 3 phases total, 6 plans total, 0 tasks
 
@@ -128,7 +146,7 @@
 
 ---
 
-## v1.2 疯狂之馆开场体验与骰子系统 (Shipped: 2026-03-27)
+## v1.2 [Track A / Track C / Track D] 疯狂之馆开场体验与骰子系统 (Shipped: 2026-03-27)
 
 **Phases completed:** 11 phases total, 22 plans total, 0 tasks
 
@@ -141,7 +159,7 @@
 
 ---
 
-## v1.1 疯狂之馆首个正式模组 (Shipped: 2026-03-27)
+## v1.1 [Track A] 疯狂之馆首个正式模组 (Shipped: 2026-03-27)
 
 **Phases completed:** 8 phases, 16 plans, 0 tasks
 
