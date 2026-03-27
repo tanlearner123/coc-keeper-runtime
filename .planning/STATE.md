@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: 疯狂之馆首个正式模组
-status: completed
-stopped_at: Completed milestone v1.1 and archived planning artifacts
-last_updated: "2026-03-27T20:30:00.000Z"
-last_activity: 2026-03-27 - Completed milestone v1.1 and prepared for next milestone
+milestone: v1.2
+milestone_name: 疯狂之馆开场体验与骰子系统
+status: planning
+stopped_at: Planned milestone v1.2 around onboarding, mature dice integration, and response reliability
+last_updated: "2026-03-27T21:10:00.000Z"
+last_activity: 2026-03-27 - Started milestone v1.2 planning
 progress:
-  total_phases: 8
+  total_phases: 11
   completed_phases: 8
-  total_plans: 16
+  total_plans: 22
   completed_plans: 16
-  percent: 100
+  percent: 73
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Run a real multiplayer D&D session in Discord where a local AI DM can narrate, roleplay multiple characters, and enforce heavy rules flow without constant manual bookkeeping.
-**Current focus:** Planning next milestone
+**Current focus:** Planning milestone v1.2 for adventure onboarding, mature dice integration, and Discord response reliability
 
 ## Current Position
 
-Phase: 8 of 8 (Module UX, Session Continuity, and Operator Guidance)
-Plan: 1 of 1
-Status: Completed
-Last activity: 2026-03-27 - Completed milestone v1.1 and prepared for next milestone
+Phase: 9 of 11 (Adventure Onboarding And Auto-Opening)
+Plan: 0 of 2
+Status: Planning
+Last activity: 2026-03-27 - Started milestone v1.2 planning
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 73%
 
 ## Performance Metrics
 
@@ -66,6 +66,9 @@ Recent decisions affecting current work:
 - Phase 2: One mature low-friction character import path is preferred over a custom sheet platform.
 - Phase 2: Deterministic rules authority and 2014 SRD-only scope are fixed v1 guardrails.
 - Phase 4: Campaign usability depends on persistence, replayability, and recovery rather than feature breadth.
+- Phase 9 target: adventure loading should become a guided ready-up and DM opening flow.
+- Phase 10 target: placeholder rolls should be replaced with a mature dice engine, not a custom parser.
+- Phase 11 target: Discord should show progress during long DM turns and ordinary message handling should be more transparent.
 
 ### Pending Todos
 
@@ -73,15 +76,17 @@ None yet.
 
 ### Roadmap Evolution
 
-- Next roadmap will continue numbering after Phase 5 for the new milestone.
+- Roadmap now continues with Phases 9-11 for milestone v1.2.
 
 ### Blockers/Concerns
 
 - Character import source must stay low-friction and mature; do not expand into a sheet platform.
 - Rules and narration boundaries must stay strict so models never become the source of truth for state mutations.
+- Dice parsing should be integrated from a mature external library to reduce debugging cost.
+- Streaming transport must not become the source of truth for canonical state.
 
 ## Session Continuity
 
-Last session: 2026-03-27T20:30:00.000Z
-Stopped at: Completed milestone v1.1 and archived planning artifacts
+Last session: 2026-03-27T21:10:00.000Z
+Stopped at: Planned milestone v1.2 around onboarding, mature dice integration, and response reliability
 Resume file: .planning/PROJECT.md

@@ -24,9 +24,9 @@ Run a real multiplayer D&D session in Discord where a local AI DM can narrate, r
 
 ### Active
 
-- [ ] The module system supports a second formal adventure package without adding one-off runtime code for that script.
-- [ ] The operator can selectively reveal secret or private information to subsets of players instead of only table-wide narration.
-- [ ] The DM runtime can surface richer structured progression controls for module-specific triggers, puzzle states, and branching overrides.
+- [ ] Loading a packaged adventure should move the table into a visible onboarding flow with readiness, character selection, and automatic DM opening instead of depending on a manual first `/turn`.
+- [ ] Dice and roll resolution should reuse a mature external engine rather than the current placeholder roll path, and must cover core D&D checks, saves, attacks, and damage.
+- [ ] Discord play should feel responsive through progressive response updates or streaming, with clearer feedback when ordinary player messages are ignored, blocked, or still being processed.
 
 ### Out of Scope
 
@@ -39,7 +39,7 @@ Run a real multiplayer D&D session in Discord where a local AI DM can narrate, r
 
 ## Current State
 
-`v1.1` shipped the first formal packaged adventure milestone. The runtime now supports structured modules with canonical state, reveal-safe narration context, and a fully encoded `疯狂之馆` package that survives bot restarts and can continue through ordinary Discord channel play.
+`v1.1` shipped the first formal packaged adventure milestone. The runtime now supports structured modules with canonical state, reveal-safe narration context, and a fully encoded `疯狂之馆` package that survives bot restarts and can continue through ordinary Discord channel play. The next milestone is about making that module start and run like a polished session instead of a developer demo.
 
 ## Context
 
@@ -50,9 +50,9 @@ The system will run on Discord and use a dual-model architecture on local infere
 
 This model split is chosen for local hardware fit and reliability on a machine in the class of `RTX 5060 8GB VRAM + 32GB RAM`. Larger narration models remain possible later, but are not the default because they raise latency and deployment friction on the target setup.
 
-The project should preferentially reuse mature external components instead of inventing custom equivalents. Current candidate references include `DND5E-MCP` as an AI-facing rules/lookup skill, `5e-srd-api` as a stable SRD-backed rules data source, and `Avrae` as a reference implementation for interaction patterns and D&D automation design rather than as the core embedded runtime.
+The project should preferentially reuse mature external components instead of inventing custom equivalents. Current candidate references include `DND5E-MCP` as an AI-facing rules/lookup skill, `5e-srd-api` as a stable SRD-backed rules data source, and `Avrae` as a reference implementation for interaction patterns and D&D automation design rather than as the core embedded runtime. For dice resolution, the next milestone should adopt a mature parser and roller such as the Python `d20` ecosystem already used by established Discord D&D tooling instead of expanding the placeholder local roller.
 
-The first release proved the core Discord gameplay loop end-to-end: player input, orchestration, rule/tool invocation, state updates, and narrated DM output. The new milestone shifts focus from runtime foundation to formal adventure packaging. `疯狂之馆` is the first target because it has strong room logic, hidden information, trigger-driven reveals, and branching endings that can force the schema to be real instead of decorative.
+The first release proved the core Discord gameplay loop end-to-end: player input, orchestration, rule/tool invocation, state updates, and narrated DM output. The second milestone turned that into a formal module runtime. The next milestone shifts focus to session usability gaps that are now obvious in live play: adventure startup should guide the table, roll resolution should be real, and long DM replies should feel responsive in Discord.
 
 ## Constraints
 
@@ -72,11 +72,12 @@ The first release proved the core Discord gameplay loop end-to-end: player input
 | Multiple real players and bot-played roles are both required | The system must support real group play while also animating the world through NPCs and enemies | — Pending |
 | Rules support should be heavy rather than lightweight | The goal is to reduce manual bookkeeping and allow campaign-grade play | — Pending |
 | v1 should prioritize end-to-end gameplay over perfect character integration | A playable Discord session loop matters more than building an elaborate character platform first | — Pending |
-| Mature external projects should be reused wherever practical | This reduces implementation risk and debugging cost | — Pending |
+| Mature external projects and libraries should be the default implementation path | This reduces implementation risk and debugging cost; custom code should be limited to glue and small targeted optimizations | ✓ Good |
 | The default narrator should fit 8GB-class local GPUs | Lower deployment friction matters more than marginal prose quality gains from larger local models | `qwen3:4b-instruct-2507-q4_K_M` selected |
 | Router and narrator should remain separate | Roleplay-tuned narration models are not trusted as the sole authority for structured tool routing | `qwen3:1.7b` router retained |
 | Formal adventures must be structured data, not raw uploaded prose | Hidden-state modules need deterministic triggers, reveal control, and reusable runtime hooks | ✓ Good |
 | `疯狂之馆` is the first official module target | It is rich enough to force a real schema while still being a bounded first module | ✓ Good |
+| New runtime subsystems should reuse mature prior art where possible | This reduces debugging cost and keeps the bot aligned with proven Discord D&D workflows | `d20`-style dice integration prioritized for v1.2 |
 
 ## Evolution
 
@@ -96,4 +97,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after v1.1 milestone*
+*Last updated: 2026-03-27 during v1.2 planning*

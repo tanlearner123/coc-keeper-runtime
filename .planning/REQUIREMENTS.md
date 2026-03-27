@@ -3,33 +3,28 @@
 **Defined:** 2026-03-27
 **Core Value:** Run a real multiplayer D&D session in Discord where a local AI DM can narrate, roleplay multiple characters, and enforce heavy rules flow without constant manual bookkeeping.
 
-## v1.1 Requirements
+## v1.2 Requirements
 
-### Structured Adventure Runtime
+### Adventure Onboarding
 
-- [ ] **MOD-01**: Operators can load a structured adventure package that declares scenes, state variables, triggers, reveal rules, and endings instead of relying on freeform raw script prompting.
-- [ ] **MOD-02**: The runtime validates adventure packages before play and fails closed when required module data is missing or malformed.
-- [ ] **MOD-03**: Canonical adventure state tracks room progress, discovered clues, trigger flags, timers, and module-specific variables independently of Discord chat history.
-- [ ] **MOD-04**: The DM runtime can treat the narrator as omniscient over module data while still enforcing reveal policy so hidden information is only surfaced when allowed by current state or player discovery.
+- [ ] **ONBOARD-01**: Loading a formal adventure package can place the campaign into an explicit pre-session onboarding state instead of only mutating hidden runtime state.
+- [ ] **ONBOARD-02**: After an operator loads `mad_mansion`, the bot can guide the table through role readiness or character selection, then automatically deliver a DM opening scene without requiring a manual `/turn`.
+- [ ] **ONBOARD-03**: The onboarding flow exposes clear readiness, selected characters, and next-step guidance so a small group can start a session from Discord without consulting source files.
+- [ ] **ONBOARD-04**: The opening flow remains reusable for later modules, so future adventures can declare their own intro scene and onboarding requirements without one-off command code.
 
-### 疯狂之馆 Module
+### Mature Dice And Action Resolution
 
-- [ ] **MANS-01**: Players can play `疯狂之馆` from the opening hall through the four branch wings using structured room progression rather than ad hoc narration.
-- [ ] **MANS-02**: The module enforces `疯狂之馆`'s special mechanics, including countdown pressure and room-specific costs or conditions, through deterministic state updates.
-- [ ] **MANS-03**: The module tracks key hidden-status mechanics such as blood progress, sensory loss, saint-state style transformations, and other branch-specific consequences required by the script.
-- [ ] **MANS-04**: The module supports the story's branching discoveries and endings so the session can conclude differently based on party choices and accumulated state.
+- [ ] **DICE-01**: Dice expression parsing and rolling reuse a mature existing implementation instead of a custom handwritten parser; the preferred baseline is the `d20` engine used in the Python ecosystem and referenced by Avrae's public code/docs.
+- [ ] **DICE-02**: The runtime can resolve standard D&D roll families including ability checks, saving throws, attack rolls, damage rolls, and advantage or disadvantage from structured actions and command paths.
+- [ ] **DICE-03**: Dice results are surfaced with enough structure to drive canonical state updates, combat outcomes, and narrated summaries without the narrator inventing roll outcomes.
+- [ ] **DICE-04**: Malformed or unsupported dice expressions fail closed with actionable feedback rather than silently producing placeholder values.
 
-### Discord Gameplay UX
+### Discord Response And Input Reliability
 
-- [ ] **UX-01**: Campaign-to-channel binding and joined-player membership survive bot restarts so ordinary channel messages continue to work without forcing the group to rebind and rejoin every time.
-- [ ] **UX-02**: Joined players in a bound channel can use ordinary channel messages as their primary gameplay input during packaged adventures, with clear handling for OOC chatter and combat turn gating.
-- [ ] **UX-03**: Bot replies and commands surface the current room, active pressure, known objectives, and next-action guidance clearly enough that a small group can keep playing without operator guesswork.
-- [ ] **UX-04**: Operators can inspect packaged adventure state, current node, discovered clues, and blocked triggers from a compact command or debug surface.
-
-### Reusable Adventure Pipeline
-
-- [ ] **PACK-01**: Future adventures can be added by authoring a new package in the same schema instead of modifying core runtime code for each new script.
-- [ ] **PACK-02**: The repository includes practical docs for loading, running, and authoring packaged adventures, using `疯狂之馆` as the first formal example.
+- [ ] **RESP-01**: Long-running DM responses can surface progress incrementally in Discord through a streaming or progressive-response path instead of only replying after full narration completes.
+- [ ] **RESP-02**: When streaming is unavailable, the bot still acknowledges quickly and emits clear progress or fallback updates so users do not see silent timeouts.
+- [ ] **RESP-03**: Ordinary bound-channel messages from joined players are routed reliably into the gameplay loop after restarts and during packaged-adventure play, without requiring `/turn` as the primary path.
+- [ ] **RESP-04**: Operators can distinguish between ignored chatter, blocked gameplay input, pending model work, and successful DM processing from compact Discord feedback.
 
 ## v2 Requirements
 
@@ -44,36 +39,35 @@
 
 | Feature | Reason |
 |---------|--------|
-| Running `疯狂之馆` by feeding the raw `.docx` directly to the narrator | Hidden-state modules need deterministic structure and reveal control. |
-| A visual module editor in this milestone | The first priority is a real schema and one real module, not editor UI. |
-| Rebuilding combat, rules, or character import foundations from scratch | Those shipped in v1.0 and this milestone builds on them. |
-| Multi-platform chat runtimes outside Discord | Discord remains the sole runtime surface for this milestone. |
-| NSFW-specific module behavior | Runtime and module quality are the priority for this round. |
+| Reimplementing mature infrastructure libraries inside the repo by default | The milestone should prefer stable existing libraries and only add thin integration or targeted optimization code. |
+| Writing a bespoke dice parser from scratch | Mature existing parsers already exist and reduce risk. |
+| Treating streaming text as the source of truth for game state | Canonical state must remain deterministic and separate from response transport. |
+| Replacing structured onboarding with a freeform DM prompt blob | Adventure startup needs explicit reusable state transitions. |
+| A full VTT-style visual combat board in this milestone | The priority is reliable Discord play, not a map UI. |
+| Expanding beyond Discord during this round | Discord remains the sole runtime surface for the active milestone. |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOD-01 | Phase 6 | Complete |
-| MOD-02 | Phase 6 | Complete |
-| MOD-03 | Phase 6 | Complete |
-| MOD-04 | Phase 6 | Complete |
-| MANS-01 | Phase 7 | Complete |
-| MANS-02 | Phase 7 | Complete |
-| MANS-03 | Phase 7 | Complete |
-| MANS-04 | Phase 7 | Complete |
-| UX-01 | Phase 8 | Complete |
-| UX-02 | Phase 8 | Complete |
-| UX-03 | Phase 8 | Complete |
-| UX-04 | Phase 8 | Complete |
-| PACK-01 | Phase 8 | Complete |
-| PACK-02 | Phase 8 | Complete |
+| ONBOARD-01 | Phase 9 | Planned |
+| ONBOARD-02 | Phase 9 | Planned |
+| ONBOARD-03 | Phase 9 | Planned |
+| ONBOARD-04 | Phase 9 | Planned |
+| DICE-01 | Phase 10 | Planned |
+| DICE-02 | Phase 10 | Planned |
+| DICE-03 | Phase 10 | Planned |
+| DICE-04 | Phase 10 | Planned |
+| RESP-01 | Phase 11 | Planned |
+| RESP-02 | Phase 11 | Planned |
+| RESP-03 | Phase 11 | Planned |
+| RESP-04 | Phase 11 | Planned |
 
 **Coverage:**
-- v1.1 requirements: 14 total
-- Mapped to phases: 14
+- v1.2 requirements: 12 total
+- Mapped to phases: 12
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-27*
-*Last updated: 2026-03-27 after Phase 8*
+*Last updated: 2026-03-27 for milestone v1.2 planning*
