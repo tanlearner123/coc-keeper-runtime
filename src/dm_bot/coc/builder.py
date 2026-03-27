@@ -170,6 +170,8 @@ class ConversationalCharacterBuilder:
         self._sessions: dict[str, BuilderSession] = {}
 
     def start(self, *, user_id: str, visibility: str = "private") -> str:
+        if self._archive_repository.active_profile(user_id) is not None:
+            return "你已有激活档案。请先归档或替换当前主角色，再开始新的建卡。"
         self._sessions[user_id] = BuilderSession(user_id=user_id, visibility=visibility)
         return self.INTRO_QUESTION
 

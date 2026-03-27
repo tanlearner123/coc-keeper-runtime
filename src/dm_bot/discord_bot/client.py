@@ -58,6 +58,10 @@ class DiscordDmBot(commands.Bot):
         async def bind_trace_channel(interaction: discord.Interaction) -> None:
             await self.handlers.bind_trace_channel(interaction)
 
+        @self.tree.command(name="bind_admin_channel", description="Bind this channel as the admin management channel")
+        async def bind_admin_channel(interaction: discord.Interaction) -> None:
+            await self.handlers.bind_admin_channel(interaction)
+
         @self.tree.command(name="join_campaign", description="Join the campaign bound to this channel or thread")
         async def join_campaign(interaction: discord.Interaction) -> None:
             await self.handlers.join_campaign(interaction)
@@ -94,6 +98,20 @@ class DiscordDmBot(commands.Bot):
         @app_commands.describe(profile_id="Archive profile id")
         async def select_profile(interaction: discord.Interaction, profile_id: str) -> None:
             await self.handlers.select_profile(interaction, profile_id=profile_id)
+
+        @self.tree.command(name="archive_profile", description="Archive one of your long-lived profiles")
+        @app_commands.describe(profile_id="Archive profile id")
+        async def archive_profile(interaction: discord.Interaction, profile_id: str) -> None:
+            await self.handlers.archive_profile(interaction, profile_id=profile_id)
+
+        @self.tree.command(name="activate_profile", description="Activate one of your archived profiles")
+        @app_commands.describe(profile_id="Archive profile id")
+        async def activate_profile(interaction: discord.Interaction, profile_id: str) -> None:
+            await self.handlers.activate_profile(interaction, profile_id=profile_id)
+
+        @self.tree.command(name="admin_profiles", description="List all player archive profiles")
+        async def admin_profiles(interaction: discord.Interaction) -> None:
+            await self.handlers.admin_profiles(interaction)
 
         @self.tree.command(name="turn", description="Submit a player turn into the active campaign")
         @app_commands.describe(content="Player action text")

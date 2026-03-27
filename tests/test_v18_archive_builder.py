@@ -46,16 +46,25 @@ class FakeChannel:
 
 
 class FakeUser:
-    def __init__(self, user_id: str, display_name: str = "Alice") -> None:
+    def __init__(self, user_id: str, display_name: str = "Alice", *, administrator: bool = False) -> None:
         self.id = user_id
         self.display_name = display_name
+        self.guild_permissions = type("GuildPermissions", (), {"administrator": administrator})()
 
 
 class FakeInteraction:
-    def __init__(self, *, channel_id: str, guild_id: str = "guild-1", user_id: str = "user-1", display_name: str = "Alice") -> None:
+    def __init__(
+        self,
+        *,
+        channel_id: str,
+        guild_id: str = "guild-1",
+        user_id: str = "user-1",
+        display_name: str = "Alice",
+        administrator: bool = False,
+    ) -> None:
         self.channel_id = channel_id
         self.guild_id = guild_id
-        self.user = FakeUser(user_id, display_name)
+        self.user = FakeUser(user_id, display_name, administrator=administrator)
         self.response = FakeResponse()
         self.followup = FakeFollowup()
         self.channel = FakeChannel()
@@ -404,3 +413,78 @@ def test_profile_detail_command_renders_investigator_card_sections() -> None:
     assert "【数值】" in content
     assert "【塑造】" in content
     assert "神经外科" in content
+
+
+def test_builder_does_not_create_second_active_profile_without_explicit_replace() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+    from dm_bot.coc.builder import ConversationalCharacterBuilder
+
+    repo = InvestigatorArchiveRepository()
+    repo.create_profile(
+        user_id="user-1",
+        name="旧角色",
+        occupation="记者",
+        age=30,
+        background="老档案",
+        disposition="冷静",
+        favored_skills=["图书馆使用"],
+        generation={"str": 50, "con": 55, "dex": 60, "app": 65, "pow": 70, "siz": 50, "int": 75, "edu": 80, "luck": 45},
+    )
+    builder = ConversationalCharacterBuilder(
+        archive_repository=repo,
+        roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+        interview_planner=FakeInterviewPlanner(),
+    )
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=SessionStore(),
+        turn_coordinator=None,
+        archive_repository=repo,
+        character_builder=builder,
+    )
+    interaction = FakeInteraction(channel_id="archive-1")
+
+    asyncio.run(commands.start_character_builder(interaction, visibility="private"))
+
+    assert "已有激活档案" in interaction.response.messages[0][0]
+
+
+def test_admin_can_list_all_profiles_from_admin_channel() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+
+    repo = InvestigatorArchiveRepository()
+    repo.create_profile(
+        user_id="user-1",
+        name="林钟轩",
+        occupation="临床医生",
+        age=38,
+        background="医生",
+        disposition="冷静",
+        favored_skills=["医学"],
+        generation={"str": 50, "con": 55, "dex": 60, "app": 65, "pow": 70, "siz": 50, "int": 75, "edu": 80, "luck": 45},
+    )
+    repo.create_profile(
+        user_id="user-2",
+        name="林秋",
+        occupation="记者",
+        age=26,
+        background="记者",
+        disposition="固执",
+        favored_skills=["图书馆使用"],
+        generation={"str": 50, "con": 55, "dex": 60, "app": 65, "pow": 70, "siz": 50, "int": 75, "edu": 80, "luck": 45},
+    )
+    store = SessionStore()
+    store.bind_trace_channel(guild_id="guild-1", channel_id="admin-1")
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=store,
+        turn_coordinator=None,
+        archive_repository=repo,
+    )
+    interaction = FakeInteraction(channel_id="admin-1", administrator=True)
+
+    asyncio.run(commands.admin_profiles(interaction))
+
+    content = interaction.response.messages[0][0]
+    assert "user-1" in content
+    assert "林秋" in content

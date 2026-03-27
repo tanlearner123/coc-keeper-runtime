@@ -92,6 +92,7 @@ def test_persistence_store_saves_and_restores_campaign_sessions(tmp_path: Path) 
     sessions.join_campaign(channel_id="chan-1", user_id="user-2")
     sessions.bind_character(channel_id="chan-1", user_id="user-1", character_name="Alice")
     sessions.bind_archive_channel(guild_id="guild-1", channel_id="archive-1")
+    sessions.bind_admin_channel(guild_id="guild-1", channel_id="admin-1")
     sessions.select_archive_profile(channel_id="chan-1", user_id="user-1", profile_id="profile-1")
 
     store.save_sessions(sessions.dump_sessions())
@@ -102,6 +103,7 @@ def test_persistence_store_saves_and_restores_campaign_sessions(tmp_path: Path) 
     assert restored["chan-1"]["active_characters"]["user-1"] == "Alice"
     assert restored["chan-1"]["selected_profiles"]["user-1"] == "profile-1"
     assert restored["_meta"]["archive_channels"]["guild-1"] == "archive-1"
+    assert restored["_meta"]["admin_channels"]["guild-1"] == "admin-1"
 
 
 def test_persistence_store_saves_and_restores_archive_profiles(tmp_path: Path) -> None:
@@ -125,3 +127,4 @@ def test_persistence_store_saves_and_restores_archive_profiles(tmp_path: Path) -
     restored_profile = restored.get_profile("user-1", profile.profile_id)
     assert restored_profile.name == "林秋"
     assert restored_profile.coc.occupation == "记者"
+    assert restored_profile.status == "active"

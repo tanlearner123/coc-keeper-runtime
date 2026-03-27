@@ -35,13 +35,14 @@ class InvestigatorArchiveProfile(BaseModel):
     disposition: str = ""
     favored_skills: list[str] = Field(default_factory=list)
     portrait_summary: str = ""
+    status: str = "active"
     finishing: ArchiveFinishingRecommendation = Field(default_factory=ArchiveFinishingRecommendation)
     coc: COCInvestigatorProfile
 
     def summary_line(self) -> str:
         goal = self.life_goal or "未记录目标"
         goal = goal[:20] + ("…" if len(goal) > 20 else "")
-        return f"{self.profile_id} | {self.name} | {self.coc.occupation} | SAN {self.coc.san} | 目标 {goal}"
+        return f"{self.profile_id} | {self.name} | {self.coc.occupation} | SAN {self.coc.san} | {self.status} | 目标 {goal}"
 
     def detail_view(self) -> str:
         favored = "、".join(self.favored_skills) if self.favored_skills else "未记录"
@@ -50,7 +51,7 @@ class InvestigatorArchiveProfile(BaseModel):
         adjustments = "；".join(self.finishing.allowed_adjustments) if self.finishing.allowed_adjustments else "无"
         lines = [
             "【调查员档案】",
-            f"{self.name} / {self.coc.occupation} / {self.age}岁",
+            f"{self.name} / {self.coc.occupation} / {self.age}岁 / {self.status}",
             "",
             "【人物】",
             f"骨架：{self.concept or '未记录'}",
@@ -112,6 +113,8 @@ class InvestigatorArchiveRepository:
         favored_skills: list[str],
         generation: dict[str, int],
     ) -> InvestigatorArchiveProfile:
+        if self.active_profile(user_id) is not None:
+            raise ValueError("已有激活档案，请先归档或替换当前主角色。")
         attributes = COCAttributes(
             str=int(generation["str"]),
             con=int(generation["con"]),
@@ -152,6 +155,7 @@ class InvestigatorArchiveRepository:
             disposition=disposition,
             favored_skills=favored,
             portrait_summary=portrait_summary or f"{occupation}。{background} 性格上{disposition}",
+            status="active",
             finishing=finishing,
             coc=COCInvestigatorProfile(
                 occupation=occupation,
@@ -171,7 +175,11 @@ class InvestigatorArchiveRepository:
         return profile
 
     def list_profiles(self, user_id: str) -> list[InvestigatorArchiveProfile]:
-        return list(self._profiles.get(user_id, {}).values())
+        profiles = list(self._profiles.get(user_id, {}).values())
+        return sorted(profiles, key=lambda item: (item.status != "active", item.name))
+
+    def list_all_profiles(self) -> list[InvestigatorArchiveProfile]:
+        return [profile for profiles in self._profiles.values() for profile in profiles.values()]
 
     def get_profile(self, user_id: str, profile_id: str) -> InvestigatorArchiveProfile:
         return self._profiles[user_id][profile_id]
@@ -179,6 +187,28 @@ class InvestigatorArchiveRepository:
     def latest_profile(self, user_id: str) -> InvestigatorArchiveProfile | None:
         profiles = list(self._profiles.get(user_id, {}).values())
         return profiles[-1] if profiles else None
+
+    def active_profile(self, user_id: str) -> InvestigatorArchiveProfile | None:
+        for profile in self._profiles.get(user_id, {}).values():
+            if profile.status == "active":
+                return profile
+        return None
+
+    def archive_profile(self, *, user_id: str, profile_id: str) -> InvestigatorArchiveProfile:
+        profile = self.get_profile(user_id, profile_id)
+        profile.status = "archived"
+        return profile
+
+    def replace_active_with(self, *, user_id: str, profile_id: str) -> InvestigatorArchiveProfile:
+        active = self.active_profile(user_id)
+        if active is not None and active.profile_id != profile_id:
+            active.status = "replaced"
+        profile = self.get_profile(user_id, profile_id)
+        profile.status = "active"
+        return profile
+
+    def delete_profile(self, *, user_id: str, profile_id: str) -> None:
+        self._profiles.get(user_id, {}).pop(profile_id, None)
 
     def export_state(self) -> dict[str, object]:
         return {

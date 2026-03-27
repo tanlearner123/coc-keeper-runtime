@@ -61,6 +61,11 @@ class BotCommands:
         self._persist_sessions()
         await interaction.response.send_message("当前频道已绑定为 KP/trace 频道。", ephemeral=True)
 
+    async def bind_admin_channel(self, interaction) -> None:
+        self._session_store.bind_admin_channel(guild_id=str(interaction.guild_id), channel_id=str(interaction.channel_id))
+        self._persist_sessions()
+        await interaction.response.send_message("当前频道已绑定为管理员角色管理频道。", ephemeral=True)
+
     async def join_campaign(self, interaction) -> None:
         session = self._session_store.join_campaign(
             channel_id=str(interaction.channel_id),
@@ -152,6 +157,41 @@ class BotCommands:
         )
         self._persist_sessions()
         await interaction.response.send_message(f"已为本团选择档案角色 `{profile.name}`。", ephemeral=True)
+
+    async def archive_profile(self, interaction, *, profile_id: str) -> None:
+        if self._archive_repository is None:
+            await interaction.response.send_message("archive repository is not configured", ephemeral=True)
+            return
+        profile = self._archive_repository.archive_profile(user_id=str(interaction.user.id), profile_id=profile_id)
+        self._persist_archives()
+        await interaction.response.send_message(f"已归档 `{profile.name}`。", ephemeral=True)
+
+    async def activate_profile(self, interaction, *, profile_id: str) -> None:
+        if self._archive_repository is None:
+            await interaction.response.send_message("archive repository is not configured", ephemeral=True)
+            return
+        profile = self._archive_repository.replace_active_with(user_id=str(interaction.user.id), profile_id=profile_id)
+        self._persist_archives()
+        await interaction.response.send_message(f"已将 `{profile.name}` 设为当前激活档案。", ephemeral=True)
+
+    async def admin_profiles(self, interaction) -> None:
+        if self._archive_repository is None:
+            await interaction.response.send_message("archive repository is not configured", ephemeral=True)
+            return
+        if not self._is_admin(interaction):
+            await interaction.response.send_message("你没有管理员权限。", ephemeral=True)
+            return
+        guidance = self._admin_channel_guidance(interaction)
+        profiles = self._archive_repository.list_all_profiles()
+        if not profiles:
+            await interaction.response.send_message(guidance + "\n当前没有任何角色档案。", ephemeral=True)
+            return
+        lines = [guidance] if guidance else []
+        lines.extend(
+            f"{item.user_id} | {item.summary_line()}"
+            for item in profiles
+        )
+        await interaction.response.send_message("\n".join(lines), ephemeral=True)
 
     async def take_turn(self, interaction, *, content: str) -> None:
         session = self._session_store.get_by_channel(str(interaction.channel_id))
@@ -503,9 +543,9 @@ class BotCommands:
             )
             return
         if self._archive_repository is not None:
-            latest_profile = self._archive_repository.latest_profile(str(interaction.user.id))
-            if latest_profile is not None:
-                await interaction.response.send_message(latest_profile.detail_view(), ephemeral=True)
+            active_profile = self._archive_repository.active_profile(str(interaction.user.id))
+            if active_profile is not None:
+                await interaction.response.send_message(active_profile.detail_view(), ephemeral=True)
                 return
         if self._gameplay is None:
             await interaction.response.send_message("gameplay is not configured", ephemeral=True)
@@ -695,6 +735,21 @@ class BotCommands:
         if self._persistence_store is None or self._archive_repository is None:
             return
         self._persistence_store.save_archive_profiles(self._archive_repository.export_state())
+
+    def _is_admin(self, interaction) -> bool:
+        guild_permissions = getattr(getattr(interaction, "user", None), "guild_permissions", None)
+        if getattr(guild_permissions, "administrator", False):
+            return True
+        session = self._session_store.get_by_channel(str(interaction.channel_id)) if self._session_store is not None else None
+        return session is not None and session.owner_id == str(interaction.user.id)
+
+    def _admin_channel_guidance(self, interaction) -> str:
+        if self._session_store is None:
+            return ""
+        admin_channel = self._session_store.admin_channel_for(str(interaction.guild_id))
+        if admin_channel and str(interaction.channel_id) != admin_channel:
+            return f"建议在管理员频道 `<#{admin_channel}>` 使用这些命令。"
+        return ""
 
     async def _consume_archive_builder_message(
         self,
