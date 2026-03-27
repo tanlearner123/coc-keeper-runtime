@@ -2,7 +2,7 @@
 
 ## Overview
 
-Milestone `v1.0` established the Discord-first local-DM runtime with deterministic rules, persistence, diagnostics, and a starter packaged adventure. Milestone `v1.1` introduced a formal module runtime and shipped `疯狂之馆` as the first structured full-length module. Milestone `v1.2` added ready-gated startup, mature dice integration, and true Discord streaming. Milestone `v1.3` polished live-play feel through structured judgement, bounded guidance, and keeper-style scene framing. Milestone `v1.4` introduced room graphs, AI-first extraction drafts, and location-driven play. Milestone `v1.5` completed the missing execution layer with a reusable trigger tree and consequence engine. Milestone `v1.6` pivots that foundation into a COC/Keeper-first runtime using local rulebooks, investigator assets, and COC module semantics. Milestone `v1.7` extends that base with persistent investigator panels, private knowledge flow, mixed room/scene/event graphs, and the first `覆辙`-class complex module sample. Milestone `v1.8` turns those systems into a clearer player product through channel-scoped command discipline, rules-grounded conversational character creation, and a clean split between archive profiles and campaign projections, and ships the first archive/builder flow. Milestone `v1.9` should transform that builder from a rules-valid interview into a more game-like character-shaping experience driven by adaptive follow-up questions and richer archive identity.
+Milestone `v1.0` established the Discord-first local-DM runtime with deterministic rules, persistence, diagnostics, and a starter packaged adventure. Milestone `v1.1` introduced a formal module runtime and shipped `疯狂之馆` as the first structured full-length module. Milestone `v1.2` added ready-gated startup, mature dice integration, and true Discord streaming. Milestone `v1.3` polished live-play feel through structured judgement, bounded guidance, and keeper-style scene framing. Milestone `v1.4` introduced room graphs, AI-first extraction drafts, and location-driven play. Milestone `v1.5` completed the missing execution layer with a reusable trigger tree and consequence engine. Milestone `v1.6` pivots that foundation into a COC/Keeper-first runtime using local rulebooks, investigator assets, and COC module semantics. Milestone `v1.7` extends that base with persistent investigator panels, private knowledge flow, mixed room/scene/event graphs, and the first `覆辙`-class complex module sample. Milestone `v1.8` turns those systems into a clearer player product through channel-scoped command discipline, rules-grounded conversational character creation, and a clean split between archive profiles and campaign projections, and ships the first archive/builder flow. Milestone `v1.9` transformed that builder into a more game-like character-shaping experience driven by adaptive follow-up questions and richer archive identity. Milestone `v2.0` should now make the archive itself feel like a real investigator-card system with richer schema, stronger normalization, better detail views, and explicit COC-bounded finishing logic.
 
 ## Phases
 
@@ -45,6 +45,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 31: Dynamic Builder Interview Engine** - Replace fixed builder prompts with structured, model-guided follow-up selection that adapts to the current character concept.
 - [x] **Phase 32: Narrative Character Shaping And Fun Builder UX** - Make builder flow feel like a roleplay scene by collecting life goal, weakness, key past events, and other vivid anchors.
 - [x] **Phase 33: COC-Legal Character Projection And Archive Writeback** - Map richer interview output back into legal COC sheets, archive summaries, and campaign-ready profile projections.
+- [ ] **Phase 34: Rich Archive Schema And Normalization** - Expand archive fields and normalize interview answers into structured long-lived investigator-card data.
+- [ ] **Phase 35: Archive Presentation And Detail Views** - Improve Discord-facing archive browsing and add richer profile detail presentation.
+- [ ] **Phase 36: COC-Bounded Archive Finishing And Module Reuse** - Add rules-bounded finishing logic and ensure richer archive data projects cleanly into modules.
 
 ## Milestone v1.8 Delivery Plan
 
@@ -85,6 +88,26 @@ Decimal phases appear between their surrounding integers in numeric order.
 - Preserve canonical COC generation as the source of numeric truth while letting the richer interview influence occupation detail, finishing choices, and sheet flavor.
 - Write richer identity data into the archive without letting campaign state overwrite it.
 - Produce a campaign-ready projection that can reuse the new archive characterization in future modules.
+
+## Milestone v2.0 Delivery Plan
+
+### Phase 34: Rich Archive Schema And Normalization
+**Planned**:
+- Expand archive profiles into a fuller investigator-card schema, including specialty, career arc, core belief, desire/goal, weakness, and other structured identity anchors.
+- Normalize richer builder answers into explicit archive fields instead of leaving them as loosely concatenated text.
+- Keep rule-derived and narrative-derived data clearly separated inside the archive.
+
+### Phase 35: Archive Presentation And Detail Views
+**Planned**:
+- Keep `/profiles` as a compact list, but add richer detail views that better match a real investigator card.
+- Organize archive presentation into readable sections inside Discord, inspired by dedicated character-card tools.
+- Keep archive presentation scoped to archive channels so live-play halls stay clean.
+
+### Phase 36: COC-Bounded Archive Finishing And Module Reuse
+**Planned**:
+- Let interview signals influence finishing choices only through explicit legal COC paths and bounded supported modes.
+- Preserve reviewable trace of any interview-driven finishing recommendations instead of hiding them in prompt behavior.
+- Ensure richer archive data can be consumed by future modules, onboarding hooks, and role overlays without mutating the archive base.
 
 ## Progress
 

@@ -3,6 +3,32 @@
 **Defined:** 2026-03-28
 **Core Value:** Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keeper can narrate, roleplay multiple characters, and enforce investigation-heavy rules flow without constant manual bookkeeping.
 
+## v2.0 Requirements
+
+### Rich Archive Schema
+
+- [ ] **ARCHX-01**: Long-lived archive profiles should store a fuller set of investigator-card fields, including specialty, career arc, core belief, desire/goal, weakness, key past event, and other structured identity anchors.
+- [ ] **ARCHX-02**: Builder answers should be normalized into explicit archive fields wherever possible instead of remaining buried in freeform background text.
+- [ ] **ARCHX-03**: Archive data should distinguish clearly between rule-derived mechanical fields and narrative identity fields.
+
+### Archive Presentation
+
+- [ ] **PRES-01**: `/profiles` should remain a compact listing, but the system should add a richer detail view for a selected archive profile.
+- [ ] **PRES-02**: Archive presentation in Discord should be organized into readable sections, closer to an investigator card than a debug dump.
+- [ ] **PRES-03**: Players should be able to inspect the richer archive details in the archive channel without polluting live-play game halls.
+
+### COC-Bounded Finishing Logic
+
+- [ ] **FIN-01**: Interview-driven signals may influence finishing choices or recommended allocation only through explicit COC-compatible rules or bounded supported modes.
+- [ ] **FIN-02**: The system should never invent arbitrary stat bonuses from prompt output; any adjustment path must be reviewable and rules-scoped.
+- [ ] **FIN-03**: The archive should preserve both the raw investigator card and the normalized reasoning behind any interview-driven finishing recommendations.
+
+### Module Reuse
+
+- [ ] **MODARCH-01**: Future modules should be able to consume richer archive identity fields for onboarding hooks, private prompts, and role overlays.
+- [ ] **MODARCH-02**: Campaign projection should continue to protect the archive base record from scenario-specific mutations.
+- [ ] **MODARCH-03**: The richer archive format should remain compatible with the existing projection and panel flows.
+
 ## v1.9 Requirements
 
 ### Immersive Character-Shaping Flow
@@ -104,12 +130,25 @@
 | ARCH-01 | Phase 32 | Completed |
 | ARCH-02 | Phase 33 | Completed |
 | ARCH-03 | Phase 33 | Completed |
+| ARCHX-01 | Phase 34 | Planned |
+| ARCHX-02 | Phase 34 | Planned |
+| ARCHX-03 | Phase 34 | Planned |
+| PRES-01 | Phase 35 | Planned |
+| PRES-02 | Phase 35 | Planned |
+| PRES-03 | Phase 35 | Planned |
+| FIN-01 | Phase 36 | Planned |
+| FIN-02 | Phase 36 | Planned |
+| FIN-03 | Phase 36 | Planned |
+| MODARCH-01 | Phase 36 | Planned |
+| MODARCH-02 | Phase 36 | Planned |
+| MODARCH-03 | Phase 36 | Planned |
 
 **Coverage:**
 - v1.8 requirements: 13 total
 - v1.9 requirements: 12 total
+- v2.0 requirements: 12 total
 - Completed: 25
-- Planned: 0
+- Planned: 12
 - Unmapped: 0
 
 ---

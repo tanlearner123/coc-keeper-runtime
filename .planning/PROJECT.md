@@ -43,7 +43,9 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ### Active
 
-- [ ] The next milestone should improve archive browsing and expose the richer character identity data more clearly in Discord surfaces.
+- [ ] The next milestone should turn the archive into a richer long-lived investigator card system, with clearer detail views and more structured fields instead of a thin profile list.
+- [ ] Builder output should normalize more concrete traits such as specialty, career arc, core belief, desire, and fear into explicit archive fields rather than leaving them buried in freeform text.
+- [ ] Interview-driven finishing touches may influence legal character outcomes only through explicit COC-compatible rules and bounded generation modes, never by arbitrary prompt-side bonuses.
 
 ### Out of Scope
 
@@ -56,7 +58,7 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ## Current State
 
-`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. `v1.8` then separated archive channels from live-play channels, added a rules-grounded conversational character builder, and split long-lived investigator identities from campaign-specific module instances. `v1.9` completes the next layer: builder interviews now start from a short concept, adapt follow-up questions through a fast local planner, and write richer life-goal / weakness / past-event identity back into long-lived archive profiles.
+`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. `v1.8` then separated archive channels from live-play channels, added a rules-grounded conversational character builder, and split long-lived investigator identities from campaign-specific module instances. `v1.9` completed the next layer by making interviews adaptive and writing richer life-goal / weakness / past-event identity into long-lived archive profiles. `v2.0` should now make those archive profiles feel like real investigator cards: richer schema, clearer detail views, stronger normalization of interview answers, and explicit COC-rule-bounded finishing logic.
 
 ## Context
 
@@ -104,6 +106,8 @@ The first releases proved the core Discord gameplay loop end-to-end: player inpu
 | Character creation should feel like a roleplay scene, not a questionnaire | Players engage more when the builder reacts to their concept and asks the next most valuable question instead of following a fixed script | v1.9 should add a dynamic interview engine on top of the canonical builder |
 | Small local models may guide builder follow-up questions, but never numeric truth | A fast model can choose interesting, non-repetitive interview prompts while rules code still owns legal COC sheet generation | v1.9 should use a model-guided question selector with strict structured slots |
 | Archive identities should retain narrative anchors beyond the numeric sheet | Future modules and onboarding tracks become stronger when the system knows not just stats, but what the character wants, fears, and carries from the past | v1.9 writes life goal, weakness, and key event into archive profiles |
+| Archive presentation should feel closer to a real investigator card than a debug list | Players need a persistent identity surface they can actually read and care about, not just an ID/occupation/SAN row | v2.0 should improve archive schema and detail presentation |
+| Interview output may bias finishing choices only through explicit legal COC paths | Roleplay-driven tuning is useful, but it must be implemented as bounded rule-aware generation, not arbitrary stat invention | v2.0 should add COC-bounded archive finishing logic |
 | `疯狂之馆` is the first official module target | It is rich enough to force a real schema while still being a bounded first module | ✓ Good |
 | New runtime subsystems should reuse mature prior art where possible | This reduces debugging cost and keeps the bot aligned with proven Discord D&D workflows | `d20`-style dice integration prioritized for v1.2 |
 | Live-play feel now matters more than new runtime primitives | The next milestone should polish judgement, hinting, and scene presentation before expanding breadth | `疯狂之馆` experience polish prioritized for v1.3 |

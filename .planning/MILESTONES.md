@@ -1,5 +1,21 @@
 # Milestones
 
+## v2.0 Archive 系统与人物卡面板完善 (Planned: 2026-03-28)
+
+**Goal:**
+
+- Turn the current archive from a thin profile store into a richer, investigator-card-like long-lived identity system with clearer schema, better Discord presentation, and explicit COC-bounded finishing logic.
+
+**Planned phases:** 3 phases total
+
+**Planned focus:**
+
+- Expand archive schema and normalize builder output into more specific structured fields.
+- Improve archive presentation so players can actually read and use their long-lived profiles in Discord.
+- Let interview output influence finishing choices only through explicit, reviewable COC-compatible rules.
+
+---
+
 ## v1.9 沉浸式人物构建层 (Shipped: 2026-03-28)
 
 **Goal:**
