@@ -18,13 +18,15 @@ Optional:
 
 - `/import_character provider:dicecloud_snapshot external_id:<id>`
 - `/load_adventure adventure_id:mad_mansion`
+- `/ready character_name:调查员A`
 
 ## Recommended Formal Module Flow
 
 1. `/load_adventure adventure_id:mad_mansion`
-2. 用中央大厅开场，把四个分馆和倒计时交代清楚
-3. 玩家直接用普通消息说话、调查、协作，不需要每句 `/turn`
-4. 需要看当前局势时，用 `/debug_status campaign_id:test1`
+2. 每个已加入玩家执行 `/ready`
+3. 全员 ready 后，bot 会自动发中央大厅开场和第一轮引导
+4. 玩家直接用普通消息说话、调查、协作，不需要每句 `/turn`
+5. 需要看当前局势时，用 `/debug_status campaign_id:test1`
 
 ## How Players Speak
 
@@ -35,6 +37,8 @@ Examples of processed messages:
 - `我检查石棺边缘有没有机关。`
 - `我对酒馆老板说：昨晚到底发生了什么？`
 - `@队友 我先进去，你帮我盯住门口。`
+- `roll 1d20+3`
+- `check Perception 4`
 
 Examples of ignored messages:
 
@@ -61,6 +65,8 @@ Examples of ignored messages:
 如果你怀疑自然消息过滤误判，仍然可以使用：
 
 - `/turn content:我推开门。`
+- `/roll expression:1d20+3`
+- `/check label:Perception modifier:4 advantage:none`
 
 这条命令始终作为保底和调试入口保留。
 

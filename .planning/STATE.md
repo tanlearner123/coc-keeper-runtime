@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 疯狂之馆开场体验与骰子系统
-status: planning
-stopped_at: Planned milestone v1.2 around onboarding, mature dice integration, and response reliability
-last_updated: "2026-03-27T21:10:00.000Z"
-last_activity: 2026-03-27 - Started milestone v1.2 planning
+status: completed
+stopped_at: Completed milestone v1.2 and prepared for next milestone
+last_updated: "2026-03-27T22:30:00.000Z"
+last_activity: 2026-03-27 - Completed milestone v1.2 with onboarding, dice, and response reliability
 progress:
   total_phases: 11
-  completed_phases: 8
+  completed_phases: 11
   total_plans: 22
-  completed_plans: 16
-  percent: 73
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Run a real multiplayer D&D session in Discord where a local AI DM can narrate, roleplay multiple characters, and enforce heavy rules flow without constant manual bookkeeping.
-**Current focus:** Planning milestone v1.2 for adventure onboarding, mature dice integration, and Discord response reliability
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 9 of 11 (Adventure Onboarding And Auto-Opening)
-Plan: 0 of 2
-Status: Planning
-Last activity: 2026-03-27 - Started milestone v1.2 planning
+Phase: 11 of 11 (Streaming Responses And Message Reliability)
+Plan: 2 of 2
+Status: Completed
+Last activity: 2026-03-27 - Completed milestone v1.2 with onboarding, dice, and response reliability
 
-Progress: [███████░░░] 73%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -76,7 +76,7 @@ None yet.
 
 ### Roadmap Evolution
 
-- Roadmap now continues with Phases 9-11 for milestone v1.2.
+- Next roadmap will continue numbering after Phase 11 for the new milestone.
 
 ### Blockers/Concerns
 
@@ -88,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-27T21:10:00.000Z
-Stopped at: Planned milestone v1.2 around onboarding, mature dice integration, and response reliability
+Stopped at: Completed milestone v1.2 and prepared for next milestone
 Resume file: .planning/PROJECT.md

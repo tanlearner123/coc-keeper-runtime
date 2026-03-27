@@ -1,5 +1,17 @@
 # Milestones
 
+## v1.2 疯狂之馆开场体验与骰子系统 (Shipped: 2026-03-27)
+
+**Phases completed:** 11 phases total, 22 plans total, 0 tasks
+
+**Key accomplishments:**
+
+- Added a reusable packaged-adventure ready-up flow so `mad_mansion` can start with explicit table readiness and an automatic DM opening.
+- Replaced placeholder dice behavior with a mature `d20`-backed rules layer and exposed checks, saves, attacks, damage, and raw expressions in Discord.
+- Improved Discord usability through clearer blocked-input feedback, inline dice shortcuts, and more visible processing during ordinary message play.
+
+---
+
 ## v1.1 疯狂之馆首个正式模组 (Shipped: 2026-03-27)
 
 **Phases completed:** 8 phases, 16 plans, 0 tasks

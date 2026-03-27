@@ -5,6 +5,7 @@ description = "Discord-native local AI DM runtime"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "d20>=1.1.2",
   "discord.py>=2.7.0",
   "fastapi>=0.116.0",
   "httpx>=0.28.0",
@@ -32,4 +33,3 @@ packages = ["src/dm_bot"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-

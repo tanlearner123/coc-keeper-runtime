@@ -2,7 +2,7 @@ from dm_bot.gameplay.combat import CombatEncounter, Combatant
 from dm_bot.gameplay.modes import GameModeState
 from dm_bot.characters.models import CharacterRecord
 from dm_bot.router.contracts import TurnPlan
-from dm_bot.rules.actions import LookupAction, RuleAction
+from dm_bot.rules.actions import LookupAction, RuleAction, StatBlock
 from dm_bot.adventures.models import AdventurePackage
 
 
@@ -73,6 +73,11 @@ class GameplayOrchestrator:
             "objectives": list(adventure.objectives),
             "module_state": adventure.state_defaults(),
             "ending_id": None,
+            "onboarding": {
+                "status": "awaiting_ready",
+                "ready_user_ids": [],
+                "opening_sent": False,
+            },
         }
 
     def adventure_snapshot(self) -> dict[str, object]:
@@ -120,6 +125,88 @@ class GameplayOrchestrator:
             raise KeyError(ending_id)
         self.adventure_state["ending_id"] = ending_id
 
+    def adventure_onboarding(self) -> dict[str, object]:
+        return dict(self.adventure_state.get("onboarding", {}))
+
+    def mark_adventure_ready(self, *, user_id: str) -> dict[str, object]:
+        onboarding = self.adventure_onboarding()
+        ready_user_ids = list(onboarding.get("ready_user_ids", []))
+        if user_id not in ready_user_ids:
+            ready_user_ids.append(user_id)
+        onboarding["ready_user_ids"] = ready_user_ids
+        self.adventure_state["onboarding"] = onboarding
+        return onboarding
+
+    def begin_adventure(self) -> None:
+        onboarding = self.adventure_onboarding()
+        onboarding["status"] = "in_progress"
+        onboarding["opening_sent"] = True
+        self.adventure_state["onboarding"] = onboarding
+
+    def adventure_opening_text(self, *, active_characters: dict[str, str]) -> str:
+        if self.adventure is None:
+            raise RuntimeError("adventure not loaded")
+        scene = self.adventure.scene_by_id(str(self.adventure_state.get("scene_id", self.adventure.start_scene_id)))
+        roster = [name for name in active_characters.values() if name]
+        roster_line = f"已就位调查员：{', '.join(roster)}。" if roster else "已就位调查员：未命名调查员。"
+        return (
+            f"《{self.adventure.title}》开始。\n"
+            f"{self.adventure.premise}\n"
+            f"{roster_line}\n"
+            f"开场场景：{scene.title}。\n"
+            f"{scene.summary}\n"
+            "先描述你们第一轮的观察、站位或试探动作。"
+        )
+
+    def onboarding_block_message(self) -> str | None:
+        onboarding = self.adventure_onboarding()
+        if onboarding and onboarding.get("status") == "awaiting_ready":
+            return "模组已加载，先用 `/ready` 完成就位；如未导入角色，可在 `/ready` 里填写角色名。"
+        return None
+
+    def resolve_manual_roll(
+        self,
+        *,
+        actor_name: str,
+        expression: str | None = None,
+        action: str = "raw_roll",
+        label: str = "",
+        modifier: int = 0,
+        advantage: str = "none",
+        damage_type: str = "untyped",
+        target_name: str = "",
+        target_ac: int = 10,
+        attack_bonus: int = 0,
+        damage_expression: str = "",
+        weapon: str = "unarmed",
+    ) -> dict[str, object]:
+        actor = StatBlock(name=actor_name or "Unknown", armor_class=10, hit_points=1)
+        target = StatBlock(name=target_name, armor_class=target_ac, hit_points=1) if target_name else None
+        parameters: dict[str, object]
+        if action == "raw_roll":
+            parameters = {"expression": expression or ""}
+        elif action in {"ability_check", "saving_throw"}:
+            parameters = {"label": label, "modifier": modifier, "advantage": advantage}
+        elif action == "damage_roll":
+            parameters = {"damage_expression": damage_expression or expression or "", "damage_type": damage_type}
+        elif action == "attack_roll":
+            parameters = {
+                "attack_bonus": attack_bonus,
+                "damage_expression": damage_expression,
+                "weapon": weapon,
+                "advantage": advantage,
+            }
+        else:
+            raise RuntimeError(action)
+        return self._rules_engine.execute(
+            RuleAction(
+                action=action,
+                actor=actor,
+                target=target,
+                parameters=parameters,
+            )
+        )
+
     def export_state(self) -> dict[str, object]:
         return {
             "mode": self.mode_state.model_dump(),
@@ -153,6 +240,14 @@ class GameplayOrchestrator:
                 result = self._rules_engine.lookup(LookupAction.model_validate(call.arguments))
             elif call.name == "rules.attack_roll":
                 result = self._rules_engine.execute(RuleAction.model_validate(call.arguments))
+            elif call.name == "rules.ability_check":
+                result = self._rules_engine.execute(RuleAction.model_validate({"action": "ability_check", **call.arguments}))
+            elif call.name == "rules.saving_throw":
+                result = self._rules_engine.execute(RuleAction.model_validate({"action": "saving_throw", **call.arguments}))
+            elif call.name == "rules.damage_roll":
+                result = self._rules_engine.execute(RuleAction.model_validate({"action": "damage_roll", **call.arguments}))
+            elif call.name == "rules.raw_roll":
+                result = self._rules_engine.execute(RuleAction.model_validate({"action": "raw_roll", **call.arguments}))
             else:
                 result = {"tool": call.name, "status": "unsupported"}
             results.append(result)

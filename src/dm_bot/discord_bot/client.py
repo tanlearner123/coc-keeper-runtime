@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+import traceback
 
 
 class DiscordDmBot(commands.Bot):
@@ -23,6 +24,21 @@ class DiscordDmBot(commands.Bot):
             await self.tree.sync(guild=guild)
         else:
             await self.tree.sync()
+
+    async def on_ready(self) -> None:
+        if self.user is not None:
+            print(f"READY {self.user} {self.user.id}", flush=True)
+
+    async def on_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
+    ) -> None:
+        print(
+            f"APP_COMMAND_ERROR name={getattr(interaction.command, 'name', 'unknown')} error={error!r}",
+            flush=True,
+        )
+        traceback.print_exception(type(error), error, error.__traceback__)
 
     def _register_commands(self) -> None:
         @self.tree.command(name="setup", description="Check runtime setup and model availability")
@@ -79,6 +95,54 @@ class DiscordDmBot(commands.Bot):
         async def load_adventure(interaction: discord.Interaction, adventure_id: str) -> None:
             await self.handlers.load_adventure(interaction, adventure_id=adventure_id)
 
+        @self.tree.command(name="ready", description="Mark yourself ready for the loaded adventure")
+        @app_commands.describe(character_name="Optional character or role name for this run")
+        async def ready(interaction: discord.Interaction, character_name: str = "") -> None:
+            await self.handlers.ready_for_adventure(interaction, character_name=character_name)
+
+        @self.tree.command(name="roll", description="Roll a dice expression")
+        @app_commands.describe(expression="Dice expression, e.g. 1d20+3")
+        async def roll(interaction: discord.Interaction, expression: str) -> None:
+            await self.handlers.roll_expression(interaction, expression=expression)
+
+        @self.tree.command(name="check", description="Resolve an ability or skill check")
+        @app_commands.describe(label="Check label", modifier="Modifier to add", advantage="none, advantage, or disadvantage")
+        async def check(interaction: discord.Interaction, label: str, modifier: int, advantage: str = "none") -> None:
+            await self.handlers.check_roll(interaction, label=label, modifier=modifier, advantage=advantage)
+
+        @self.tree.command(name="save", description="Resolve a saving throw")
+        @app_commands.describe(label="Save label", modifier="Modifier to add", advantage="none, advantage, or disadvantage")
+        async def save(interaction: discord.Interaction, label: str, modifier: int, advantage: str = "none") -> None:
+            await self.handlers.save_roll(interaction, label=label, modifier=modifier, advantage=advantage)
+
+        @self.tree.command(name="attack", description="Resolve an attack roll with optional damage")
+        @app_commands.describe(
+            target_name="Target name",
+            target_ac="Target armor class",
+            attack_bonus="Attack bonus",
+            damage_expression="Damage expression, e.g. 1d8+3",
+            weapon="Weapon name",
+            advantage="none, advantage, or disadvantage",
+        )
+        async def attack(
+            interaction: discord.Interaction,
+            target_name: str,
+            target_ac: int,
+            attack_bonus: int,
+            damage_expression: str,
+            weapon: str = "unarmed",
+            advantage: str = "none",
+        ) -> None:
+            await self.handlers.attack_roll(
+                interaction,
+                target_name=target_name,
+                target_ac=target_ac,
+                attack_bonus=attack_bonus,
+                damage_expression=damage_expression,
+                weapon=weapon,
+                advantage=advantage,
+            )
+
         @self.tree.command(name="debug_status", description="Show recent trace-linked runtime events")
         @app_commands.describe(campaign_id="Campaign identifier")
         async def debug_status(interaction: discord.Interaction, campaign_id: str) -> None:
@@ -87,13 +151,14 @@ class DiscordDmBot(commands.Bot):
     async def on_message(self, message: discord.Message) -> None:
         if message.author.bot or not message.content or message.guild is None:
             return
-        reply = await self.handlers.handle_channel_message(
-            channel_id=str(message.channel.id),
-            guild_id=str(message.guild.id),
-            user_id=str(message.author.id),
-            content=message.content,
-            mention_count=len(message.mentions),
-        )
+        async with message.channel.typing():
+            reply = await self.handlers.handle_channel_message(
+                channel_id=str(message.channel.id),
+                guild_id=str(message.guild.id),
+                user_id=str(message.author.id),
+                content=message.content,
+                mention_count=len(message.mentions),
+            )
         if reply:
             await message.channel.send(reply)
 

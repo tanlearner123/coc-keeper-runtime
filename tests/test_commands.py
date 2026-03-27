@@ -22,6 +22,14 @@ class FakeFollowup:
     def __init__(self) -> None:
         self.messages: list[str] = []
 
+    async def send(self, content: str, **kwargs) -> None:
+        self.messages.append(content)
+
+
+class FakeChannel:
+    def __init__(self) -> None:
+        self.messages: list[str] = []
+
     async def send(self, content: str) -> None:
         self.messages.append(content)
 
@@ -33,6 +41,7 @@ class FakeInteraction:
         self.user = type("User", (), {"id": user_id})()
         self.response = FakeResponse()
         self.followup = FakeFollowup()
+        self.channel = FakeChannel()
 
 
 class StubTurnService:
@@ -109,3 +118,61 @@ def test_bind_command_persists_session_binding(tmp_path) -> None:
 
     restored = persistence.load_sessions()
     assert restored["chan-1"]["campaign_id"] == "camp-1"
+
+
+def test_load_adventure_prompts_ready_up_and_records_onboarding_state() -> None:
+    from dm_bot.orchestrator.gameplay import CharacterRegistry, GameplayOrchestrator
+    from dm_bot.rules.compendium import FixtureCompendium
+    from dm_bot.rules.engine import RulesEngine
+
+    store = SessionStore()
+    store.bind_campaign(campaign_id="camp-1", channel_id="chan-1", guild_id="guild-1", owner_id="user-1")
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=store,
+        turn_coordinator=StubTurnService(),
+        gameplay=GameplayOrchestrator(
+            importer=None,
+            registry=CharacterRegistry(),
+            rules_engine=RulesEngine(compendium=FixtureCompendium(baseline="2014", fixtures={})),
+        ),
+    )
+    interaction = FakeInteraction(channel_id="chan-1", user_id="user-1")
+
+    asyncio.run(commands.load_adventure(interaction, adventure_id="mad_mansion"))
+
+    assert "loaded adventure" in interaction.response.messages[0][0]
+    assert interaction.channel.messages
+    assert "ready" in interaction.channel.messages[0].lower()
+    assert commands._gameplay.adventure_state["onboarding"]["status"] == "awaiting_ready"
+
+
+def test_ready_command_posts_opening_when_all_members_are_ready() -> None:
+    from dm_bot.orchestrator.gameplay import CharacterRegistry, GameplayOrchestrator
+    from dm_bot.rules.compendium import FixtureCompendium
+    from dm_bot.rules.engine import RulesEngine
+
+    store = SessionStore()
+    store.bind_campaign(campaign_id="camp-1", channel_id="chan-1", guild_id="guild-1", owner_id="user-1")
+    store.join_campaign(channel_id="chan-1", user_id="user-2")
+    gameplay = GameplayOrchestrator(
+        importer=None,
+        registry=CharacterRegistry(),
+        rules_engine=RulesEngine(compendium=FixtureCompendium(baseline="2014", fixtures={})),
+    )
+    gameplay.load_adventure(__import__("dm_bot.adventures.loader", fromlist=["load_adventure"]).load_adventure("mad_mansion"))
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=store,
+        turn_coordinator=StubTurnService(),
+        gameplay=gameplay,
+    )
+    first = FakeInteraction(channel_id="chan-1", user_id="user-1")
+    second = FakeInteraction(channel_id="chan-1", user_id="user-2")
+    first.channel = second.channel
+
+    asyncio.run(commands.ready_for_adventure(first, character_name="调查员A"))
+    asyncio.run(commands.ready_for_adventure(second, character_name="调查员B"))
+
+    assert any("疯狂之馆" in message for message in first.channel.messages)
+    assert commands._gameplay.adventure_state["onboarding"]["status"] == "in_progress"

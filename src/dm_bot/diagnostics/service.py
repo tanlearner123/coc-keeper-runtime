@@ -11,6 +11,10 @@ class DiagnosticsService:
         if adventure_state:
             module_state = dict(adventure_state.get("module_state", {}))
             lines.append(f"scene={adventure_state.get('scene_id', 'unknown')}")
+            onboarding = dict(adventure_state.get("onboarding", {}))
+            if onboarding:
+                ready = onboarding.get("ready_user_ids", [])
+                lines.append(f"onboarding={onboarding.get('status', 'unknown')} ready={len(ready)}")
             if adventure_state.get("objectives"):
                 lines.append(f"objectives={', '.join(adventure_state['objectives'])}")
             if adventure_state.get("clues_found"):

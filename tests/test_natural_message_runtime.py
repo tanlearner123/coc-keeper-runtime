@@ -127,3 +127,27 @@ def test_natural_message_works_after_session_restore(tmp_path) -> None:
 
     assert reply == "DM reply"
     assert coordinator.calls == [("camp-1", "chan-1", "user-1", "我检查钟表。")]
+
+
+def test_natural_message_is_blocked_until_adventure_ready() -> None:
+    from dm_bot.adventures.loader import load_adventure
+
+    store = SessionStore()
+    store.bind_campaign(campaign_id="camp-1", channel_id="chan-1", guild_id="guild-1", owner_id="user-1")
+    coordinator = StubTurnCoordinator()
+    gameplay = build_gameplay()
+    gameplay.load_adventure(load_adventure("mad_mansion"))
+    commands = BotCommands(settings=None, session_store=store, turn_coordinator=coordinator, gameplay=gameplay)
+
+    reply = asyncio.run(
+        commands.handle_channel_message(
+            channel_id="chan-1",
+            guild_id="guild-1",
+            user_id="user-1",
+            content="我推开门看看里面有什么。",
+            mention_count=0,
+        )
+    )
+
+    assert "ready" in reply.lower()
+    assert coordinator.calls == []

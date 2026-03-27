@@ -75,11 +75,15 @@ class BotCommands:
             return
 
         await interaction.response.defer(thinking=True)
+        self._load_campaign_state(session.campaign_id)
         blocked = self._combat_gate_message(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id))
         if blocked:
             await interaction.followup.send(blocked, ephemeral=True)
             return
-        self._load_campaign_state(session.campaign_id)
+        onboarding_block = self._gameplay.onboarding_block_message() if self._gameplay is not None else None
+        if onboarding_block:
+            await interaction.followup.send(onboarding_block, ephemeral=True)
+            return
         result = await self._dispatch_turn(
             campaign_id=session.campaign_id,
             channel_id=str(interaction.channel_id),
@@ -96,6 +100,7 @@ class BotCommands:
                 ephemeral=True,
             )
             return
+        self._load_state_for_channel(str(interaction.channel_id))
         character = self._gameplay.import_character(
             user_id=str(interaction.user.id),
             provider=provider,
@@ -117,6 +122,7 @@ class BotCommands:
         if self._gameplay is None:
             await interaction.response.send_message("gameplay is not configured", ephemeral=True)
             return
+        self._load_state_for_channel(str(interaction.channel_id))
         parsed = [item.strip() for item in speakers.split(",") if item.strip()]
         self._gameplay.enter_scene(speakers=parsed)
         self._save_state_for_channel(str(interaction.channel_id))
@@ -129,6 +135,7 @@ class BotCommands:
         if self._gameplay is None:
             await interaction.response.send_message("gameplay is not configured", ephemeral=True)
             return
+        self._load_state_for_channel(str(interaction.channel_id))
         self._gameplay.end_scene()
         self._save_state_for_channel(str(interaction.channel_id))
         await interaction.response.send_message("returned to DM mode", ephemeral=True)
@@ -137,6 +144,7 @@ class BotCommands:
         if self._gameplay is None:
             await interaction.response.send_message("gameplay is not configured", ephemeral=True)
             return
+        self._load_state_for_channel(str(interaction.channel_id))
         parsed = []
         from dm_bot.gameplay.combat import Combatant
 
@@ -161,12 +169,14 @@ class BotCommands:
         if self._gameplay is None:
             await interaction.response.send_message("gameplay is not configured", ephemeral=True)
             return
+        self._load_state_for_channel(str(interaction.channel_id))
         await interaction.response.send_message(self._gameplay.combat_summary(), ephemeral=True)
 
     async def next_turn(self, interaction) -> None:
         if self._gameplay is None:
             await interaction.response.send_message("gameplay is not configured", ephemeral=True)
             return
+        self._load_state_for_channel(str(interaction.channel_id))
         encounter = self._gameplay.next_combat_turn()
         if encounter is None:
             await interaction.response.send_message("combat not active", ephemeral=True)
@@ -183,6 +193,7 @@ class BotCommands:
             return
         from dm_bot.adventures.loader import load_adventure
 
+        self._load_state_for_channel(str(interaction.channel_id))
         adventure = load_adventure(adventure_id)
         self._gameplay.load_adventure(adventure)
         self._save_state_for_channel(str(interaction.channel_id))
@@ -190,6 +201,95 @@ class BotCommands:
             f"loaded adventure `{adventure.title}`",
             ephemeral=True,
         )
+        await interaction.channel.send(
+            f"《{adventure.title}》已加载。已加入玩家请使用 `/ready` 完成就位；如未导入角色，可在 `/ready` 时填写角色名。"
+        )
+
+    async def ready_for_adventure(self, interaction, *, character_name: str = "") -> None:
+        if self._gameplay is None or self._session_store is None:
+            await interaction.response.send_message("gameplay is not configured", ephemeral=True)
+            return
+        self._load_state_for_channel(str(interaction.channel_id))
+        session = self._session_store.get_by_channel(str(interaction.channel_id))
+        if session is None:
+            await interaction.response.send_message("no campaign bound to this channel", ephemeral=True)
+            return
+        if character_name.strip():
+            self._session_store.bind_character(
+                channel_id=str(interaction.channel_id),
+                user_id=str(interaction.user.id),
+                character_name=character_name.strip(),
+            )
+            self._persist_sessions()
+        onboarding = self._gameplay.mark_adventure_ready(user_id=str(interaction.user.id))
+        ready_ids = set(onboarding.get("ready_user_ids", []))
+        await interaction.response.send_message(
+            f"已就位 ({len(ready_ids)}/{len(session.member_ids)})",
+            ephemeral=True,
+        )
+        if session.member_ids and ready_ids.issuperset(session.member_ids):
+            self._gameplay.begin_adventure()
+            self._save_state_for_channel(str(interaction.channel_id))
+            await interaction.channel.send(
+                self._gameplay.adventure_opening_text(active_characters=session.active_characters)
+            )
+        else:
+            self._save_state_for_channel(str(interaction.channel_id))
+
+    async def roll_expression(self, interaction, *, expression: str) -> None:
+        result = self._safe_roll_for_channel(
+            channel_id=str(interaction.channel_id),
+            user_id=str(interaction.user.id),
+            action="raw_roll",
+            expression=expression,
+        )
+        await interaction.response.send_message(result, ephemeral=False)
+
+    async def check_roll(self, interaction, *, label: str, modifier: int, advantage: str = "none") -> None:
+        result = self._safe_roll_for_channel(
+            channel_id=str(interaction.channel_id),
+            user_id=str(interaction.user.id),
+            action="ability_check",
+            label=label,
+            modifier=modifier,
+            advantage=advantage,
+        )
+        await interaction.response.send_message(result, ephemeral=False)
+
+    async def save_roll(self, interaction, *, label: str, modifier: int, advantage: str = "none") -> None:
+        result = self._safe_roll_for_channel(
+            channel_id=str(interaction.channel_id),
+            user_id=str(interaction.user.id),
+            action="saving_throw",
+            label=label,
+            modifier=modifier,
+            advantage=advantage,
+        )
+        await interaction.response.send_message(result, ephemeral=False)
+
+    async def attack_roll(
+        self,
+        interaction,
+        *,
+        target_name: str,
+        target_ac: int,
+        attack_bonus: int,
+        damage_expression: str,
+        weapon: str = "unarmed",
+        advantage: str = "none",
+    ) -> None:
+        result = self._safe_roll_for_channel(
+            channel_id=str(interaction.channel_id),
+            user_id=str(interaction.user.id),
+            action="attack_roll",
+            target_name=target_name,
+            target_ac=target_ac,
+            attack_bonus=attack_bonus,
+            damage_expression=damage_expression,
+            weapon=weapon,
+            advantage=advantage,
+        )
+        await interaction.response.send_message(result, ephemeral=False)
 
     async def debug_status(self, interaction, *, campaign_id: str) -> None:
         if self._diagnostics is None:
@@ -219,11 +319,24 @@ class BotCommands:
         if disposition != MessageDisposition.PROCESS:
             return None
 
+        self._load_campaign_state(session.campaign_id)
+        onboarding_block = self._gameplay.onboarding_block_message() if self._gameplay is not None else None
+        if onboarding_block:
+            return onboarding_block
+
+        inline_roll = self._try_inline_roll(
+            channel_id=channel_id,
+            user_id=user_id,
+            content=content,
+        )
+        if inline_roll is not None:
+            self._save_campaign_state(session.campaign_id)
+            return inline_roll
+
         blocked = self._combat_gate_message(channel_id=channel_id, user_id=user_id)
         if blocked:
             return blocked
 
-        self._load_campaign_state(session.campaign_id)
         result = await self._dispatch_turn(
             campaign_id=session.campaign_id,
             channel_id=channel_id,
@@ -276,3 +389,76 @@ class BotCommands:
         state = self._persistence_store.load_campaign_state(campaign_id)
         if state:
             self._gameplay.import_state(state)
+
+    def _load_state_for_channel(self, channel_id: str) -> None:
+        if self._session_store is None:
+            return
+        session = self._session_store.get_by_channel(channel_id)
+        if session is None:
+            return
+        self._load_campaign_state(session.campaign_id)
+
+    def _resolve_roll_for_channel(self, *, channel_id: str, user_id: str, action: str, **kwargs) -> str:
+        if self._session_store is None or self._gameplay is None:
+            return "gameplay is not configured"
+        self._load_state_for_channel(channel_id)
+        actor_name = self._session_store.active_character_for(channel_id=channel_id, user_id=user_id) or f"玩家{user_id}"
+        result = self._gameplay.resolve_manual_roll(actor_name=actor_name, action=action, **kwargs)
+        return self._format_roll_result(result)
+
+    def _safe_roll_for_channel(self, *, channel_id: str, user_id: str, action: str, **kwargs) -> str:
+        try:
+            return self._resolve_roll_for_channel(channel_id=channel_id, user_id=user_id, action=action, **kwargs)
+        except Exception as exc:
+            return f"掷骰失败：{exc}"
+
+    def _try_inline_roll(self, *, channel_id: str, user_id: str, content: str) -> str | None:
+        stripped = content.strip()
+        lowered = stripped.lower()
+        try:
+            if lowered.startswith("roll "):
+                return self._resolve_roll_for_channel(channel_id=channel_id, user_id=user_id, action="raw_roll", expression=stripped[5:].strip())
+            if lowered.startswith("check "):
+                label, modifier, advantage = self._split_check_payload(stripped[6:].strip())
+                return self._resolve_roll_for_channel(
+                    channel_id=channel_id,
+                    user_id=user_id,
+                    action="ability_check",
+                    label=label,
+                    modifier=modifier,
+                    advantage=advantage,
+                )
+            if lowered.startswith("save "):
+                label, modifier, advantage = self._split_check_payload(stripped[5:].strip())
+                return self._resolve_roll_for_channel(
+                    channel_id=channel_id,
+                    user_id=user_id,
+                    action="saving_throw",
+                    label=label,
+                    modifier=modifier,
+                    advantage=advantage,
+                )
+        except (ValueError, RuntimeError) as exc:
+            return f"掷骰输入无效：{exc}"
+        return None
+
+    def _split_check_payload(self, payload: str) -> tuple[str, int, str]:
+        parts = [part for part in payload.split(" ") if part]
+        if len(parts) < 2:
+            raise ValueError("expected `<label> <modifier> [advantage|disadvantage]`")
+        label = parts[0]
+        modifier = int(parts[1])
+        advantage = parts[2] if len(parts) > 2 else "none"
+        return label, modifier, advantage
+
+    def _format_roll_result(self, result: dict[str, object]) -> str:
+        action = str(result.get("action", "roll"))
+        if action == "attack_roll":
+            hit_text = "命中" if result.get("hit") else "未命中"
+            damage_text = f"，伤害 {result.get('damage')}" if result.get("hit") else ""
+            return f"{result['actor']} 攻击 {result['target']}：{result['roll']}，总计 {result['total']}，{hit_text}{damage_text}"
+        if action in {"ability_check", "saving_throw"}:
+            return f"{result['actor']} 的 {result['label']}：{result['roll']}，总计 {result['total']}"
+        if action == "damage_roll":
+            return f"{result['actor']} 的伤害掷骰：{result['roll']}，总计 {result['total']} {result['damage_type']}"
+        return f"{result['actor']} 掷骰：{result['roll']}，总计 {result['total']}"

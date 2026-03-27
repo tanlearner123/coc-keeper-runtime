@@ -15,8 +15,11 @@ class StatBlock(BaseModel):
     hit_points: int
 
 
+AdvantageMode = Literal["none", "advantage", "disadvantage"]
+
+
 class RuleAction(BaseModel):
-    action: Literal["attack_roll"]
+    action: Literal["attack_roll", "ability_check", "saving_throw", "damage_roll", "raw_roll"]
     actor: StatBlock
     target: StatBlock | None = None
     parameters: dict[str, object] = Field(default_factory=dict)

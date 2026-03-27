@@ -31,9 +31,10 @@ In Discord, run:
 /bind_campaign campaign_id:test1
 /join_campaign
 /load_adventure adventure_id:mad_mansion
+/ready character_name:调查员A
 ```
 
-After that, ordinary messages in the bound channel become gameplay input. Players do not need to use `/turn` for every action.
+所有已加入玩家都 `/ready` 之后，bot 会自动发《疯狂之馆》开场。之后普通消息才会进入正式跑团流程，玩家不需要每句都 `/turn`。
 
 Examples:
 
@@ -48,6 +49,19 @@ Behavior:
 - obvious player-to-player social chatter is ignored
 - `/turn` still exists as a fallback and debug path
 
+骰子相关命令：
+
+- `/roll expression:1d20+3`
+- `/check label:Perception modifier:3 advantage:none`
+- `/save label:DEX modifier:2 advantage:advantage`
+- `/attack target_name:Goblin target_ac:13 attack_bonus:5 damage_expression:1d8+3`
+
+普通消息里也支持简写：
+
+- `roll 1d20+3`
+- `check Perception 3`
+- `save DEX 2 disadvantage`
+
 ## Restart Recovery
 
 - bound campaigns and joined members are persisted in SQLite
@@ -61,9 +75,11 @@ Behavior:
 2. Each real player runs `/join_campaign`.
 3. Optional: import a character with `/import_character`.
 4. Load `疯狂之馆` with `/load_adventure adventure_id:mad_mansion`.
-5. Use ordinary messages for exploration and roleplay.
-6. Use `/enter_scene` and `/end_scene` for multi-NPC performance scenes.
-7. Use `/start_combat`, `/show_combat`, and `/next_turn` for combat control.
+5. Each player runs `/ready`, optionally with `character_name`.
+6. Wait for the automatic DM opening post.
+7. Use ordinary messages for exploration and roleplay.
+8. Use `/enter_scene` and `/end_scene` for multi-NPC performance scenes.
+9. Use `/start_combat`, `/show_combat`, and `/next_turn` for combat control.
 
 During combat, only the active combatant's message is accepted as a turn. Other players are reminded whose turn it is.
 

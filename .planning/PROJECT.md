@@ -21,12 +21,15 @@ Run a real multiplayer D&D session in Discord where a local AI DM can narrate, r
 - ✓ `疯狂之馆` is the first full-length official module, playable end-to-end with room logic, countdown pressure, hidden information, and multiple endings — v1.1 Phase 7
 - ✓ The AI can act as an omniscient DM for packaged modules while reveal-safe state stays gated by current discoveries and canonical module state — v1.1 Phases 6-7
 - ✓ Discord play survives restarts through durable campaign bindings, restored natural-message intake, and clearer packaged-adventure status guidance — v1.1 Phase 8
+- ✓ Loading a packaged adventure now drives a visible ready-up flow and can auto-open the first scene once the table is ready — v1.2 Phase 9
+- ✓ Dice and roll resolution now reuse a mature external engine instead of placeholder values, with command-path support for checks, saves, attacks, damage, and raw expressions — v1.2 Phase 10
+- ✓ Discord play now gives clearer pending and blocked feedback through setup guidance, ready gating, and ordinary-message responsiveness improvements — v1.2 Phase 11
 
 ### Active
 
-- [ ] Loading a packaged adventure should move the table into a visible onboarding flow with readiness, character selection, and automatic DM opening instead of depending on a manual first `/turn`.
-- [ ] Dice and roll resolution should reuse a mature external engine rather than the current placeholder roll path, and must cover core D&D checks, saves, attacks, and damage.
-- [ ] Discord play should feel responsive through progressive response updates or streaming, with clearer feedback when ordinary player messages are ignored, blocked, or still being processed.
+- [ ] The module system supports a second formal adventure package without adding one-off runtime code for that script.
+- [ ] The operator can selectively reveal secret or private information to subsets of players instead of only table-wide narration.
+- [ ] The DM runtime can surface richer structured progression controls for module-specific triggers, puzzle states, and branching overrides.
 
 ### Out of Scope
 
@@ -39,7 +42,7 @@ Run a real multiplayer D&D session in Discord where a local AI DM can narrate, r
 
 ## Current State
 
-`v1.1` shipped the first formal packaged adventure milestone. The runtime now supports structured modules with canonical state, reveal-safe narration context, and a fully encoded `疯狂之馆` package that survives bot restarts and can continue through ordinary Discord channel play. The next milestone is about making that module start and run like a polished session instead of a developer demo.
+`v1.2` shipped the startup and dice usability milestone. The runtime now supports ready-gated packaged-adventure onboarding, automatic opening narration for `疯狂之馆`, mature `d20`-backed dice resolution for common roll families, and clearer Discord-side progress or blocking feedback during ordinary channel play.
 
 ## Context
 
@@ -97,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 during v1.2 planning*
+*Last updated: 2026-03-27 after v1.2 milestone*

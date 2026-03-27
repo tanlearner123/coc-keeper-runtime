@@ -11,10 +11,11 @@
 ## Recommended Flow
 
 1. `/load_adventure adventure_id:mad_mansion`
-2. 从中央大厅开场，描述四个光幕、吊灯和倒计时数字钟
-3. 让玩家自由决定先进入哪个分馆
-4. 用自然消息推进调查，按需要切换 scene/combat
-5. 用 `/debug_status campaign_id:<id>` 检查当前房间、线索和鲜血进度
+2. 每个已加入玩家执行 `/ready`，必要时附带 `character_name`
+3. 等 bot 自动发中央大厅开场
+4. 让玩家自由决定先进入哪个分馆
+5. 用自然消息推进调查，按需要切换 scene/combat
+6. 用 `/debug_status campaign_id:<id>` 检查当前房间、线索和鲜血进度
 
 ## Scene Nodes
 
