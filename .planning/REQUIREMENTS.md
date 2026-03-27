@@ -7,27 +7,27 @@
 
 ### Immersive Character-Shaping Flow
 
-- [ ] **CHAR-01**: Character creation should begin from a short concept or premise and evolve through adaptive Keeper-style follow-up questions instead of a fixed questionnaire.
-- [ ] **CHAR-02**: The builder should explicitly shape a character's life goal, weakness/flaw, key past event, and other roleplay anchors so the finished investigator feels like a person rather than just a sheet.
-- [ ] **CHAR-03**: Follow-up questions should vary by the concept already given, rather than asking the same generic prompts to every player.
+- [x] **CHAR-01**: Character creation should begin from a short concept or premise and evolve through adaptive Keeper-style follow-up questions instead of a fixed questionnaire.
+- [x] **CHAR-02**: The builder should explicitly shape a character's life goal, weakness/flaw, key past event, and other roleplay anchors so the finished investigator feels like a person rather than just a sheet.
+- [x] **CHAR-03**: Follow-up questions should vary by the concept already given, rather than asking the same generic prompts to every player.
 
 ### Model-Guided Builder Control
 
-- [ ] **ASK-01**: A fast local model may select the next best follow-up question, but only within structured slots and strict interview constraints.
-- [ ] **ASK-02**: The builder must stop asking questions once the required narrative and mechanical information is sufficient, instead of dragging through unnecessary rounds.
-- [ ] **ASK-03**: The system should be able to summarize collected answers into structured narrative fields for downstream archive storage and campaign projection.
+- [x] **ASK-01**: A fast local model may select the next best follow-up question, but only within structured slots and strict interview constraints.
+- [x] **ASK-02**: The builder must stop asking questions once the required narrative and mechanical information is sufficient, instead of dragging through unnecessary rounds.
+- [x] **ASK-03**: The system should be able to summarize collected answers into structured narrative fields for downstream archive storage and campaign projection.
 
 ### COC-Legal Generation Discipline
 
-- [ ] **COCGEN-01**: Core attributes and other canonical sheet fields must still come from supported COC generation rules or explicit allowed modes, never from freeform model invention.
-- [ ] **COCGEN-02**: Narrative answers should influence occupation detail, background, finishing choices, and skill leanings without breaking COC legality.
-- [ ] **COCGEN-03**: The finished archive profile should clearly distinguish rules-derived values from narrative characterization fields.
+- [x] **COCGEN-01**: Core attributes and other canonical sheet fields must still come from supported COC generation rules or explicit allowed modes, never from freeform model invention.
+- [x] **COCGEN-02**: Narrative answers should influence occupation detail, background, finishing choices, and skill leanings without breaking COC legality.
+- [x] **COCGEN-03**: The finished archive profile should clearly distinguish rules-derived values from narrative characterization fields.
 
 ### Archive Value And Future Module Reuse
 
-- [ ] **ARCH-01**: Archive profiles should store richer long-term identity fields, including life goal and weakness, for reuse across future modules.
-- [ ] **ARCH-02**: Campaign projections should continue to derive from archive profiles without mutating the archive base.
-- [ ] **ARCH-03**: Complex modules should be able to read the richer archive characterization to improve onboarding, private hooks, and role overlays.
+- [x] **ARCH-01**: Archive profiles should store richer long-term identity fields, including life goal and weakness, for reuse across future modules.
+- [x] **ARCH-02**: Campaign projections should continue to derive from archive profiles without mutating the archive base.
+- [x] **ARCH-03**: Complex modules should be able to read the richer archive characterization to improve onboarding, private hooks, and role overlays.
 
 ## v1.8 Requirements
 
@@ -92,24 +92,24 @@
 | RULE-01 | Phase 29 | Completed |
 | RULE-02 | Phase 30 | Completed |
 | RULE-03 | Phase 30 | Completed |
-| CHAR-01 | Phase 31 | Planned |
-| CHAR-02 | Phase 32 | Planned |
-| CHAR-03 | Phase 32 | Planned |
-| ASK-01 | Phase 31 | Planned |
-| ASK-02 | Phase 31 | Planned |
-| ASK-03 | Phase 33 | Planned |
-| COCGEN-01 | Phase 33 | Planned |
-| COCGEN-02 | Phase 33 | Planned |
-| COCGEN-03 | Phase 33 | Planned |
-| ARCH-01 | Phase 32 | Planned |
-| ARCH-02 | Phase 33 | Planned |
-| ARCH-03 | Phase 33 | Planned |
+| CHAR-01 | Phase 31 | Completed |
+| CHAR-02 | Phase 32 | Completed |
+| CHAR-03 | Phase 32 | Completed |
+| ASK-01 | Phase 31 | Completed |
+| ASK-02 | Phase 31 | Completed |
+| ASK-03 | Phase 33 | Completed |
+| COCGEN-01 | Phase 33 | Completed |
+| COCGEN-02 | Phase 33 | Completed |
+| COCGEN-03 | Phase 33 | Completed |
+| ARCH-01 | Phase 32 | Completed |
+| ARCH-02 | Phase 33 | Completed |
+| ARCH-03 | Phase 33 | Completed |
 
 **Coverage:**
 - v1.8 requirements: 13 total
 - v1.9 requirements: 12 total
-- Completed: 13
-- Planned: 12
+- Completed: 25
+- Planned: 0
 - Unmapped: 0
 
 ---

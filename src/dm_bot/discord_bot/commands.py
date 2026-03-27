@@ -107,7 +107,7 @@ class BotCommands:
         if self._character_builder is None or self._archive_repository is None:
             await interaction.response.send_message("character builder is not configured", ephemeral=True)
             return
-        prompt, profile = self._character_builder.answer(user_id=str(interaction.user.id), answer=answer)
+        prompt, profile = await self._character_builder.answer(user_id=str(interaction.user.id), answer=answer)
         self._persist_archives()
         ephemeral = True
         if profile is None:
@@ -518,7 +518,7 @@ class BotCommands:
         content: str,
         mention_count: int,
     ) -> str | None:
-        builder_reply = self._consume_archive_builder_message(
+        builder_reply = await self._consume_archive_builder_message(
             channel_id=channel_id,
             guild_id=guild_id,
             user_id=user_id,
@@ -581,7 +581,7 @@ class BotCommands:
         user_id = str(message.author.id)
         content = message.content
         mention_count = len(message.mentions)
-        builder_reply = self._consume_archive_builder_message(
+        builder_reply = await self._consume_archive_builder_message(
             channel_id=channel_id,
             guild_id=guild_id,
             user_id=user_id,
@@ -684,7 +684,7 @@ class BotCommands:
             return
         self._persistence_store.save_archive_profiles(self._archive_repository.export_state())
 
-    def _consume_archive_builder_message(
+    async def _consume_archive_builder_message(
         self,
         *,
         channel_id: str,
@@ -700,7 +700,7 @@ class BotCommands:
         answer = content.strip()
         if not answer:
             return None
-        prompt, profile = self._character_builder.answer(user_id=user_id, answer=answer)
+        prompt, profile = await self._character_builder.answer(user_id=user_id, answer=answer)
         self._persist_archives()
         if profile is None:
             return prompt

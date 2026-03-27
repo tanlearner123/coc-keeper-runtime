@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import dataclass
 
 from dm_bot.config import Settings
 from dm_bot.discord_bot.commands import BotCommands
@@ -84,6 +85,28 @@ class FakeMessage:
         self.mentions: list[object] = []
 
 
+@dataclass
+class FakeQuestionChoice:
+    slot: str
+    question: str
+
+
+class FakeInterviewPlanner:
+    async def next_question(self, session):
+        concept = session.answers.get("concept", "")
+        if "key_past_event" not in session.answers:
+            if "落魄" in concept:
+                return FakeQuestionChoice(slot="key_past_event", question="你为什么会落魄到这一步？最近究竟发生了什么？")
+            return FakeQuestionChoice(slot="key_past_event", question="过去究竟发生过什么，才把他推到了今天这一步？")
+        if "life_goal" not in session.answers:
+            return FakeQuestionChoice(slot="life_goal", question="如果这一切还没把他压垮，他现在最想达成的人生目标是什么？")
+        if "weakness" not in session.answers:
+            return FakeQuestionChoice(slot="weakness", question="他最致命的弱点或劣势是什么？")
+        if "disposition" not in session.answers:
+            return FakeQuestionChoice(slot="disposition", question="别人通常会怎么评价他的处事方式？")
+        return FakeQuestionChoice(slot="favored_skills", question="列出 2-4 个他最拿手的技能，用逗号分隔。")
+
+
 def test_sheet_command_redirects_from_game_hall_to_archive_channel() -> None:
     from dm_bot.coc.archive import InvestigatorArchiveRepository
     from dm_bot.orchestrator.gameplay import CharacterRegistry, GameplayOrchestrator
@@ -133,6 +156,7 @@ def test_conversational_builder_creates_archive_profile() -> None:
     builder = ConversationalCharacterBuilder(
         archive_repository=repo,
         roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+        interview_planner=FakeInterviewPlanner(),
     )
     commands = BotCommands(
         settings=Settings(),
@@ -145,17 +169,41 @@ def test_conversational_builder_creates_archive_profile() -> None:
 
     asyncio.run(commands.start_character_builder(interaction, visibility="private"))
     asyncio.run(commands.builder_reply(interaction, answer="林秋"))
-    asyncio.run(commands.builder_reply(interaction, answer="记者"))
-    asyncio.run(commands.builder_reply(interaction, answer="26"))
-    asyncio.run(commands.builder_reply(interaction, answer="我总在夜里追新闻。"))
+    asyncio.run(commands.builder_reply(interaction, answer="26岁的夜班记者"))
+    asyncio.run(commands.builder_reply(interaction, answer="我总在夜里追新闻，结果因为一篇得罪人的报道被行业封杀。"))
+    asyncio.run(commands.builder_reply(interaction, answer="我想查清那篇报道背后的真相，重新拿回自己的名字。"))
+    asyncio.run(commands.builder_reply(interaction, answer="我太执拗，也太容易因为愧疚把自己逼进死角。"))
     asyncio.run(commands.builder_reply(interaction, answer="冷静但固执。"))
     asyncio.run(commands.builder_reply(interaction, answer="图书馆使用,聆听,心理学"))
 
     profiles = repo.list_profiles("user-1")
     assert len(profiles) == 1
     assert profiles[0].name == "林秋"
-    assert profiles[0].coc.occupation == "记者"
+    assert profiles[0].coc.occupation == "夜班记者"
     assert profiles[0].coc.attributes.int == 70
+    assert profiles[0].life_goal.startswith("我想查清")
+    assert "执拗" in profiles[0].weakness
+
+
+def test_builder_uses_concept_to_ask_a_more_specific_follow_up() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+    from dm_bot.coc.builder import ConversationalCharacterBuilder
+
+    builder = ConversationalCharacterBuilder(
+        archive_repository=InvestigatorArchiveRepository(),
+        roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+        interview_planner=FakeInterviewPlanner(),
+    )
+
+    assert builder.start(user_id="user-1", visibility="private") == "先给这位调查员起个名字。"
+    prompt, profile = asyncio.run(builder.answer(user_id="user-1", answer="林钟轩"))
+    assert profile is None
+    assert "一句短话" in prompt
+
+    prompt, profile = asyncio.run(builder.answer(user_id="user-1", answer="38岁的落魄临床医生"))
+
+    assert profile is None
+    assert "落魄" in prompt or "发生了什么" in prompt
 
 
 def test_archive_channel_plain_messages_advance_builder_session() -> None:
@@ -166,6 +214,7 @@ def test_archive_channel_plain_messages_advance_builder_session() -> None:
     builder = ConversationalCharacterBuilder(
         archive_repository=repo,
         roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+        interview_planner=FakeInterviewPlanner(),
     )
     store = SessionStore()
     store.bind_archive_channel(guild_id="guild-1", channel_id="archive-1")
@@ -183,7 +232,7 @@ def test_archive_channel_plain_messages_advance_builder_session() -> None:
     name_message = FakeMessage(channel_id="archive-1", content="林钟轩")
     asyncio.run(commands.handle_channel_message_stream(message=name_message))
 
-    assert name_message.channel.messages[-1] == "他的职业是什么？尽量用 COC 里能落地的现实职业描述。"
+    assert "一句短话" in name_message.channel.messages[-1]
 
 
 def test_archive_channel_plain_messages_can_finish_builder_session() -> None:
@@ -194,6 +243,7 @@ def test_archive_channel_plain_messages_can_finish_builder_session() -> None:
     builder = ConversationalCharacterBuilder(
         archive_repository=repo,
         roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+        interview_planner=FakeInterviewPlanner(),
     )
     store = SessionStore()
     store.bind_archive_channel(guild_id="guild-1", channel_id="archive-1")
@@ -207,13 +257,23 @@ def test_archive_channel_plain_messages_can_finish_builder_session() -> None:
     interaction = FakeInteraction(channel_id="archive-1")
     asyncio.run(commands.start_character_builder(interaction, visibility="private"))
 
-    for answer in ["林钟轩", "记者", "26", "夜班跑新闻", "冷静但固执", "图书馆使用,聆听,心理学"]:
+    for answer in [
+        "林钟轩",
+        "38岁的落魄临床医生",
+        "三年前的一场手术纠纷把我从医院里赶了出来。",
+        "我想证明那次事故里真正犯错的人不是我。",
+        "我太骄傲，也太容易在压力下酗酒。",
+        "外冷内热，但防备心很重。",
+        "医学,急救,心理学",
+    ]:
         message = FakeMessage(channel_id="archive-1", content=answer)
         asyncio.run(commands.handle_channel_message_stream(message=message))
 
     profiles = repo.list_profiles("user-1")
     assert len(profiles) == 1
     assert profiles[0].name == "林钟轩"
+    assert profiles[0].coc.occupation == "临床医生"
+    assert "证明" in profiles[0].life_goal
 
 
 def test_ready_projects_selected_archive_profile_without_mutating_archive() -> None:

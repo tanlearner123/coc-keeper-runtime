@@ -42,9 +42,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 28: Discord Channel Roles And Command Discipline** - Separate archive, game-hall, and keeper-trace responsibilities and enforce command boundaries across channels.
 - [x] **Phase 29: COC Conversational Character Builder** - Add a Keeper-style conversational builder with canonical COC stat generation and private-first delivery.
 - [x] **Phase 30: Profile Archive And Campaign Projection** - Split long-lived investigator archives from campaign-specific role instances and scenario overlays.
-- [ ] **Phase 31: Dynamic Builder Interview Engine** - Replace fixed builder prompts with structured, model-guided follow-up selection that adapts to the current character concept.
-- [ ] **Phase 32: Narrative Character Shaping And Fun Builder UX** - Make builder flow feel like a roleplay scene by collecting life goal, weakness, key past events, and other vivid anchors.
-- [ ] **Phase 33: COC-Legal Character Projection And Archive Writeback** - Map richer interview output back into legal COC sheets, archive summaries, and campaign-ready profile projections.
+- [x] **Phase 31: Dynamic Builder Interview Engine** - Replace fixed builder prompts with structured, model-guided follow-up selection that adapts to the current character concept.
+- [x] **Phase 32: Narrative Character Shaping And Fun Builder UX** - Make builder flow feel like a roleplay scene by collecting life goal, weakness, key past events, and other vivid anchors.
+- [x] **Phase 33: COC-Legal Character Projection And Archive Writeback** - Map richer interview output back into legal COC sheets, archive summaries, and campaign-ready profile projections.
 
 ## Milestone v1.8 Delivery Plan
 
@@ -69,19 +69,19 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Milestone v1.9 Delivery Plan
 
 ### Phase 31: Dynamic Builder Interview Engine
-**Planned**:
+**Delivered**:
 - Start from a short player concept and derive the next most valuable follow-up question through structured builder slots.
 - Let a fast local model suggest the next question while code enforces slot coverage, stopping conditions, and anti-repetition rules.
 - Keep builder answers reviewable and machine-readable so they can later feed archive summaries and campaign projections.
 
 ### Phase 32: Narrative Character Shaping And Fun Builder UX
-**Planned**:
+**Delivered**:
 - Make the builder feel like a Keeper-led character-shaping scene instead of a form.
 - Explicitly collect life goal, weakness/flaw, and other humanizing anchors when they matter.
 - Keep questions short, adaptive, and interesting rather than running every player through the same script.
 
 ### Phase 33: COC-Legal Character Projection And Archive Writeback
-**Planned**:
+**Delivered**:
 - Preserve canonical COC generation as the source of numeric truth while letting the richer interview influence occupation detail, finishing choices, and sheet flavor.
 - Write richer identity data into the archive without letting campaign state overwrite it.
 - Produce a campaign-ready projection that can reuse the new archive characterization in future modules.
@@ -123,3 +123,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 28. Discord Channel Roles And Command Discipline | 1/1 | Completed | 2026-03-28 |
 | 29. COC Conversational Character Builder | 1/1 | Completed | 2026-03-28 |
 | 30. Profile Archive And Campaign Projection | 1/1 | Completed | 2026-03-28 |
+| 31. Dynamic Builder Interview Engine | 1/1 | Completed | 2026-03-28 |
+| 32. Narrative Character Shaping And Fun Builder UX | 1/1 | Completed | 2026-03-28 |
+| 33. COC-Legal Character Projection And Archive Writeback | 1/1 | Completed | 2026-03-28 |

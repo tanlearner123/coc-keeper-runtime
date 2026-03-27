@@ -7,7 +7,7 @@ from dm_bot.characters.importer import CharacterImporter
 from dm_bot.characters.sources import DicecloudSnapshotSource
 from dm_bot.coc.archive import InvestigatorArchiveRepository
 from dm_bot.coc.assets import COCAssetLibrary, COCReference
-from dm_bot.coc.builder import ConversationalCharacterBuilder
+from dm_bot.coc.builder import ConversationalCharacterBuilder, ModelGuidedInterviewPlanner
 from dm_bot.config import Settings, get_settings
 from dm_bot.diagnostics.service import DiagnosticsService
 from dm_bot.discord_bot.client import create_discord_bot
@@ -53,7 +53,10 @@ def build_runtime(settings: Settings | None = None) -> RuntimeBundle:
     coc_assets = build_coc_assets(settings)
     archive_repository = InvestigatorArchiveRepository()
     archive_repository.import_state(persistence_store.load_archive_profiles())
-    character_builder = ConversationalCharacterBuilder(archive_repository=archive_repository)
+    character_builder = ConversationalCharacterBuilder(
+        archive_repository=archive_repository,
+        interview_planner=ModelGuidedInterviewPlanner(model_client=model_client),
+    )
     gameplay = GameplayOrchestrator(
         importer=CharacterImporter(sources={"dicecloud_snapshot": DicecloudSnapshotSource(fixtures={})}),
         registry=CharacterRegistry(),

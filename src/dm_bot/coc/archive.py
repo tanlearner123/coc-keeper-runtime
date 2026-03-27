@@ -13,7 +13,11 @@ class InvestigatorArchiveProfile(BaseModel):
     name: str
     occupation: str
     age: int
+    concept: str = ""
     background: str = ""
+    key_past_event: str = ""
+    life_goal: str = ""
+    weakness: str = ""
     disposition: str = ""
     favored_skills: list[str] = Field(default_factory=list)
     portrait_summary: str = ""
@@ -32,6 +36,11 @@ class InvestigatorArchiveRepository:
         occupation: str,
         age: int,
         background: str,
+        portrait_summary: str = "",
+        concept: str = "",
+        key_past_event: str = "",
+        life_goal: str = "",
+        weakness: str = "",
         disposition: str,
         favored_skills: list[str],
         generation: dict[str, int],
@@ -54,10 +63,14 @@ class InvestigatorArchiveRepository:
             name=name,
             occupation=occupation,
             age=age,
+            concept=concept,
             background=background,
+            key_past_event=key_past_event,
+            life_goal=life_goal,
+            weakness=weakness,
             disposition=disposition,
             favored_skills=favored,
-            portrait_summary=f"{occupation}。{background} 性格上{disposition}",
+            portrait_summary=portrait_summary or f"{occupation}。{background} 性格上{disposition}",
             coc=COCInvestigatorProfile(
                 occupation=occupation,
                 age=age,

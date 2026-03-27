@@ -37,12 +37,13 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 - ✓ The runtime now supports COC-first percentile checks, success tiers, pushed/bonus/penalty roll handling, and sanity-aware resolution on top of the existing Discord and trigger foundations — v1.6 Phase 22
 - ✓ Local COC rulebooks, pregenerated-investigator files, and curated community references can now be discovered through a reviewable asset layer instead of living only outside the runtime — v1.6 Phase 23
 - ✓ Prompts, extraction, commands, and diagnostics now frame play as a Keeper-led COC investigation rather than a D&D-first DM workflow — v1.6 Phase 24
+- ✓ Character creation can now start from a short concept and branch into adaptive Keeper-style follow-up questions instead of relying on a fixed builder script — v1.9 Phase 31
+- ✓ Archive profiles now capture richer roleplay anchors such as life goal, weakness, and key past event, making the builder feel more like shaping a person than filling a sheet — v1.9 Phase 32
+- ✓ Richer builder output now writes back into long-lived archive profiles while numeric truth still comes from legal COC generation rules — v1.9 Phase 33
 
 ### Active
 
-- [ ] The next milestone should turn character creation into a more game-like, immersive interview where a short character premise expands through dynamic Keeper-style follow-up questions.
-- [ ] The builder should use a small local model to choose the next best question while keeping numeric generation and sheet legality grounded in local COC rules.
-- [ ] Long-lived archive profiles should become richer narrative assets, including life goal, weakness, core past event, and other roleplay anchors that can project cleanly into future modules.
+- [ ] The next milestone should improve archive browsing and expose the richer character identity data more clearly in Discord surfaces.
 
 ### Out of Scope
 
@@ -55,7 +56,7 @@ Run a real multiplayer Call of Cthulhu session in Discord where a local AI Keepe
 
 ## Current State
 
-`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. `v1.8` then separated archive channels from live-play channels, added a rules-grounded conversational character builder, and split long-lived investigator identities from campaign-specific module instances. `v1.9` should now turn that builder into a more immersive “character-shaping” layer, where dynamic Keeper-style follow-up questions make the creation flow feel like part of the game rather than a form.
+`v1.6` completed the project pivot from D&D-first semantics to a COC/Keeper-first base. `v1.7` extended that base with persistent investigator panels, player-private and role-scoped knowledge flow, mixed room/scene/event graph support, and the first structured `覆辙` sample module. `v1.8` then separated archive channels from live-play channels, added a rules-grounded conversational character builder, and split long-lived investigator identities from campaign-specific module instances. `v1.9` completes the next layer: builder interviews now start from a short concept, adapt follow-up questions through a fast local planner, and write richer life-goal / weakness / past-event identity back into long-lived archive profiles.
 
 ## Context
 
@@ -102,6 +103,7 @@ The first releases proved the core Discord gameplay loop end-to-end: player inpu
 | Long-lived character identity must remain separate from module-specific instances | Players should carry independent personas across modules while each module tracks its own SAN, secrets, and entry-track state | v1.8 split archive profiles from campaign projections |
 | Character creation should feel like a roleplay scene, not a questionnaire | Players engage more when the builder reacts to their concept and asks the next most valuable question instead of following a fixed script | v1.9 should add a dynamic interview engine on top of the canonical builder |
 | Small local models may guide builder follow-up questions, but never numeric truth | A fast model can choose interesting, non-repetitive interview prompts while rules code still owns legal COC sheet generation | v1.9 should use a model-guided question selector with strict structured slots |
+| Archive identities should retain narrative anchors beyond the numeric sheet | Future modules and onboarding tracks become stronger when the system knows not just stats, but what the character wants, fears, and carries from the past | v1.9 writes life goal, weakness, and key event into archive profiles |
 | `疯狂之馆` is the first official module target | It is rich enough to force a real schema while still being a bounded first module | ✓ Good |
 | New runtime subsystems should reuse mature prior art where possible | This reduces debugging cost and keeps the bot aligned with proven Discord D&D workflows | `d20`-style dice integration prioritized for v1.2 |
 | Live-play feel now matters more than new runtime primitives | The next milestone should polish judgement, hinting, and scene presentation before expanding breadth | `疯狂之馆` experience polish prioritized for v1.3 |

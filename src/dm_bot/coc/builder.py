@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass, field
+from typing import Protocol
 
 from dm_bot.coc.archive import InvestigatorArchiveProfile, InvestigatorArchiveRepository
+from dm_bot.models.schemas import ModelRequest
+
+
+@dataclass
+class BuilderQuestionChoice:
+    slot: str
+    question: str
 
 
 @dataclass
@@ -10,44 +20,130 @@ class BuilderSession:
     user_id: str
     visibility: str = "private"
     answers: dict[str, str] = field(default_factory=dict)
-    step_index: int = 0
+    current_slot: str = "name"
+    asked_slots: list[str] = field(default_factory=lambda: ["name"])
+
+
+class InterviewPlanner(Protocol):
+    async def next_question(self, session: BuilderSession) -> BuilderQuestionChoice: ...
+
+
+class HeuristicInterviewPlanner:
+    async def next_question(self, session: BuilderSession) -> BuilderQuestionChoice:
+        concept = session.answers.get("concept", "")
+        occupation = session.answers.get("occupation", "")
+        if "key_past_event" not in session.answers:
+            return BuilderQuestionChoice(slot="key_past_event", question=_past_event_question(concept, occupation))
+        if "life_goal" not in session.answers:
+            return BuilderQuestionChoice(
+                slot="life_goal",
+                question="如果这一切还没把他压垮，他现在最想达成的人生目标是什么？",
+            )
+        if "weakness" not in session.answers:
+            return BuilderQuestionChoice(
+                slot="weakness",
+                question="他最致命的弱点、劣势或坏习惯是什么？",
+            )
+        if "disposition" not in session.answers:
+            return BuilderQuestionChoice(
+                slot="disposition",
+                question="别人通常会怎么评价他的处事方式？",
+            )
+        return BuilderQuestionChoice(
+            slot="favored_skills",
+            question="列出 2-4 个他最拿手的技能，用逗号分隔。",
+        )
+
+
+class ModelGuidedInterviewPlanner:
+    def __init__(self, *, model_client, fallback: InterviewPlanner | None = None) -> None:
+        self._model_client = model_client
+        self._fallback = fallback or HeuristicInterviewPlanner()
+
+    async def next_question(self, session: BuilderSession) -> BuilderQuestionChoice:
+        missing_slots = [slot for slot in DYNAMIC_SLOT_ORDER if not session.answers.get(slot)]
+        if not missing_slots:
+            return BuilderQuestionChoice(slot="favored_skills", question="列出 2-4 个他最拿手的技能，用逗号分隔。")
+        request = ModelRequest(
+            system_prompt=(
+                "你是克苏鲁的呼唤建卡采访器。"
+                "基于已知角色信息，选择下一条最有价值的追问。"
+                "一次只能问一个问题。不要重复已知信息，不要谈属性数值，不要输出解释。"
+                "只返回 JSON，键为 slot 和 question。"
+                f"slot 必须是这些候选之一: {', '.join(missing_slots)}。"
+            ),
+            user_prompt=(
+                "已知信息:\n"
+                f"{json.dumps(session.answers, ensure_ascii=False)}\n"
+                f"当前缺失槽位: {json.dumps(missing_slots, ensure_ascii=False)}"
+            ),
+            response_format={"type": "json_object"},
+        )
+        try:
+            response = await self._model_client.call_router(request)
+            payload = json.loads(response.content)
+            slot = str(payload.get("slot", "")).strip()
+            question = str(payload.get("question", "")).strip()
+            if slot in missing_slots and question:
+                return BuilderQuestionChoice(slot=slot, question=question)
+        except Exception:
+            pass
+        return await self._fallback.next_question(session)
 
 
 class ConversationalCharacterBuilder:
-    STEPS: list[tuple[str, str]] = [
-        ("name", "先给这位调查员起个名字。"),
-        ("occupation", "他的职业是什么？尽量用 COC 里能落地的现实职业描述。"),
-        ("age", "他的年龄是多少？"),
-        ("background", "用一句话描述他的生活背景或过往经历。"),
-        ("disposition", "再用一句话说说他的性格或处事方式。"),
-        ("favored_skills", "列出 2-4 个你最希望他擅长的技能，用逗号分隔。"),
-    ]
+    INTRO_QUESTION = "先给这位调查员起个名字。"
+    CONCEPT_QUESTION = "用一句短话描述这个人的人物骨架，例如“38岁的落魄临床医生”。"
 
-    def __init__(self, *, archive_repository: InvestigatorArchiveRepository, roll_provider=None) -> None:
+    def __init__(
+        self,
+        *,
+        archive_repository: InvestigatorArchiveRepository,
+        roll_provider=None,
+        interview_planner: InterviewPlanner | None = None,
+    ) -> None:
         self._archive_repository = archive_repository
         self._roll_provider = roll_provider or self._default_roll_provider
+        self._interview_planner = interview_planner or HeuristicInterviewPlanner()
         self._sessions: dict[str, BuilderSession] = {}
 
     def start(self, *, user_id: str, visibility: str = "private") -> str:
         self._sessions[user_id] = BuilderSession(user_id=user_id, visibility=visibility)
-        return self.STEPS[0][1]
+        return self.INTRO_QUESTION
 
-    def answer(self, *, user_id: str, answer: str) -> tuple[str, InvestigatorArchiveProfile | None]:
+    async def answer(self, *, user_id: str, answer: str) -> tuple[str, InvestigatorArchiveProfile | None]:
         session = self._sessions[user_id]
-        key, _ = self.STEPS[session.step_index]
-        session.answers[key] = answer.strip()
-        session.step_index += 1
-        if session.step_index < len(self.STEPS):
-            return self.STEPS[session.step_index][1], None
+        slot = session.current_slot
+        answer = answer.strip()
+        session.answers[slot] = answer
+
+        if slot == "name":
+            session.current_slot = "concept"
+            session.asked_slots.append("concept")
+            return self.CONCEPT_QUESTION, None
+
+        if slot == "concept":
+            session.answers.update(_extract_concept_fields(answer))
+
+        next_question = await self._next_question(session)
+        if next_question is not None:
+            session.current_slot = next_question.slot
+            session.asked_slots.append(next_question.slot)
+            return next_question.question, None
 
         profile = self._archive_repository.create_profile(
             user_id=user_id,
             name=session.answers["name"],
             occupation=session.answers["occupation"],
             age=int(session.answers["age"]),
-            background=session.answers["background"],
-            disposition=session.answers["disposition"],
-            favored_skills=[item.strip() for item in session.answers["favored_skills"].split(",") if item.strip()],
+            background=_build_background(session.answers),
+            disposition=session.answers.get("disposition", ""),
+            favored_skills=[item.strip() for item in session.answers.get("favored_skills", "").split(",") if item.strip()],
+            portrait_summary=_build_portrait_summary(session.answers),
+            concept=session.answers.get("concept", ""),
+            life_goal=session.answers.get("life_goal", ""),
+            weakness=session.answers.get("weakness", ""),
+            key_past_event=session.answers.get("key_past_event", ""),
             generation=self._generate_stats(),
         )
         del self._sessions[user_id]
@@ -55,6 +151,16 @@ class ConversationalCharacterBuilder:
 
     def has_session(self, user_id: str) -> bool:
         return user_id in self._sessions
+
+    async def _next_question(self, session: BuilderSession) -> BuilderQuestionChoice | None:
+        if not session.answers.get("age"):
+            return BuilderQuestionChoice(slot="age", question="他的年龄是多少？")
+        if not session.answers.get("occupation"):
+            return BuilderQuestionChoice(slot="occupation", question="他的职业是什么？尽量用 COC 里能落地的现实职业描述。")
+        missing_dynamic = [slot for slot in DYNAMIC_SLOT_ORDER if not session.answers.get(slot)]
+        if not missing_dynamic:
+            return None
+        return await self._interview_planner.next_question(session)
 
     def _generate_stats(self) -> dict[str, int]:
         return {
@@ -79,3 +185,55 @@ class ConversationalCharacterBuilder:
         if expr == "luck":
             return sum(random.randint(1, 6) for _ in range(3)) * 5
         raise KeyError(expr)
+
+
+DYNAMIC_SLOT_ORDER = ["key_past_event", "life_goal", "weakness", "disposition", "favored_skills"]
+DOWNFALL_KEYWORDS = ("落魄", "潦倒", "失意", "破产", "酗酒", "停职", "离婚", "退学", "失业")
+
+
+def _extract_concept_fields(concept: str) -> dict[str, str]:
+    payload: dict[str, str] = {"concept": concept}
+    age_match = re.search(r"(\d{1,2})\s*岁", concept)
+    if age_match:
+        payload["age"] = age_match.group(1)
+
+    normalized = concept
+    normalized = re.sub(r"^\s*我(?:是|想扮演)?(?:一个|一位)?", "", normalized)
+    normalized = re.sub(r"\d{1,2}\s*岁(?:的)?", "", normalized)
+    normalized = normalized.strip(" ，。；、")
+    if "的" in normalized:
+        normalized = normalized.split("的")[-1]
+    normalized = re.sub(r"^(?:落魄|潦倒|失意|疲惫|年轻|年老|酗酒|偏执|孤僻|失业|没落)+", "", normalized).strip()
+    if normalized:
+        payload["occupation"] = normalized
+    return payload
+
+
+def _past_event_question(concept: str, occupation: str) -> str:
+    if any(keyword in concept for keyword in DOWNFALL_KEYWORDS):
+        return "你为什么会落到这一步？最近究竟发生了什么，把他拖进了现在的困境？"
+    if "医生" in occupation:
+        return "在他的行医生涯里，哪件事最深地改变了他，甚至让他开始怀疑自己？"
+    if "记者" in occupation:
+        return "哪次采访或报道最深地改变了他，甚至让他付出了代价？"
+    if "警察" in occupation or "侦探" in occupation:
+        return "哪件旧案一直卡在他心里，直到现在都没真正过去？"
+    return "过去到底发生过什么，才让他变成了今天这个样子？"
+
+
+def _build_background(answers: dict[str, str]) -> str:
+    snippets = [answers.get("concept", ""), answers.get("key_past_event", "")]
+    return " ".join(part.strip() for part in snippets if part and part.strip())
+
+
+def _build_portrait_summary(answers: dict[str, str]) -> str:
+    fragments = [answers.get("occupation", "调查员")]
+    if answers.get("concept"):
+        fragments.append(answers["concept"])
+    if answers.get("life_goal"):
+        fragments.append(f"人生目标：{answers['life_goal']}")
+    if answers.get("weakness"):
+        fragments.append(f"弱点：{answers['weakness']}")
+    if answers.get("disposition"):
+        fragments.append(f"处事方式：{answers['disposition']}")
+    return "。".join(item.strip("。 ") for item in fragments if item).strip()
