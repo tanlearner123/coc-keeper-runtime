@@ -12,7 +12,7 @@ This roadmap keeps v1 narrow: deliver a Discord-first D&D runtime that can run a
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Discord Runtime & Dual-Model Control** - Establish the Discord session surface, async interaction flow, and local dual-model orchestration.
+- [x] **Phase 1: Discord Runtime & Dual-Model Control** - Establish the Discord session surface, async interaction flow, and local dual-model orchestration.
 - [ ] **Phase 2: Character Import & Rules Authority** - Add one low-friction character path and a deterministic 2014 SRD rules backbone.
 - [ ] **Phase 3: Gameplay Loop & Combat Play** - Deliver DM narration, multi-character scenes, and heavy-rules combat inside Discord.
 - [ ] **Phase 4: Persistence, Recovery & Diagnostics** - Harden the runtime for campaign reuse, replayability, and operator visibility.
@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 Plans:
 - [x] 01-01-PLAN.md - Bootstrap the Python runtime shell, typed config, and setup or health workflow.
-- [ ] 01-02-PLAN.md - Implement Discord session binding, deferred interactions, and campaign-scoped turn serialization.
+- [x] 01-02-PLAN.md - Implement Discord session binding, deferred interactions, and campaign-scoped turn serialization.
 - [x] 01-03-PLAN.md - Implement dual-model router and narrator orchestration with model health checks.
 
 ### Phase 2: Character Import & Rules Authority
@@ -74,7 +74,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Discord Runtime & Dual-Model Control | 2/3 | In Progress|  |
+| 1. Discord Runtime & Dual-Model Control | 3/3 | Completed | 2026-03-27 |
 | 2. Character Import & Rules Authority | 0/TBD | Not started | - |
 | 3. Gameplay Loop & Combat Play | 0/TBD | Not started | - |
 | 4. Persistence, Recovery & Diagnostics | 0/TBD | Not started | - |
