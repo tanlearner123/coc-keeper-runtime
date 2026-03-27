@@ -518,6 +518,15 @@ class BotCommands:
         content: str,
         mention_count: int,
     ) -> str | None:
+        builder_reply = self._consume_archive_builder_message(
+            channel_id=channel_id,
+            guild_id=guild_id,
+            user_id=user_id,
+            content=content,
+        )
+        if builder_reply is not None:
+            return builder_reply
+
         if self._session_store is None or self._turn_coordinator is None:
             return None
         session = self._session_store.get_by_channel(channel_id)
@@ -572,6 +581,15 @@ class BotCommands:
         user_id = str(message.author.id)
         content = message.content
         mention_count = len(message.mentions)
+        builder_reply = self._consume_archive_builder_message(
+            channel_id=channel_id,
+            guild_id=guild_id,
+            user_id=user_id,
+            content=content,
+        )
+        if builder_reply is not None:
+            await message.channel.send(builder_reply)
+            return
         if self._session_store is None or self._turn_coordinator is None:
             return
         session = self._session_store.get_by_channel(channel_id)
@@ -665,6 +683,28 @@ class BotCommands:
         if self._persistence_store is None or self._archive_repository is None:
             return
         self._persistence_store.save_archive_profiles(self._archive_repository.export_state())
+
+    def _consume_archive_builder_message(
+        self,
+        *,
+        channel_id: str,
+        guild_id: str,
+        user_id: str,
+        content: str,
+    ) -> str | None:
+        if self._session_store is None or self._character_builder is None or self._archive_repository is None:
+            return None
+        archive_channel = self._session_store.archive_channel_for(guild_id)
+        if archive_channel != channel_id or not self._character_builder.has_session(user_id):
+            return None
+        answer = content.strip()
+        if not answer:
+            return None
+        prompt, profile = self._character_builder.answer(user_id=user_id, answer=answer)
+        self._persist_archives()
+        if profile is None:
+            return prompt
+        return f"{prompt}\n你现在可以在档案频道使用 `/profiles` 或在游戏大厅里 `/select_profile profile_id:{profile.profile_id}`。"
 
     def _save_state_for_channel(self, channel_id: str) -> None:
         if self._session_store is None:

@@ -33,6 +33,16 @@ class FakeChannel:
         self.messages.append(content)
         return None
 
+    def typing(self):
+        class _Typing:
+            async def __aenter__(self_inner):
+                return None
+
+            async def __aexit__(self_inner, exc_type, exc, tb):
+                return False
+
+        return _Typing()
+
 
 class FakeUser:
     def __init__(self, user_id: str, display_name: str = "Alice") -> None:
@@ -48,6 +58,30 @@ class FakeInteraction:
         self.response = FakeResponse()
         self.followup = FakeFollowup()
         self.channel = FakeChannel()
+
+
+class FakeGuild:
+    def __init__(self, guild_id: str) -> None:
+        self.id = guild_id
+
+
+class FakeMessage:
+    def __init__(
+        self,
+        *,
+        channel_id: str,
+        guild_id: str = "guild-1",
+        user_id: str = "user-1",
+        display_name: str = "Alice",
+        content: str,
+    ) -> None:
+        self.channel = FakeChannel()
+        self.channel.id = channel_id
+        self.guild = FakeGuild(guild_id)
+        self.author = FakeUser(user_id, display_name)
+        self.author.bot = False
+        self.content = content
+        self.mentions: list[object] = []
 
 
 def test_sheet_command_redirects_from_game_hall_to_archive_channel() -> None:
@@ -122,6 +156,64 @@ def test_conversational_builder_creates_archive_profile() -> None:
     assert profiles[0].name == "林秋"
     assert profiles[0].coc.occupation == "记者"
     assert profiles[0].coc.attributes.int == 70
+
+
+def test_archive_channel_plain_messages_advance_builder_session() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+    from dm_bot.coc.builder import ConversationalCharacterBuilder
+
+    repo = InvestigatorArchiveRepository()
+    builder = ConversationalCharacterBuilder(
+        archive_repository=repo,
+        roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+    )
+    store = SessionStore()
+    store.bind_archive_channel(guild_id="guild-1", channel_id="archive-1")
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=store,
+        turn_coordinator=None,
+        archive_repository=repo,
+        character_builder=builder,
+    )
+    interaction = FakeInteraction(channel_id="archive-1")
+
+    asyncio.run(commands.start_character_builder(interaction, visibility="private"))
+
+    name_message = FakeMessage(channel_id="archive-1", content="林钟轩")
+    asyncio.run(commands.handle_channel_message_stream(message=name_message))
+
+    assert name_message.channel.messages[-1] == "他的职业是什么？尽量用 COC 里能落地的现实职业描述。"
+
+
+def test_archive_channel_plain_messages_can_finish_builder_session() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+    from dm_bot.coc.builder import ConversationalCharacterBuilder
+
+    repo = InvestigatorArchiveRepository()
+    builder = ConversationalCharacterBuilder(
+        archive_repository=repo,
+        roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+    )
+    store = SessionStore()
+    store.bind_archive_channel(guild_id="guild-1", channel_id="archive-1")
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=store,
+        turn_coordinator=None,
+        archive_repository=repo,
+        character_builder=builder,
+    )
+    interaction = FakeInteraction(channel_id="archive-1")
+    asyncio.run(commands.start_character_builder(interaction, visibility="private"))
+
+    for answer in ["林钟轩", "记者", "26", "夜班跑新闻", "冷静但固执", "图书馆使用,聆听,心理学"]:
+        message = FakeMessage(channel_id="archive-1", content=answer)
+        asyncio.run(commands.handle_channel_message_stream(message=message))
+
+    profiles = repo.list_profiles("user-1")
+    assert len(profiles) == 1
+    assert profiles[0].name == "林钟轩"
 
 
 def test_ready_projects_selected_archive_profile_without_mutating_archive() -> None:

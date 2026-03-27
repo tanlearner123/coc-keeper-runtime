@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.9 沉浸式人物构建层 (Planned: 2026-03-28)
+
+**Goal:**
+
+- Turn investigator creation into a more game-like, immersive character-shaping experience while preserving canonical COC sheet legality and archive/campaign separation.
+
+**Planned phases:** 3 phases total
+
+**Planned focus:**
+
+- Add a dynamic interview engine that can adapt the next Keeper-style question to the concept already given.
+- Make the builder collect richer identity anchors such as life goal, weakness, and key past events instead of stopping at flat background text.
+- Keep numeric truth and legal sheet generation grounded in local COC rules while writing richer archive summaries for future module reuse.
+
+---
+
 ## v1.8 角色档案分层与 COC 对话建卡系统 (Shipped: 2026-03-28)
 
 **Goal:**
