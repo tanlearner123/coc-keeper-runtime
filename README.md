@@ -359,6 +359,225 @@ uv run pytest -q
 uv run python -m dm_bot.main smoke-check
 ```
 
+## GSD Onboarding For New Contributors
+
+如果你是第一次接手这个仓库，推荐按这个顺序用 GSD：
+
+1. **先看 planning 文档**
+   - 先读：
+     - `.planning/PROJECT.md`
+     - `.planning/ROADMAP.md`
+     - `.planning/STATE.md`
+   - 先理解当前有哪些 Track、当前 active milestone 是什么、各 Track 的下一步候选是什么。
+
+2. **先跑 codebase 全局映射**
+   - 推荐先执行：
+
+```text
+$gsd-map-codebase
+```
+
+   - 目的不是立刻写代码，而是先让 AI 了解当前代码结构、核心模块和边界。
+
+3. **再选一条 Track**
+   - 不要一上来做一个跨所有层的大改动。
+   - 先决定你当前工作属于：
+     - `Track A` 模组与规则运行层
+     - `Track B` 人物构建与管理层
+     - `Track C` Discord 交互层
+     - `Track D` 游戏呈现层
+
+4. **然后再开具体 milestone**
+   - 按 `.planning/ROADMAP.md` 找到该 Track 的下一 milestone。
+   - 如果要新开 milestone，优先遵守：
+     - 一个 milestone 只有一个 `Primary Track`
+     - 如果影响别的 Track，要显式写 `Secondary Impact`
+
+5. **推进过程中保持说明清楚**
+   - 如果你的改动影响了别的板块，请在说明里写：
+     - `Primary Track`
+     - `Secondary Impact`
+     - `Contracts Changed`
+     - `Migration Notes`
+
+6. **适时请求推送或 PR**
+   - 当一个 milestone 或一个清晰的子目标完成后，再整理提交。
+   - 推送前至少先通过：
+
+```powershell
+uv run pytest -q
+uv run python -m dm_bot.main smoke-check
+```
+
+   - 如果要发起协作审查，优先把变更说明写成“改了哪条 Track、影响了哪些接口”，这样后续 AI 和人都能更快接手。
+
+## GitHub 协作流程（新手版）
+
+如果你是第一次参与这个项目，推荐按下面流程协作。
+
+### 1. Fork 仓库
+
+如果你不是直接在主仓库里开发，而是作为协作者参与：
+
+1. 打开 GitHub 上的项目主页
+2. 点击右上角 `Fork`
+3. 把仓库 fork 到你自己的 GitHub 账号下
+
+这样你会得到一个你自己账号下的副本，后续你可以在自己的 fork 里随便建分支、提交、推送，不会直接影响主仓库。
+
+### 2. 克隆你的 fork 到本地
+
+在你自己的电脑上执行：
+
+```powershell
+git clone <你的-fork-地址>
+cd Playground
+```
+
+例如：
+
+```powershell
+git clone https://github.com/<your-name>/Playground.git
+cd Playground
+```
+
+### 3. 添加上游仓库（upstream）
+
+为了后面能同步主仓库的最新改动，建议你在本地加一个 `upstream`：
+
+```powershell
+git remote add upstream <主仓库地址>
+git remote -v
+```
+
+这样通常会有两个 remote：
+
+- `origin`：你自己的 fork
+- `upstream`：主仓库
+
+### 4. 开始前先同步最新代码
+
+在开始做事之前，先同步主仓库最新内容：
+
+```powershell
+git fetch upstream
+git checkout master
+git merge upstream/master
+```
+
+如果你本地默认分支不是 `master`，就把命令里的 `master` 换成实际分支名。
+
+### 5. 开一个自己的功能分支
+
+不要直接在 `master` 上开发。建议新开分支：
+
+```powershell
+git checkout -b codex/<你的功能名>
+```
+
+例如：
+
+```powershell
+git checkout -b codex/track-b-archive-polish
+```
+
+### 6. 开始前先看 planning 和 codebase
+
+推荐先做这几步：
+
+1. 读：
+   - `.planning/PROJECT.md`
+   - `.planning/ROADMAP.md`
+   - `.planning/STATE.md`
+2. 跑：
+
+```text
+$gsd-map-codebase
+```
+
+3. 确认这次工作属于哪条 Track
+
+### 7. 开发过程中怎么同步主仓库
+
+如果你开发到一半，主仓库又有新提交，可以这样同步：
+
+```powershell
+git fetch upstream
+git checkout master
+git merge upstream/master
+git checkout codex/<你的功能名>
+git merge master
+```
+
+这样可以把主仓库最新改动合进你的功能分支。
+
+如果你更熟悉 rebase，也可以用 rebase，但新手先用 `merge` 更稳。
+
+### 8. 提交前做检查
+
+至少先跑：
+
+```powershell
+uv run pytest -q
+uv run python -m dm_bot.main smoke-check
+```
+
+如果你的改动跨了多个 Track，请在提交说明、PR 描述或交接说明里写清楚：
+
+- `Primary Track`
+- `Secondary Impact`
+- `Contracts Changed`
+- `Migration Notes`
+
+### 9. 推送到你自己的 fork
+
+```powershell
+git push origin codex/<你的功能名>
+```
+
+### 10. 发 Pull Request
+
+到 GitHub 上打开你的 fork，通常会看到一个 `Compare & pull request` 按钮。
+
+PR 里建议写清楚：
+
+- 这次属于哪条 Track
+- 做了什么
+- 没做什么
+- 改了哪些关键接口
+- 是否需要额外测试
+
+### 11. 如果只是想拿最新代码，不做开发
+
+如果你只是想把主仓库最新改动拉到本地：
+
+```powershell
+git fetch upstream
+git checkout master
+git merge upstream/master
+```
+
+如果你的 `origin` 也是你自己的 fork，想顺便把 fork 也同步一下，再执行：
+
+```powershell
+git push origin master
+```
+
+### 12. 一句话流程总结
+
+最常见的协作流程就是：
+
+1. Fork 主仓库
+2. Clone 你的 fork
+3. 添加 `upstream`
+4. 同步主仓库最新代码
+5. 新开功能分支
+6. 先看 planning，再跑 `$gsd-map-codebase`
+7. 选 Track，推进 milestone
+8. 本地测试和 smoke-check
+9. 推送到 fork
+10. 发 PR
+
 ## Useful Commands
 
 ```powershell
