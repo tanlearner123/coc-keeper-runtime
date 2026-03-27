@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: complete
-stopped_at: Completed Phase 5 multiplayer usability, natural message intake, and starter adventure
-last_updated: "2026-03-27T17:05:00.000Z"
-last_activity: 2026-03-27 - Completed Phase 5 multiplayer usability, natural message intake, and starter adventure
+milestone: v1.1
+milestone_name: 疯狂之馆首个正式模组
+status: in_progress
+stopped_at: Defining requirements for milestone v1.1
+last_updated: "2026-03-27T18:30:00.000Z"
+last_activity: 2026-03-27 - Started milestone v1.1 for structured modules and bot interaction hardening
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Run a real multiplayer D&D session in Discord where a local AI DM can narrate, roleplay multiple characters, and enforce heavy rules flow without constant manual bookkeeping.
-**Current focus:** Milestone complete
+**Current focus:** Defining milestone v1.1 requirements
 
 ## Current Position
 
-Phase: 5 of 5 (Multiplayer usability, natural message intake, and starter adventure)
-Plan: 2 of 2 in current phase
-Status: Completed
-Last activity: 2026-03-27 - Completed Phase 5 multiplayer usability, natural message intake, and starter adventure
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-27 - Milestone v1.1 started
 
-Progress: [██████████] 100%
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -73,7 +73,7 @@ None yet.
 
 ### Roadmap Evolution
 
-- Phase 5 added: Multiplayer usability, natural message intake, and starter adventure
+- Next roadmap will continue numbering after Phase 5 for the new milestone.
 
 ### Blockers/Concerns
 
@@ -82,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T17:05:00.000Z
-Stopped at: Completed Phase 5 multiplayer usability, natural message intake, and starter adventure
+Last session: 2026-03-27T18:30:00.000Z
+Stopped at: Defining requirements for milestone v1.1
 Resume file: .planning/ROADMAP.md

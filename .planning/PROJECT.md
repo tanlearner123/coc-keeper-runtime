@@ -14,35 +14,48 @@ Run a real multiplayer D&D session in Discord where a local AI DM can narrate, r
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Discord bot can run a bound multiplayer campaign in one channel with slash-command setup and local-model orchestration — v1.0 Phases 1-5
+- ✓ Router and narrator are separated so structured decisions and final prose do not share authority — v1.0 Phase 1
+- ✓ Deterministic rules, combat state, persistence, diagnostics, natural message intake, and a starter packaged adventure exist as the current baseline — v1.0 Phases 2-5
 
 ### Active
 
-- [ ] Multiplayer Discord sessions support multiple human players in the same campaign channel or thread.
-- [ ] The DM flow supports two modes: normal DM-led narration and scene-based multi-character performance.
-- [ ] The system can play multiple NPCs, enemies, or companions as distinct speaking roles in the same session.
-- [ ] The rules layer supports heavy D&D flow including combat, initiative, HP, conditions, spell/rule lookup, and resource tracking.
-- [ ] Character data comes from an external or importable source using the simplest viable mature integration path rather than a large custom character platform.
-- [ ] The first usable release can reliably run a one-shot or short campaign with persistent game state and recoverable session context.
+- [ ] The system can load a formal structured adventure package with reusable schema, state variables, triggers, reveal policy, and branching outcomes.
+- [ ] `疯狂之馆` becomes the first full-length official module, playable end-to-end with its room logic, countdown pressure, hidden information, and multiple endings.
+- [ ] The AI operates as an omniscient DM for packaged modules, but only reveals hidden information according to scripted triggers, discoveries, and current state.
+- [ ] Discord interaction becomes campaign-usable after restarts, including durable campaign bindings, reliable natural-message intake, and clearer multiplayer guidance.
+- [ ] The module system remains reusable so future adventures can be loaded without rewriting core runtime code.
 
 ### Out of Scope
 
 - Building every D&D subsystem from scratch when stable mature projects or datasets already exist — this is explicitly excluded to reduce debugging cost and delivery time.
 - Telegram support in v1 — Discord is the chosen primary runtime environment.
 - Full product-grade parity with mature ecosystem bots on day one — v1 should be campaign-usable, not feature-complete against every existing tool.
+- Freeform raw-document prompting as the canonical adventure runtime — structured module data is required so the DM does not drift on hidden state and branching rules.
+- A full visual adventure authoring tool in this milestone — this round is about one formal module plus reusable schema, not a general editor UI.
+- NSFW-specific behavior in this milestone — module and runtime quality take precedence.
+
+## Current Milestone: v1.1 疯狂之馆首个正式模组
+
+**Goal:** Make `疯狂之馆` the first formally structured, fully runnable adventure module while hardening Discord interaction and session continuity around that style of play.
+
+**Target features:**
+- Introduce a reusable structured adventure package format with state, triggers, reveal policy, and ending support.
+- Encode `疯狂之馆` as the first full module, including hub-and-wing progression, hidden information, countdown pressure, special statuses, and branching outcomes.
+- Improve campaign interaction so ordinary channel play survives bot restarts and gives players clearer status and next-step guidance.
 
 ## Context
 
 The system will run on Discord and use a dual-model architecture on local inference. The finalized default model split is:
 
 - `qwen3:1.7b` for fast routing, structured intent classification, and tool decision output
-- `qwen3:8b` for Chinese DM narration, NPC voice, and multi-character roleplay
+- `qwen3:4b-instruct-2507-q4_K_M` for Chinese DM narration, NPC voice, and multi-character roleplay with lower latency on 8GB-class local GPUs
 
-This model split is chosen for local hardware fit and reliability on a machine in the class of `RTX 5060 8GB VRAM + 32GB RAM`. Larger 14B narration models remain possible later, but are not the default v1 choice because they raise latency and deployment friction on the target setup.
+This model split is chosen for local hardware fit and reliability on a machine in the class of `RTX 5060 8GB VRAM + 32GB RAM`. Larger narration models remain possible later, but are not the default because they raise latency and deployment friction on the target setup.
 
 The project should preferentially reuse mature external components instead of inventing custom equivalents. Current candidate references include `DND5E-MCP` as an AI-facing rules/lookup skill, `5e-srd-api` as a stable SRD-backed rules data source, and `Avrae` as a reference implementation for interaction patterns and D&D automation design rather than as the core embedded runtime.
 
-The first release should prioritize running the full Discord gameplay loop end-to-end: player input, orchestration, rule/tool invocation, state updates, and narrated DM output. External character integration should be chosen based on the lowest-friction mature option, not on brand preference.
+The first release proved the core Discord gameplay loop end-to-end: player input, orchestration, rule/tool invocation, state updates, and narrated DM output. The new milestone shifts focus from runtime foundation to formal adventure packaging. `疯狂之馆` is the first target because it has strong room logic, hidden information, trigger-driven reveals, and branching endings that can force the schema to be real instead of decorative.
 
 ## Constraints
 
@@ -63,8 +76,10 @@ The first release should prioritize running the full Discord gameplay loop end-t
 | Rules support should be heavy rather than lightweight | The goal is to reduce manual bookkeeping and allow campaign-grade play | — Pending |
 | v1 should prioritize end-to-end gameplay over perfect character integration | A playable Discord session loop matters more than building an elaborate character platform first | — Pending |
 | Mature external projects should be reused wherever practical | This reduces implementation risk and debugging cost | — Pending |
-| The default narrator should fit 8GB-class local GPUs | Lower deployment friction matters more than marginal prose quality gains from larger local models | `qwen3:8b` selected |
+| The default narrator should fit 8GB-class local GPUs | Lower deployment friction matters more than marginal prose quality gains from larger local models | `qwen3:4b-instruct-2507-q4_K_M` selected |
 | Router and narrator should remain separate | Roleplay-tuned narration models are not trusted as the sole authority for structured tool routing | `qwen3:1.7b` router retained |
+| Formal adventures must be structured data, not raw uploaded prose | Hidden-state modules need deterministic triggers, reveal control, and reusable runtime hooks | — Pending |
+| `疯狂之馆` is the first official module target | It is rich enough to force a real schema while still being a bounded first module | — Pending |
 
 ## Evolution
 
@@ -84,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after initialization*
+*Last updated: 2026-03-27 after starting milestone v1.1*
