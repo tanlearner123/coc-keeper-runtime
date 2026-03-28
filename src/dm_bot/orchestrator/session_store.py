@@ -18,8 +18,11 @@ class SessionStore:
         self._archive_channels: dict[str, str] = {}
         self._trace_channels: dict[str, str] = {}
         self._admin_channels: dict[str, str] = {}
+        self._game_channels: dict[str, str] = {}
 
-    def bind_campaign(self, *, campaign_id: str, channel_id: str, guild_id: str, owner_id: str) -> CampaignSession:
+    def bind_campaign(
+        self, *, campaign_id: str, channel_id: str, guild_id: str, owner_id: str
+    ) -> CampaignSession:
         session = CampaignSession(
             campaign_id=campaign_id,
             channel_id=channel_id,
@@ -41,7 +44,9 @@ class SessionStore:
         session.active_characters.pop(user_id, None)
         return session
 
-    def bind_character(self, *, channel_id: str, user_id: str, character_name: str) -> CampaignSession:
+    def bind_character(
+        self, *, channel_id: str, user_id: str, character_name: str
+    ) -> CampaignSession:
         session = self._sessions[channel_id]
         session.active_characters[user_id] = character_name
         return session
@@ -51,7 +56,9 @@ class SessionStore:
         session.active_roles[user_id] = role
         return session
 
-    def select_archive_profile(self, *, channel_id: str, user_id: str, profile_id: str) -> CampaignSession:
+    def select_archive_profile(
+        self, *, channel_id: str, user_id: str, profile_id: str
+    ) -> CampaignSession:
         session = self._sessions[channel_id]
         session.selected_profiles[user_id] = profile_id
         return session
@@ -80,6 +87,12 @@ class SessionStore:
     def admin_channel_for(self, guild_id: str) -> str | None:
         return self._admin_channels.get(guild_id)
 
+    def bind_game_channel(self, *, guild_id: str, channel_id: str) -> None:
+        self._game_channels[guild_id] = channel_id
+
+    def game_channel_for(self, guild_id: str) -> str | None:
+        return self._game_channels.get(guild_id)
+
     def active_character_for(self, *, channel_id: str, user_id: str) -> str | None:
         session = self._sessions.get(channel_id)
         if session is None:
@@ -94,6 +107,19 @@ class SessionStore:
 
     def get_by_channel(self, channel_id: str) -> CampaignSession | None:
         return self._sessions.get(channel_id)
+
+    def get_by_campaign(self, campaign_id: str) -> CampaignSession | None:
+        for session in self._sessions.values():
+            if session.campaign_id == campaign_id:
+                return session
+        return None
+
+    def channels_selecting_profile(self, *, user_id: str, profile_id: str) -> list[str]:
+        return [
+            session.channel_id
+            for session in self._sessions.values()
+            if session.selected_profiles.get(user_id) == profile_id
+        ]
 
     def dump_sessions(self) -> dict[str, dict[str, object]]:
         payload = {
@@ -113,6 +139,7 @@ class SessionStore:
             "archive_channels": dict(self._archive_channels),
             "trace_channels": dict(self._trace_channels),
             "admin_channels": dict(self._admin_channels),
+            "game_channels": dict(self._game_channels),
         }
         return payload
 
@@ -122,6 +149,7 @@ class SessionStore:
         self._archive_channels = dict(meta.get("archive_channels", {}))
         self._trace_channels = dict(meta.get("trace_channels", {}))
         self._admin_channels = dict(meta.get("admin_channels", {}))
+        self._game_channels = dict(meta.get("game_channels", {}))
         for channel_id, raw in payload.items():
             if channel_id == "_meta":
                 continue

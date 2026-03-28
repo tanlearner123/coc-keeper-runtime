@@ -355,6 +355,7 @@ class SectionNormalizer:
         answer_normalizer: AnswerNormalizer,
     ) -> ArchiveWritebackPayload:
         normalized = answer_normalizer.normalized_contract(answers)
+        explicit_skills = normalized.favored_skills
         return ArchiveWritebackPayload(
             name=normalized.name,
             occupation=normalized.occupation,
@@ -363,15 +364,15 @@ class SectionNormalizer:
             occupation_detail=synthesis.occupation_detail,
             specialty=synthesis.specialty,
             career_arc=synthesis.career_arc,
-            key_past_event=synthesis.key_past_event or normalized.key_past_event,
+            key_past_event=normalized.key_past_event or synthesis.key_past_event,
             core_belief=synthesis.core_belief,
-            life_goal=synthesis.life_goal or normalized.life_goal,
+            life_goal=normalized.life_goal or synthesis.life_goal,
             material_desire=synthesis.material_desire,
-            weakness=synthesis.weakness or normalized.weakness,
+            weakness=normalized.weakness or synthesis.weakness,
             fear_or_taboo=synthesis.fear_or_taboo,
             important_tie=synthesis.important_tie,
-            disposition=synthesis.disposition or normalized.disposition,
-            favored_skills=synthesis.favored_skills or normalized.favored_skills,
+            disposition=normalized.disposition or synthesis.disposition,
+            favored_skills=explicit_skills or synthesis.favored_skills,
             portrait_summary=synthesis.portrait_summary or _build_portrait_summary(answers),
             concept=normalized.concept,
             birthplace=synthesis.birthplace,

@@ -1,6 +1,8 @@
 class DiagnosticsService:
-    def __init__(self, store) -> None:
+    def __init__(self, store, *, session_store=None, archive_repository=None) -> None:
         self._store = store
+        self._session_store = session_store
+        self._archive_repository = archive_repository
 
     def recent_summary(self, campaign_id: str) -> str:
         events = self._store.list_events(campaign_id)
@@ -43,8 +45,42 @@ class DiagnosticsService:
             if adventure_state.get("ending_id"):
                 lines.append(f"ending={adventure_state['ending_id']}")
 
+        panel_sync_lines = self._projection_sync_lines(campaign_id=campaign_id, state=state)
+        lines.extend(panel_sync_lines)
+
         if events:
             last = events[-5:]
             lines.extend(f"{event['trace_id']} {event['event_type']}" for event in last)
 
         return "\n".join(lines) if lines else "no events"
+
+    def _projection_sync_lines(self, *, campaign_id: str, state: dict[str, object]) -> list[str]:
+        if self._session_store is None or self._archive_repository is None:
+            return []
+        session = self._session_store.get_by_campaign(campaign_id)
+        if session is None:
+            return []
+        panels = dict(state.get("panels", {}))
+        lines: list[str] = []
+        for user_id, profile_id in session.selected_profiles.items():
+            try:
+                profile = self._archive_repository.get_profile(user_id, profile_id)
+            except Exception:
+                lines.append(f"profile_sync:{user_id}=missing_profile:{profile_id}")
+                continue
+            panel = dict(panels.get(user_id, {}))
+            if not panel:
+                lines.append(f"profile_sync:{user_id}=missing_panel:{profile.name}")
+                continue
+            if (
+                panel.get("name") == profile.name
+                and panel.get("occupation") == profile.coc.occupation
+                and int(panel.get("san", -1)) == profile.coc.san
+                and int(panel.get("hp", -1)) == profile.coc.hp
+                and int(panel.get("mp", -1)) == profile.coc.mp
+                and int(panel.get("luck", -1)) == profile.coc.luck
+            ):
+                lines.append(f"profile_sync:{user_id}=synced:{profile.name}")
+            else:
+                lines.append(f"profile_sync:{user_id}=drift:{profile.name}")
+        return lines

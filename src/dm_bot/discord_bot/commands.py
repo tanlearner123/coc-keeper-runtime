@@ -118,8 +118,10 @@ class BotCommands:
         if profile is None:
             await interaction.response.send_message(prompt, ephemeral=ephemeral)
             return
+        await self._sync_selected_profile_projections(user_id=str(interaction.user.id), profile=profile)
         await interaction.response.send_message(
-            f"{prompt}\n你现在可以在档案频道使用 `/profiles` 或在游戏大厅里 `/select_profile profile_id:{profile.profile_id}`。",
+            f"{prompt}\nAI 只会补充职业细化、背景摘要和人物归档字段；不会静默覆盖你明确给出的年龄、职业、人生目标和弱点。\n"
+            f"你现在可以在档案频道使用 `/profiles` 或在游戏大厅里 `/select_profile profile_id:{profile.profile_id}`。",
             ephemeral=ephemeral,
         )
 
@@ -156,6 +158,11 @@ class BotCommands:
             profile_id=profile.profile_id,
         )
         self._persist_sessions()
+        await self._sync_profile_projection_for_channel(
+            channel_id=str(interaction.channel_id),
+            user_id=str(interaction.user.id),
+            profile=profile,
+        )
         await interaction.response.send_message(f"已为本团选择档案角色 `{profile.name}`。", ephemeral=True)
 
     async def archive_profile(self, interaction, *, profile_id: str) -> None:
@@ -164,6 +171,7 @@ class BotCommands:
             return
         profile = self._archive_repository.archive_profile(user_id=str(interaction.user.id), profile_id=profile_id)
         self._persist_archives()
+        await self._sync_selected_profile_projections(user_id=str(interaction.user.id), profile=profile)
         await interaction.response.send_message(f"已归档 `{profile.name}`。", ephemeral=True)
 
     async def activate_profile(self, interaction, *, profile_id: str) -> None:
@@ -172,6 +180,7 @@ class BotCommands:
             return
         profile = self._archive_repository.replace_active_with(user_id=str(interaction.user.id), profile_id=profile_id)
         self._persist_archives()
+        await self._sync_selected_profile_projections(user_id=str(interaction.user.id), profile=profile)
         await interaction.response.send_message(f"已将 `{profile.name}` 设为当前激活档案。", ephemeral=True)
 
     async def admin_profiles(self, interaction) -> None:
@@ -372,17 +381,12 @@ class BotCommands:
                 )
                 self._persist_sessions()
                 if self._gameplay is not None:
-                    panel = self._gameplay.ensure_investigator_panel(
+                    role = self._session_store.active_role_for(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id)) or "investigator"
+                    panel = self._gameplay.sync_panel_from_archive_profile(
                         user_id=str(interaction.user.id),
-                        display_name=profile.name,
-                        role=self._session_store.active_role_for(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id)) or "investigator",
+                        profile=profile,
+                        role=role,
                     )
-                    panel.occupation = profile.coc.occupation
-                    panel.san = profile.coc.san
-                    panel.hp = profile.coc.hp
-                    panel.mp = profile.coc.mp
-                    panel.luck = profile.coc.luck
-                    panel.skills = dict(profile.coc.skills)
         role = self._session_store.active_role_for(channel_id=str(interaction.channel_id), user_id=str(interaction.user.id)) or "investigator"
         self._gameplay.ensure_investigator_panel(
             user_id=str(interaction.user.id),
@@ -735,6 +739,25 @@ class BotCommands:
         if self._persistence_store is None or self._archive_repository is None:
             return
         self._persistence_store.save_archive_profiles(self._archive_repository.export_state())
+
+    async def _sync_selected_profile_projections(self, *, user_id: str, profile) -> None:
+        if self._session_store is None:
+            return
+        for channel_id in self._session_store.channels_selecting_profile(user_id=user_id, profile_id=profile.profile_id):
+            await self._sync_profile_projection_for_channel(channel_id=channel_id, user_id=user_id, profile=profile)
+
+    async def _sync_profile_projection_for_channel(self, *, channel_id: str, user_id: str, profile) -> None:
+        if self._session_store is None or self._gameplay is None:
+            return
+        session = self._session_store.get_by_channel(channel_id)
+        if session is None:
+            return
+        self._load_campaign_state(session.campaign_id)
+        role = self._session_store.active_role_for(channel_id=channel_id, user_id=user_id) or "investigator"
+        self._session_store.bind_character(channel_id=channel_id, user_id=user_id, character_name=profile.name)
+        self._persist_sessions()
+        self._gameplay.sync_panel_from_archive_profile(user_id=user_id, profile=profile, role=role)
+        self._save_campaign_state(session.campaign_id)
 
     def _is_admin(self, interaction) -> bool:
         guild_permissions = getattr(getattr(interaction, "user", None), "guild_permissions", None)

@@ -6,6 +6,7 @@ from dm_bot.coc.panels import InvestigatorPanel
 from dm_bot.router.contracts import TurnPlan
 from dm_bot.rules.actions import LookupAction, RuleAction, StatBlock
 from dm_bot.adventures.models import AdventureLocationConnection, AdventurePackage
+from dm_bot.coc.archive import InvestigatorArchiveProfile
 
 
 class CharacterRegistry:
@@ -271,6 +272,21 @@ class GameplayOrchestrator:
             panel.mp = character.coc.mp
             panel.luck = character.coc.luck
             panel.skills = dict(character.coc.skills)
+
+    def sync_panel_from_archive_profile(self, *, user_id: str, profile: InvestigatorArchiveProfile, role: str = "investigator") -> InvestigatorPanel:
+        panel = self.ensure_investigator_panel(user_id=user_id, display_name=profile.name, role=role)
+        panel.name = profile.name
+        panel.role = role or panel.role
+        panel.occupation = profile.coc.occupation
+        panel.san = profile.coc.san
+        panel.hp = profile.coc.hp
+        panel.mp = profile.coc.mp
+        panel.luck = profile.coc.luck
+        panel.skills = dict(profile.coc.skills)
+        panel.module_flags["archive_profile_id"] = profile.profile_id
+        panel.module_flags["archive_schema_version"] = profile.schema_version
+        panel.module_flags["archive_sync_status"] = "synced"
+        return panel
 
     def apply_panel_update(self, *, user_id: str, san: int = 0, hp: int = 0, mp: int = 0, luck: int = 0, note: str = "") -> None:
         existing_name = self.panels[user_id].name if user_id in self.panels else f"玩家{user_id}"

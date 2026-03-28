@@ -83,7 +83,11 @@ def build_runtime(settings: Settings | None = None) -> RuntimeBundle:
         session_store=session_store,
         turn_coordinator=turn_coordinator,
         gameplay=gameplay,
-        diagnostics=DiagnosticsService(persistence_store),
+        diagnostics=DiagnosticsService(
+            persistence_store,
+            session_store=session_store,
+            archive_repository=archive_repository,
+        ),
         persistence_store=persistence_store,
         coc_assets=coc_assets,
         archive_repository=archive_repository,

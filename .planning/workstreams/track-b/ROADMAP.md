@@ -5,6 +5,7 @@
 **vB.1.1** - B1 Archive And Builder Normalization
 - **Primary Track:** Track B - 人物构建与管理层
 - **Goal:** Tighten archive-builder mapping with better AI summarization during builder flow, aligned with standard COC character sheet sections
+- **Status:** Completed
 
 ---
 
@@ -12,8 +13,8 @@
 
 - [x] **Phase 40: Foundation** - Pydantic contracts, AnswerNormalizer, schema versioning
 - [x] **Phase 41: Core Synthesis** - CharacterSheetSynthesizer, SectionNormalizer
-- [ ] **Phase 42: Integration** - Connect to builder, backward compatibility, archive-projection sync
-- [ ] **Phase 43: Polish** - Expand COC 7e sections, validation, playtest
+- [x] **Phase 42: Integration** - Connect to builder, backward compatibility, archive-projection sync
+- [x] **Phase 43: Polish** - Expand COC 7e sections, validation, playtest
 
 ### Phase 40: Foundation
 
@@ -93,8 +94,8 @@
 |-------|----------------|--------|-----------|
 | 40. Foundation | 1/1 | Completed | 2026-03-28 |
 | 41. Core Synthesis | 1/1 | Completed | 2026-03-28 |
-| 42. Integration | 0/1 | Not started | - |
-| 43. Polish | 0/1 | Not started | - |
+| 42. Integration | 1/1 | Completed | 2026-03-28 |
+| 43. Polish | 1/1 | Completed | 2026-03-28 |
 
 ---
 *Last updated: 2026-03-28 for milestone vB.1.1*

@@ -195,6 +195,7 @@ def test_conversational_builder_creates_archive_profile() -> None:
     assert "低谷" in profiles[0].background or "命运" in profiles[0].background
     assert profiles[0].finishing.recommended_interest_skills
     assert "规则" in profiles[0].finishing.rules_note
+    assert "不会静默覆盖" in interaction.response.messages[-1][0]
 
 
 def test_builder_uses_concept_to_ask_a_more_specific_follow_up() -> None:
@@ -235,6 +236,42 @@ def test_answer_normalizer_canonicalizes_age_occupation_and_skills() -> None:
         raw="医学， 急救、心理学/聆听",
         current_answers={},
     ) == {"favored_skills": "医学, 急救, 心理学, 聆听"}
+
+
+def test_section_normalizer_preserves_explicit_answers_over_ai_synthesis() -> None:
+    from dm_bot.coc.builder import AnswerNormalizer, CharacterSheetSynthesis, SectionNormalizer
+
+    answers = {
+        "name": "林钟轩",
+        "concept": "38岁的落魄临床医生",
+        "age": "38",
+        "occupation": "临床医生",
+        "key_past_event": "一次手术纠纷毁掉了他的声誉。",
+        "life_goal": "赚很多钱然后隐居。",
+        "weakness": "过度自信且酗酒。",
+        "disposition": "嘴硬，控制欲强。",
+        "favored_skills": "医学, 急救, 心理学",
+    }
+    synthesis = CharacterSheetSynthesis(
+        key_past_event="AI 改写的过去",
+        life_goal="AI 改写的目标",
+        weakness="AI 改写的弱点",
+        disposition="AI 改写的性格",
+        favored_skills=["图书馆使用", "聆听"],
+        background="AI 背景摘要",
+    )
+
+    payload = SectionNormalizer().to_writeback(
+        answers=answers,
+        synthesis=synthesis,
+        answer_normalizer=AnswerNormalizer(),
+    )
+
+    assert payload.key_past_event == "一次手术纠纷毁掉了他的声誉。"
+    assert payload.life_goal == "赚很多钱然后隐居。"
+    assert payload.weakness == "过度自信且酗酒。"
+    assert payload.disposition == "嘴硬，控制欲强。"
+    assert payload.favored_skills == ["医学", "急救", "心理学"]
 
 
 def test_archive_channel_plain_messages_advance_builder_session() -> None:
@@ -356,6 +393,50 @@ def test_ready_projects_selected_archive_profile_without_mutating_archive() -> N
     assert panel["name"] == "林秋"
     assert panel["san"] == archive_profile.coc.san - 5
     assert archive_profile.coc.san == 70
+
+
+def test_select_profile_immediately_syncs_projection_panel() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+    from dm_bot.orchestrator.gameplay import CharacterRegistry, GameplayOrchestrator
+    from dm_bot.rules.compendium import FixtureCompendium
+    from dm_bot.rules.engine import RulesEngine
+
+    store = SessionStore()
+    store.bind_campaign(campaign_id="camp-1", channel_id="hall-1", guild_id="guild-1", owner_id="user-1")
+    gameplay = GameplayOrchestrator(
+        importer=None,
+        registry=CharacterRegistry(),
+        rules_engine=RulesEngine(compendium=FixtureCompendium(baseline="2014", fixtures={})),
+    )
+    repo = InvestigatorArchiveRepository()
+    profile = repo.create_profile(
+        user_id="user-1",
+        name="林秋",
+        occupation="记者",
+        age=26,
+        background="夜班记者",
+        disposition="冷静但固执",
+        favored_skills=["图书馆使用", "聆听", "心理学"],
+        generation={
+            "str": 50, "con": 55, "dex": 60, "app": 65, "pow": 70, "siz": 50, "int": 75, "edu": 80, "luck": 45
+        },
+    )
+    commands = BotCommands(
+        settings=Settings(),
+        session_store=store,
+        turn_coordinator=None,
+        gameplay=gameplay,
+        archive_repository=repo,
+    )
+    interaction = FakeInteraction(channel_id="hall-1")
+
+    asyncio.run(commands.select_profile(interaction, profile_id=profile.profile_id))
+
+    snapshot = gameplay.investigator_panel_snapshot("user-1")
+    assert snapshot["name"] == "林秋"
+    assert snapshot["occupation"] == "记者"
+    assert snapshot["san"] == profile.coc.san
+    assert snapshot["module_flags"]["archive_profile_id"] == profile.profile_id
 
 
 def test_profiles_command_shows_richer_summary_line() -> None:
@@ -508,3 +589,23 @@ def test_admin_can_list_all_profiles_from_admin_channel() -> None:
     content = interaction.response.messages[0][0]
     assert "user-1" in content
     assert "林秋" in content
+
+
+def test_doctor_profile_finishing_recommendations_stay_within_expected_skill_family() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+
+    repo = InvestigatorArchiveRepository()
+    profile = repo.create_profile(
+        user_id="user-1",
+        name="林钟轩",
+        occupation="临床医生",
+        age=38,
+        concept="38岁的落魄临床医生",
+        specialty="神经外科",
+        background="医生",
+        disposition="冷静",
+        favored_skills=["医学", "急救", "心理学"],
+        generation={"str": 50, "con": 55, "dex": 60, "app": 65, "pow": 70, "siz": 50, "int": 75, "edu": 80, "luck": 45},
+    )
+
+    assert profile.finishing.recommended_occupation_skills == ["医学", "急救", "科学(生物学)", "心理学"]

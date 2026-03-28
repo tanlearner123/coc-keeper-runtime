@@ -3,6 +3,8 @@ from pathlib import Path
 
 from dm_bot.diagnostics.service import DiagnosticsService
 from dm_bot.discord_bot.commands import BotCommands
+from dm_bot.coc.archive import InvestigatorArchiveRepository
+from dm_bot.orchestrator.session_store import SessionStore
 from dm_bot.persistence.store import PersistenceStore
 
 
@@ -108,3 +110,48 @@ def test_diagnostics_service_surfaces_trigger_events(tmp_path: Path) -> None:
     summary = service.recent_summary("camp-1")
 
     assert "trigger.effect_applied" in summary
+
+
+def test_diagnostics_service_reports_archive_projection_sync(tmp_path: Path) -> None:
+    store = PersistenceStore(tmp_path / "diag.sqlite3")
+    sessions = SessionStore()
+    sessions.bind_campaign(campaign_id="camp-1", channel_id="chan-1", guild_id="guild-1", owner_id="user-1")
+    repo = InvestigatorArchiveRepository()
+    profile = repo.create_profile(
+        user_id="user-1",
+        name="林秋",
+        occupation="记者",
+        age=26,
+        background="夜班记者",
+        disposition="冷静",
+        favored_skills=["图书馆使用"],
+        generation={
+            "str": 50, "con": 55, "dex": 60, "app": 65, "pow": 70, "siz": 50, "int": 75, "edu": 80, "luck": 45
+        },
+    )
+    sessions.select_archive_profile(channel_id="chan-1", user_id="user-1", profile_id=profile.profile_id)
+    store.save_campaign_state(
+        "camp-1",
+        {
+            "panels": {
+                "user-1": {
+                    "user_id": "user-1",
+                    "name": "林秋",
+                    "role": "investigator",
+                    "occupation": "记者",
+                    "san": profile.coc.san,
+                    "hp": profile.coc.hp,
+                    "mp": profile.coc.mp,
+                    "luck": profile.coc.luck,
+                    "skills": dict(profile.coc.skills),
+                    "journal": [],
+                    "module_flags": {"archive_profile_id": profile.profile_id},
+                }
+            }
+        },
+    )
+    service = DiagnosticsService(store, session_store=sessions, archive_repository=repo)
+
+    summary = service.recent_summary("camp-1")
+
+    assert "profile_sync:user-1=synced:林秋" in summary
