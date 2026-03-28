@@ -6,6 +6,8 @@ __pycache__/
 bot.stdout.log
 bot.stderr.log
 bot.smoke.log
+bot.restart.log
+bot.startup.log
 .models/
 .planning/config.json
 tmp_*.md

@@ -21,13 +21,13 @@ def log_contains_marker(log_path: Path, marker: str) -> bool:
         return False
 
 
-def runtime_bootstrap_complete(stdout_log: Path) -> bool:
-    return log_contains_marker(stdout_log, READY_MARKER) and log_contains_marker(
-        stdout_log, SYNC_MARKER
+def runtime_bootstrap_complete(marker_log: Path) -> bool:
+    return log_contains_marker(marker_log, READY_MARKER) and log_contains_marker(
+        marker_log, SYNC_MARKER
     )
 
 
-def run_restart_system(*, cwd: Path, wait_seconds: int = 20) -> int:
+def run_restart_system(*, cwd: Path, wait_seconds: int = 60) -> int:
     smoke = subprocess.run(
         [sys.executable, "-m", "dm_bot.main", "smoke-check"],
         cwd=cwd,
@@ -40,13 +40,15 @@ def run_restart_system(*, cwd: Path, wait_seconds: int = 20) -> int:
 
     stdout_log = cwd / "bot.stdout.log"
     stderr_log = cwd / "bot.stderr.log"
+    startup_marker_log = cwd / "bot.startup.log"
     restart_log = cwd / "bot.restart.log"
-    for path in (stdout_log, stderr_log, restart_log):
+    for path in (stdout_log, stderr_log, startup_marker_log, restart_log):
         if path.exists():
             path.unlink()
 
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
+    env["DM_BOT_STARTUP_MARKER_FILE"] = str(startup_marker_log)
     creationflags = 0
     if os.name == "nt":
         creationflags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
@@ -70,7 +72,7 @@ def run_restart_system(*, cwd: Path, wait_seconds: int = 20) -> int:
         if process.poll() is not None:
             result = 1
             break
-        if runtime_bootstrap_complete(stdout_log):
+        if runtime_bootstrap_complete(startup_marker_log):
             time.sleep(5)
             result = 0 if process.poll() is None else 1
             break
@@ -80,8 +82,8 @@ def run_restart_system(*, cwd: Path, wait_seconds: int = 20) -> int:
         "\n".join(
             [
                 f"pid={process.pid}",
-                f"ready_seen={log_contains_marker(stdout_log, READY_MARKER)}",
-                f"sync_seen={log_contains_marker(stdout_log, SYNC_MARKER)}",
+                f"ready_seen={log_contains_marker(startup_marker_log, READY_MARKER)}",
+                f"sync_seen={log_contains_marker(startup_marker_log, SYNC_MARKER)}",
                 f"alive={process.poll() is None}",
                 f"result={result}",
             ]

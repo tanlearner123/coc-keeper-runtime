@@ -1,7 +1,21 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+import os
+from pathlib import Path
 import traceback
+
+
+def _write_startup_marker(line: str) -> None:
+    marker_path = os.environ.get("DM_BOT_STARTUP_MARKER_FILE")
+    if not marker_path:
+        return
+    try:
+        Path(marker_path).parent.mkdir(parents=True, exist_ok=True)
+        with Path(marker_path).open("a", encoding="utf-8") as handle:
+            handle.write(f"{line}\n")
+    except OSError:
+        return
 
 
 class DiscordDmBot(commands.Bot):
@@ -17,6 +31,7 @@ class DiscordDmBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         print("SYNC_START", flush=True)
+        _write_startup_marker("SYNC_START")
         if self.sync_guild_id:
             guild = discord.Object(id=int(self.sync_guild_id))
             self.tree.copy_global_to(guild=guild)
@@ -27,13 +42,18 @@ class DiscordDmBot(commands.Bot):
                 f"SYNC_DONE global={len(global_synced)} guild={len(guild_synced)}",
                 flush=True,
             )
+            _write_startup_marker(
+                f"SYNC_DONE global={len(global_synced)} guild={len(guild_synced)}"
+            )
         else:
             synced = await self.tree.sync()
             print(f"SYNC_DONE global={len(synced)}", flush=True)
+            _write_startup_marker(f"SYNC_DONE global={len(synced)}")
 
     async def on_ready(self) -> None:
         if self.user is not None:
             print(f"READY {self.user} {self.user.id}", flush=True)
+            _write_startup_marker(f"READY {self.user} {self.user.id}")
 
     async def on_app_command_error(
         self,
