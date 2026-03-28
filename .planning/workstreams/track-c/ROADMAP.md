@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **vC.1.1** — Channel Governance (Phases 44-46) — SHIPPED 2026-03-28
-- 🔄 **vC.1.2** — Multiplayer Session Governance (Phase 47 in progress)
+- 🔄 **vC.1.2** — Multiplayer Session Governance (Phase 48 complete, 49-50 pending)
 
 ---
 
@@ -22,16 +22,19 @@
 
 ## vC.1.2 Phases (IN PROGRESS)
 
-**Goal:** Add explicit multiplayer session phases, structured onboarding, admin-start flow, scene-round collection/resolution, and clearer message-intent routing plus campaign/adventure status surfaces.
+**Goal:** Add explicit multiplayer session phases, structured onboarding, admin-start flow, scene-round collection/resolution, and clearer message-intent routing.
 
-- [ ] Phase 47: Session Phases (1/1 plan) — 2026-03-28
+- [x] Phase 47: Session Phases (1/1 plan) — 2026-03-28 ✅
+- [x] Phase 48: Pre-Play Onboarding — session briefing and minimum-rules intro ✅
+- [ ] Phase 49: Scene Round Collection — collect player inputs before KP output
+- [ ] Phase 50: Message Intent Routing — smarter message handling beyond ignore/process
 
-**Planned focus:**
-- ready-check plus admin-start discipline
-- pre-play onboarding and minimum-rules session briefing
-- scene round collection before one KP output
-- message intent routing beyond simple ignore/process
-- campaign/adventure/current-scene status visibility
+**Completed focus:**
+- ✅ ready-check plus admin-start discipline (Phase 47)
+- ✅ Pre-play onboarding with interactive Discord buttons (Phase 48)
+
+**Research note:**
+- Overall vC.1.2 research recommends keeping this milestone focused on governance/control-flow engine work (Phases 48-50) and moving visibility surfaces back to vC.1.3.
 
 ---
 
@@ -46,6 +49,7 @@
 - list/status surfaces for campaigns and adventures
 - clearer player-facing explanations for ignored/buffered/processed messages
 - stronger operator-facing session visibility
+- **Phase 51: Campaign Status Visibility** — show current scene/adventure state to players
 
 ---
 
@@ -56,8 +60,12 @@
 | 44. Channel Structure | 1/1 | ✅ Complete | 2026-03-28 |
 | 45. Command Routing | 1/1 | ✅ Complete | 2026-03-28 |
 | 46. Guidance & Polish | 1/1 | ✅ Complete | 2026-03-28 |
-| 47. Session Phases | 1/1 | 📋 Planned | — |
+| 47. Session Phases | 1/1 | ✅ Complete | 2026-03-28 |
+| 48. Pre-Play Onboarding | 1/1 | ✅ Complete | 2026-03-28 |
+| 49. Scene Round Collection | - | ○ Not Started | - |
+| 50. Message Intent Routing | - | ○ Not Started | - |
+| 51. Campaign Status Visibility | - | ○ Deferred to vC.1.3 | - |
 
 ---
 
-*Last updated: 2026-03-28 — Added Phase 47 for vC.1.2*
+*Last updated: 2026-03-28 — Phase 51 moved back to vC.1.3 after overall research boundary review*
