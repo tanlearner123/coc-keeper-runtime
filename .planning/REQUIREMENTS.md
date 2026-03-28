@@ -182,24 +182,24 @@ Milestone: Archive And Builder Normalization
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AI-01 | TBD | Pending |
-| AI-02 | TBD | Pending |
-| AI-03 | TBD | Pending |
-| AI-04 | TBD | Pending |
-| FN-01 | TBD | Pending |
-| FN-02 | TBD | Pending |
-| FN-03 | TBD | Pending |
-| FN-04 | TBD | Pending |
-| FN-05 | TBD | Pending |
-| BC-01 | TBD | Pending |
-| BC-02 | TBD | Pending |
-| BC-03 | TBD | Pending |
-| BC-04 | TBD | Pending |
-| BC-05 | TBD | Pending |
-| BC-06 | TBD | Pending |
-| PS-01 | TBD | Pending |
-| PS-02 | TBD | Pending |
-| PS-03 | TBD | Pending |
+| AI-01 | Phase 41 | Pending |
+| AI-02 | Phase 42 | Pending |
+| AI-03 | Phase 42 | Pending |
+| AI-04 | Phase 42 | Pending |
+| FN-01 | Phase 42 | Pending |
+| FN-02 | Phase 42 | Pending |
+| FN-03 | Phase 42 | Pending |
+| FN-04 | Phase 42 | Pending |
+| FN-05 | Phase 40 | Pending |
+| BC-01 | Phase 40 | Pending |
+| BC-02 | Phase 40 | Pending |
+| BC-03 | Phase 41 | Pending |
+| BC-04 | Phase 41 | Pending |
+| BC-05 | Phase 41 | Pending |
+| BC-06 | Phase 42 | Pending |
+| PS-01 | Phase 42 | Pending |
+| PS-02 | Phase 42 | Pending |
+| PS-03 | Phase 42 | Pending |
 | CHAN-01 | Phase 28 | Completed |
 | CHAN-02 | Phase 28 | Completed |
 | CHAN-03 | Phase 28 | Completed |
@@ -246,30 +246,31 @@ Milestone: Archive And Builder Normalization
 | ADMIN-01 | Phase 39 | Planned |
 | ADMIN-02 | Phase 39 | Planned |
 | ADMIN-03 | Phase 39 | Planned |
-| TRACK-01 | Phase 40 | Planned |
-| TRACK-02 | Phase 40 | Planned |
-| TRACK-03 | Phase 40 | Planned |
-| GOV-01 | Phase 40 | Planned |
-| GOV-02 | Phase 40 | Planned |
-| GOV-03 | Phase 42 | Planned |
-| GOV-04 | Phase 40 | Planned |
-| PLAN-01 | Phase 41 | Planned |
-| PLAN-02 | Phase 41 | Planned |
-| PLAN-03 | Phase 41 | Planned |
-| PLAN-04 | Phase 41 | Planned |
-| PLAN-05 | Phase 41 | Planned |
+| TRACK-01 | Phase 44 | Deferred |
+| TRACK-02 | Phase 44 | Deferred |
+| TRACK-03 | Phase 44 | Deferred |
+| GOV-01 | Phase 44 | Deferred |
+| GOV-02 | Phase 44 | Deferred |
+| GOV-03 | Phase 46 | Deferred |
+| GOV-04 | Phase 44 | Deferred |
+| PLAN-01 | Phase 45 | Deferred |
+| PLAN-02 | Phase 45 | Deferred |
+| PLAN-03 | Phase 45 | Deferred |
+| PLAN-04 | Phase 45 | Deferred |
+| PLAN-05 | Phase 45 | Deferred |
 
 **Coverage:**
-- vB.1.1 requirements: 18 total
-- v1.8 requirements: 13 total
-- v1.9 requirements: 12 total
-- v2.0 requirements: 12 total
-- v2.1 requirements: 9 total
-- v2.2 requirements: 12 total
+- vB.1.1 requirements: 18 total (100% mapped to Phases 40-43)
+- v1.8 requirements: 13 total (completed)
+- v1.9 requirements: 12 total (completed)
+- v2.0 requirements: 12 total (completed)
+- v2.1 requirements: 9 total (completed)
+- v2.2 requirements: 12 total (deferred to Phases 44-46)
 - Completed: 25
-- Planned: 33
+- Planned: 18 (vB.1.1)
+- Deferred: 12 (v2.2)
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after vB.1.1 milestone definition*
+*Last updated: 2026-03-28 after vB.1.1 roadmap creation - phases 40-43*
