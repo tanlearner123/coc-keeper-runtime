@@ -1,36 +1,39 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: GSD Track 化治理重构
+milestone: v2.3
+milestone_name: B1 Archive And Builder Normalization
 status: planning
-active_track: governance
-stopped_at: Defining track-aware planning structure so future milestones can be chosen by layer without losing GSD continuity
-last_updated: "2026-03-28T18:30:00.000Z"
-last_activity: 2026-03-28 - Reframed project planning around persistent tracks and global rules
+active_track: track-b
+stopped_at: Starting milestone v2.3 - archive and builder normalization with better AI summarization
+last_updated: "2026-03-28T11:08:00.000Z"
+last_activity: 2026-03-28 - Started milestone v2.3 B1 Archive And Builder Normalization
 progress:
-  total_phases: 39
-  completed_phases: 39
-  total_plans: 59
-  completed_plans: 59
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Current Position
 
-- Active milestone: `v2.2`
-- Active track: `Governance`
-- Current mode: restructure planning so any GSD agent can understand the project by reading `.planning`
+- Active milestone: `v2.3`
+- Active track: `Track B - 人物构建与管理层`
+- Current mode: Defining requirements for archive-builder normalization
 
 ## What Just Completed
 
-`v2.1` completed the operational baseline for:
-- local smoke-check delivery gating
-- single-active archive profile lifecycle
-- first-pass admin profile governance
+`v2.2` (governance restructure) was superseded by user request to focus on Track B work.
 
-That means the next step is not another feature by default. The next step is making the repository structure legible enough that collaborators can safely pick the next milestone by track.
+## Milestone Context
+
+`v2.3` focuses on:
+- Tightening archive-builder mapping
+- Fixing AI summarization in builder flow (AI currently just copies user input)
+- Referencing standard COC character sheet sections from https://www.cthulhuclub.com/charSheetGenerator/
+- Using local COC rules (C:\Users\Lin\Downloads\COC) for proper semantics
 
 ## Active Tracks
 
@@ -46,10 +49,15 @@ That means the next step is not another feature by default. The next step is mak
 3. Add track labels to milestone history in `MILESTONES.md`.
 4. Keep README aligned so GitHub collaborators can follow the same structure.
 
+## Current Milestone
+
+**v2.3: B1 Archive And Builder Normalization** (Active Now)
+- Goal: Tighten archive-builder mapping with better AI summarization
+- Reference: COC character sheet sections, local COC rules
+
 ## Next Candidate Milestones By Track
 
 - `Track A`: `A1 Complex COC Module Runtime Stabilization`
-- `Track B`: `B1 Archive And Builder Normalization`
 - `Track C`: `C1 Channel Governance And Command Discipline Hardening`
 - `Track D`: `D1 Keeper Presentation And Guidance Pass`
 
@@ -84,4 +92,4 @@ When resuming:
 6. Keep `v2.2` focused on governance/document structure only.
 
 ---
-*Last updated: 2026-03-28 for milestone v2.2 planning restructure*
+*Last updated: 2026-03-28 for milestone v2.3 B1 Archive And Builder Normalization*

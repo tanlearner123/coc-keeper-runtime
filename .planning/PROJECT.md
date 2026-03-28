@@ -139,9 +139,20 @@ When work genuinely spans multiple tracks:
 
 ## Active Milestone
 
-- Current milestone: `v2.2`
-- Primary track: `Governance / planning restructure` in service of all tracks
-- Immediate goal: make `.planning` track-aware so any GSD agent can recover project direction from the repository
+- Current milestone: `v2.3`
+- Primary track: `Track B - 人物构建与管理层`
+- Goal: Tighten archive-builder mapping with better AI summarization during builder flow, aligned with standard COC character sheet sections
+
+## Milestone v2.3: B1 Archive And Builder Normalization
+
+**Goal:** Tighten archive-builder mapping with better AI summarization during builder flow.
+
+**Target features:**
+- Reference https://www.cthulhuclub.com/charSheetGenerator/ for comprehensive character sheet sections
+- Reference local COC rules (C:\Users\Lin\Downloads\COC) for proper COC semantics
+- Fix AI summarization in builder flow: Currently AI just copies user input instead of summarizing into cohesive character attributes
+- Better builder-to-archive contracts
+- Richer semantic normalization, fewer fallback heuristics
 
 ## Current State
 
@@ -183,4 +194,4 @@ Update it when:
 - track selection guidance needs to become more explicit for collaborators
 
 ---
-*Last updated: 2026-03-28 for milestone v2.2 planning restructure*
+*Last updated: 2026-03-28 for milestone v2.3 B1 Archive And Builder Normalization*
