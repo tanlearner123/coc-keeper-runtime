@@ -140,25 +140,52 @@ When work genuinely spans multiple tracks:
 ## Active Milestone
 
 - Most recently completed milestone: `vB.1.2`
+- Active milestone: `vB.1.3`
 - Primary track: `Track B - 人物构建与管理层`
-- Goal achieved: Expanded archive and profile presentation toward a fuller COC investigator card, aligned with the sections exposed by `charSheetGenerator`
+- Current goal: Turn character creation into a two-stage interview-to-sheet flow where a Keeper-like interview shapes the person first, then a COC-bounded card finalization stage turns that person into a legal investigator sheet.
 
-## Milestone vB.1.2: B2 Investigator Archive Card Completion
+## Milestone vB.1.3: B3 Interview-To-Sheet Character Creation
 
-**Goal:** Upgrade long-lived investigator archives from usable profiles into fuller COC investigator cards with clearer sections, richer writeback, and cleaner long-lived identity boundaries.
+**Goal:** Evolve the builder from "adaptive archive interview" into a full two-stage character creation loop: first interview and shape a believable person, then summarize, map, and finalize that person into a legal COC investigator card using rule-bounded generation and dice.
 
 **Target features:**
-- Reference [COC第七版调查员人物卡生成器](https://www.cthulhuclub.com/charSheetGenerator/) for card sections worth mirroring in Discord form
-- Continue treating local COC rulebooks as the rules source of truth; new card sections extend character representation, not rule truth
-- Fill out richer archive sections:
-  - 基础身份
-  - 人物塑造
-  - 经历与状态
-  - 资源与装备
-  - 技能与规则建议
-- Improve builder writeback so interview answers land in specific character-card sections instead of only background summaries
-- Strengthen archive detail and `/sheet` presentation so archives feel like persistent investigator assets rather than thin lists
-- Preserve strict separation between long-lived archive truth and campaign/module instance state
+- Split builder into two explicit stages:
+  - interview stage
+  - card finalization stage
+- Keep the interview stage Keeper-like and dynamic:
+  - start from one-line concept
+  - ask 5-7 targeted follow-up questions
+  - avoid giant generic prompts
+- Make interview output richer than raw archive notes:
+  - produce a structured character portrait
+  - capture goal, weakness, belief, past event, important ties, specialities, and other card-relevant long-lived identity
+- Add a rule-mapping stage that converts interview results into:
+  - occupation candidates
+  - skill bias suggestions
+  - age/education-aware finishing hints
+  - COC-bounded adjustments and recommendations
+- Add a finalization stage that uses COC rules and dice to determine the actual sheet rather than letting the model invent numbers
+- Keep archive truth and sheet finalization related but distinct:
+  - interview shapes the person
+  - rules and dice determine the legal card
+
+**Primary Track**
+- Track B - 人物构建与管理层
+
+**Secondary Impact**
+- Track D - 游戏呈现层: builder tone and summary readability
+- Track C - Discord 交互层: builder flow and archive-channel interactions
+
+**Contracts Changed**
+- `BuilderSession`
+- builder interview slot coverage and completion criteria
+- archive writeback staging before final sheet generation
+- future card-finalization contract between Track B and Track A rule resolution
+
+**Migration Notes**
+- Preserve current builder and archive compatibility during the transition
+- Treat the interview phase and the sheet-finalization phase as additive structure, not a rewrite of archive semantics
+- Keep local COC rulebooks as the only source of rule truth; interview output can influence recommendations, not invent rule math
 
 ## Current State
 
@@ -188,7 +215,7 @@ The next priority is making long-lived archives feel like complete investigator 
 
 ## Evolution
 
-This file is the repository-level project map.
+This file is the workstream-level project map.
 
 Update it when:
 - the active milestone changes
@@ -197,4 +224,4 @@ Update it when:
 - track selection guidance needs to become more explicit for collaborators
 
 ---
-*Last updated: 2026-03-28 for milestone vB.1.2 B2 Investigator Archive Card Completion*
+*Last updated: 2026-03-28 for milestone vB.1.3 B3 Interview-To-Sheet Character Creation*

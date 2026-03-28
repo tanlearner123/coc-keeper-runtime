@@ -21,10 +21,13 @@ class BuilderQuestionChoice:
 class BuilderSession:
     user_id: str
     visibility: str = "private"
+    stage: str = "interview"
     raw_answers: dict[str, str] = field(default_factory=dict)
     answers: dict[str, str] = field(default_factory=dict)
     current_slot: str = "name"
     asked_slots: list[str] = field(default_factory=lambda: ["name"])
+    portrait_summary: str = ""
+    pending_writeback: ArchiveWritebackPayload | None = None
 
 
 class NormalizedBuilderAnswers(BaseModel):
@@ -35,6 +38,7 @@ class NormalizedBuilderAnswers(BaseModel):
     key_past_event: str = ""
     life_goal: str = ""
     weakness: str = ""
+    core_belief: str = ""
     important_person: str = ""
     significant_location: str = ""
     treasured_possession: str = ""
@@ -101,6 +105,7 @@ class AnswerNormalizer:
             key_past_event=answers.get("key_past_event", ""),
             life_goal=answers.get("life_goal", ""),
             weakness=answers.get("weakness", ""),
+            core_belief=answers.get("core_belief", ""),
             important_person=answers.get("important_person", ""),
             significant_location=answers.get("significant_location", ""),
             treasured_possession=answers.get("treasured_possession", ""),
@@ -123,7 +128,7 @@ class AnswerNormalizer:
             occupation_detail=semantic_fields.get("occupation_detail", ""),
             specialty=semantic_fields.get("specialty", ""),
             career_arc=semantic_fields.get("career_arc", ""),
-            core_belief=semantic_fields.get("core_belief", ""),
+            core_belief=normalized.core_belief or semantic_fields.get("core_belief", ""),
             material_desire=semantic_fields.get("material_desire", ""),
             fear_or_taboo=semantic_fields.get("fear_or_taboo", ""),
             important_tie=semantic_fields.get("important_tie", ""),
@@ -202,29 +207,14 @@ class HeuristicInterviewPlanner:
                 slot="weakness",
                 question="他最致命的弱点、劣势或坏习惯是什么？",
             )
-        if "important_person" not in session.answers:
+        if "core_belief" not in session.answers:
             return BuilderQuestionChoice(
-                slot="important_person",
-                question="在他心里，最重要的那个人是谁？为什么偏偏是这个人？",
-            )
-        if "significant_location" not in session.answers:
-            return BuilderQuestionChoice(
-                slot="significant_location",
-                question="对他而言最重要的地方是哪里？那个地方为什么一直留在他心里？",
-            )
-        if "treasured_possession" not in session.answers:
-            return BuilderQuestionChoice(
-                slot="treasured_possession",
-                question="他一直舍不得丢、甚至会随身带着的珍贵之物是什么？",
-            )
-        if "disposition" not in session.answers:
-            return BuilderQuestionChoice(
-                slot="disposition",
-                question="别人通常会怎么评价他的处事方式？",
+                slot="core_belief",
+                question="如果别人说这一切都是他的错，他会怎么替自己辩护？",
             )
         return BuilderQuestionChoice(
-            slot="favored_skills",
-            question="列出 2-4 个他最拿手的技能，用逗号分隔。",
+            slot="important_person",
+            question="如果还要再补一笔人物关系，在他心里最重要的那个人是谁？",
         )
 
 
@@ -234,9 +224,9 @@ class ModelGuidedInterviewPlanner:
         self._fallback = fallback or HeuristicInterviewPlanner()
 
     async def next_question(self, session: BuilderSession) -> BuilderQuestionChoice:
-        missing_slots = [slot for slot in DYNAMIC_SLOT_ORDER if not session.answers.get(slot)]
+        missing_slots = [slot for slot in REQUIRED_INTERVIEW_SLOTS if not session.answers.get(slot)]
         if not missing_slots:
-            return BuilderQuestionChoice(slot="favored_skills", question="列出 2-4 个他最拿手的技能，用逗号分隔。")
+            return BuilderQuestionChoice(slot="important_person", question="如果还要再补一笔人物关系，在他心里最重要的那个人是谁？")
         request = ModelRequest(
             system_prompt=(
                 "你是克苏鲁的呼唤建卡采访器。"
@@ -479,6 +469,8 @@ class ConversationalCharacterBuilder:
 
     async def answer(self, *, user_id: str, answer: str) -> tuple[str, InvestigatorArchiveProfile | None]:
         session = self._sessions[user_id]
+        if session.stage == "finalize":
+            return await self._finalize_from_portrait(session=session, answer=answer)
         slot = session.current_slot
         answer = answer.strip()
         session.raw_answers[slot] = answer
@@ -497,6 +489,7 @@ class ConversationalCharacterBuilder:
             session.asked_slots.append(next_question.slot)
             return next_question.question, None
 
+        session.stage = "finalize"
         semantic_fields = await self._semantic_extractor.extract(session)
         synthesis = await self._synthesizer.synthesize(session, semantic_fields)
         payload = self._section_normalizer.to_writeback(
@@ -504,9 +497,9 @@ class ConversationalCharacterBuilder:
             synthesis=synthesis,
             answer_normalizer=self._answer_normalizer,
         )
-        profile = self._archive_repository.create_profile(user_id=user_id, generation=self._generate_stats(), **payload.model_dump())
-        del self._sessions[user_id]
-        return f"建卡完成：{profile.name} / {profile.coc.occupation}", profile
+        session.pending_writeback = payload
+        session.portrait_summary = _build_interview_portrait(payload)
+        return _build_finalization_prompt(session), None
 
     def has_session(self, user_id: str) -> bool:
         return user_id in self._sessions
@@ -516,10 +509,52 @@ class ConversationalCharacterBuilder:
             return BuilderQuestionChoice(slot="age", question="他的年龄是多少？")
         if not session.answers.get("occupation"):
             return BuilderQuestionChoice(slot="occupation", question="他的职业是什么？尽量用 COC 里能落地的现实职业描述。")
-        missing_dynamic = [slot for slot in DYNAMIC_SLOT_ORDER if not session.answers.get(slot)]
+        missing_dynamic = [slot for slot in REQUIRED_INTERVIEW_SLOTS if not session.answers.get(slot)]
         if not missing_dynamic:
             return None
         return await self._interview_planner.next_question(session)
+
+    async def _finalize_from_portrait(
+        self, *, session: BuilderSession, answer: str
+    ) -> tuple[str, InvestigatorArchiveProfile | None]:
+        text = _normalize_free_text(answer)
+        if not text:
+            return _build_finalization_prompt(session), None
+
+        if _is_finalize_reply(text):
+            assert session.pending_writeback is not None
+            profile = self._archive_repository.create_profile(
+                user_id=session.user_id,
+                generation=self._generate_stats(),
+                **session.pending_writeback.model_dump(),
+            )
+            del self._sessions[session.user_id]
+            return f"建卡完成：{profile.name} / {profile.coc.occupation}", profile
+
+        if _looks_like_skill_list(text):
+            skills = _normalize_skill_list(text)
+            session.answers["favored_skills"] = ", ".join(skills)
+            if session.pending_writeback is not None:
+                session.pending_writeback.favored_skills = skills
+            assert session.pending_writeback is not None
+            profile = self._archive_repository.create_profile(
+                user_id=session.user_id,
+                generation=self._generate_stats(),
+                **session.pending_writeback.model_dump(),
+            )
+            del self._sessions[session.user_id]
+            return f"建卡完成：{profile.name} / {profile.coc.occupation}", profile
+
+        _apply_finalization_note(session, text)
+        semantic_fields = await self._semantic_extractor.extract(session)
+        synthesis = await self._synthesizer.synthesize(session, semantic_fields)
+        session.pending_writeback = self._section_normalizer.to_writeback(
+            answers=session.answers,
+            synthesis=synthesis,
+            answer_normalizer=self._answer_normalizer,
+        )
+        session.portrait_summary = _build_interview_portrait(session.pending_writeback)
+        return _build_finalization_prompt(session), None
 
     def _generate_stats(self) -> dict[str, int]:
         return {
@@ -545,16 +580,11 @@ class ConversationalCharacterBuilder:
             return sum(random.randint(1, 6) for _ in range(3)) * 5
         raise KeyError(expr)
 
-
-DYNAMIC_SLOT_ORDER = [
+REQUIRED_INTERVIEW_SLOTS = [
     "key_past_event",
     "life_goal",
     "weakness",
-    "important_person",
-    "significant_location",
-    "treasured_possession",
-    "disposition",
-    "favored_skills",
+    "core_belief",
 ]
 DOWNFALL_KEYWORDS = ("落魄", "潦倒", "失意", "破产", "酗酒", "停职", "离婚", "退学", "失业")
 
@@ -737,3 +767,64 @@ def _build_portrait_summary(answers: dict[str, str]) -> str:
     if answers.get("disposition"):
         fragments.append(f"处事方式：{answers['disposition']}")
     return "。".join(item.strip("。 ") for item in fragments if item).strip()
+
+
+def _build_interview_portrait(payload: ArchiveWritebackPayload) -> str:
+    lines = [
+        "【人物画像】",
+        f"{payload.name} / {payload.occupation} / {payload.age}岁",
+        f"人物骨架：{payload.concept or '未记录'}",
+        f"关键过往：{payload.key_past_event or '未记录'}",
+        f"人生目标：{payload.life_goal or '未记录'}",
+        f"弱点：{payload.weakness or '未记录'}",
+        f"核心信念：{payload.core_belief or '未记录'}",
+    ]
+    if payload.important_person:
+        lines.append(f"重要之人：{payload.important_person}")
+    if payload.specialty:
+        lines.append(f"专长倾向：{payload.specialty}")
+    return "\n".join(lines)
+
+
+def _build_finalization_prompt(session: BuilderSession) -> str:
+    return (
+        f"{session.portrait_summary}\n\n"
+        "访谈阶段结束。现在进入定卡阶段。\n"
+        "如果这份人物画像没问题，回复 `定卡` 或 `按人物来`。\n"
+        "如果你想直接指定这人最擅长的 2-4 项技能，直接回复技能名并用逗号分隔。\n"
+        "如果你还想补一笔人物信息，直接回复那一句，我会先更新人物画像。"
+    )
+
+
+def _is_finalize_reply(text: str) -> bool:
+    return text in {"定卡", "继续定卡", "确认", "按人物来", "开始定卡"}
+
+
+def _looks_like_skill_list(text: str) -> bool:
+    lowered = text.lower()
+    if lowered.startswith("技能:") or lowered.startswith("技能："):
+        return True
+    if not any(sep in text for sep in (",", "，", "、", ";", "；", "/")):
+        return False
+    items = _normalize_skill_list(text)
+    if not 2 <= len(items) <= 4:
+        return False
+    return all(
+        len(item) <= 8
+        and not any(token in item for token in ("。", "！", "？", " ", "我", "他", "她"))
+        for item in items
+    )
+
+
+def _apply_finalization_note(session: BuilderSession, text: str) -> None:
+    if not session.answers.get("important_person"):
+        session.answers["important_person"] = text
+        return
+    if not session.answers.get("significant_location"):
+        session.answers["significant_location"] = text
+        return
+    if not session.answers.get("treasured_possession"):
+        session.answers["treasured_possession"] = text
+        return
+    existing = session.answers.get("trait_notes", "")
+    session.answers["trait_notes"] = f"{existing}；{text}".strip("；")

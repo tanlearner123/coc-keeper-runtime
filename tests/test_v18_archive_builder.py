@@ -111,15 +111,9 @@ class FakeInterviewPlanner:
             return FakeQuestionChoice(slot="life_goal", question="如果这一切还没把他压垮，他现在最想达成的人生目标是什么？")
         if "weakness" not in session.answers:
             return FakeQuestionChoice(slot="weakness", question="他最致命的弱点或劣势是什么？")
-        if "important_person" not in session.answers:
-            return FakeQuestionChoice(slot="important_person", question="在他心里最重要的人是谁？")
-        if "significant_location" not in session.answers:
-            return FakeQuestionChoice(slot="significant_location", question="对他而言最重要的地方是哪里？")
-        if "treasured_possession" not in session.answers:
-            return FakeQuestionChoice(slot="treasured_possession", question="他最珍贵、舍不得丢的东西是什么？")
-        if "disposition" not in session.answers:
-            return FakeQuestionChoice(slot="disposition", question="别人通常会怎么评价他的处事方式？")
-        return FakeQuestionChoice(slot="favored_skills", question="列出 2-4 个他最拿手的技能，用逗号分隔。")
+        if "core_belief" not in session.answers:
+            return FakeQuestionChoice(slot="core_belief", question="如果别人说这一切都是他的错，他会怎么替自己辩护？")
+        return FakeQuestionChoice(slot="important_person", question="在他心里最重要的人是谁？")
 
 
 def test_sheet_command_redirects_from_game_hall_to_archive_channel() -> None:
@@ -188,10 +182,8 @@ def test_conversational_builder_creates_archive_profile() -> None:
     asyncio.run(commands.builder_reply(interaction, answer="我总在夜里追新闻，结果因为一篇得罪人的报道被行业封杀。"))
     asyncio.run(commands.builder_reply(interaction, answer="我想查清那篇报道背后的真相，重新拿回自己的名字。"))
     asyncio.run(commands.builder_reply(interaction, answer="我太执拗，也太容易因为愧疚把自己逼进死角。"))
+    asyncio.run(commands.builder_reply(interaction, answer="就算所有人都怀疑我，真相也值得追到底。"))
     asyncio.run(commands.builder_reply(interaction, answer="我姐姐，她还愿意相信我。"))
-    asyncio.run(commands.builder_reply(interaction, answer="旧报社顶楼，那是我最后一次觉得自己真的做对了事的地方。"))
-    asyncio.run(commands.builder_reply(interaction, answer="那支录下关键证词的钢笔录音笔。"))
-    asyncio.run(commands.builder_reply(interaction, answer="冷静但固执。"))
     asyncio.run(commands.builder_reply(interaction, answer="图书馆使用,聆听,心理学"))
 
     profiles = repo.list_profiles("user-1")
@@ -202,12 +194,11 @@ def test_conversational_builder_creates_archive_profile() -> None:
     assert profiles[0].life_goal.startswith("我想查清")
     assert "执拗" in profiles[0].weakness
     assert "低谷" in profiles[0].background or "命运" in profiles[0].background
-    assert "姐姐" in profiles[0].important_person
-    assert "旧报社顶楼" in profiles[0].significant_location
-    assert "录音笔" in profiles[0].treasured_possession
+    assert "姐姐" in profiles[0].important_person or "姐姐" in profiles[0].important_tie
     assert profiles[0].finishing.recommended_interest_skills
     assert "规则" in profiles[0].finishing.rules_note
     assert "不会静默覆盖" in interaction.response.messages[-1][0]
+    assert "人物画像" in interaction.response.messages[-2][0]
 
 
 def test_builder_uses_concept_to_ask_a_more_specific_follow_up() -> None:
@@ -337,20 +328,20 @@ def test_archive_channel_plain_messages_can_finish_builder_session() -> None:
     interaction = FakeInteraction(channel_id="archive-1")
     asyncio.run(commands.start_character_builder(interaction, visibility="private"))
 
+    emitted_messages: list[str] = []
     for answer in [
         "林钟轩",
         "38岁的落魄临床医生",
         "三年前的一场手术纠纷把我从医院里赶了出来。",
         "我想证明那次事故里真正犯错的人不是我。",
         "我太骄傲，也太容易在压力下酗酒。",
+        "我不是在犯错，我是在救人。",
         "我的导师，他教我怎么拿起手术刀。",
-        "老医院的手术准备室。",
-        "那支导师送我的钢笔。",
-        "外冷内热，但防备心很重。",
         "医学,急救,心理学",
     ]:
         message = FakeMessage(channel_id="archive-1", content=answer)
         asyncio.run(commands.handle_channel_message_stream(message=message))
+        emitted_messages.extend(message.channel.messages)
 
     profiles = repo.list_profiles("user-1")
     assert len(profiles) == 1
@@ -359,6 +350,37 @@ def test_archive_channel_plain_messages_can_finish_builder_session() -> None:
     assert "证明" in profiles[0].life_goal
     assert profiles[0].specialty
     assert "导师" in profiles[0].important_person
+    assert any("人物画像" in item for item in emitted_messages)
+
+
+def test_builder_generates_portrait_before_finalizing_profile() -> None:
+    from dm_bot.coc.archive import InvestigatorArchiveRepository
+    from dm_bot.coc.builder import ConversationalCharacterBuilder
+
+    repo = InvestigatorArchiveRepository()
+    builder = ConversationalCharacterBuilder(
+        archive_repository=repo,
+        roll_provider=lambda expr: {"3d6*5": 55, "2d6+6*5": 70, "luck": 60}[expr],
+        interview_planner=FakeInterviewPlanner(),
+    )
+
+    assert builder.start(user_id="user-1", visibility="private") == "先给这位调查员起个名字。"
+    asyncio.run(builder.answer(user_id="user-1", answer="林钟轩"))
+    asyncio.run(builder.answer(user_id="user-1", answer="38岁的落魄临床医生"))
+    asyncio.run(builder.answer(user_id="user-1", answer="一场手术事故让他被赶出了三甲医院。"))
+    asyncio.run(builder.answer(user_id="user-1", answer="他想证明自己依然是最好的医生。"))
+    asyncio.run(builder.answer(user_id="user-1", answer="过度自信，而且拒绝认错。"))
+    prompt, profile = asyncio.run(builder.answer(user_id="user-1", answer="我不是在犯错，我是在救人。"))
+
+    assert profile is None
+    assert "人物画像" in prompt
+    assert "定卡" in prompt
+    assert repo.list_profiles("user-1") == []
+
+    prompt, profile = asyncio.run(builder.answer(user_id="user-1", answer="按人物来"))
+
+    assert profile is not None
+    assert "建卡完成" in prompt
 
 
 def test_ready_projects_selected_archive_profile_without_mutating_archive() -> None:

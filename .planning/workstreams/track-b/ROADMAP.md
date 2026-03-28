@@ -11,9 +11,9 @@
 
 ## Active Milestone
 
-**vB.1.2** - B2 Investigator Archive Card Completion
+**vB.1.3** - B3 Interview-To-Sheet Character Creation
 - **Primary Track:** Track B - 人物构建与管理层
-- **Goal:** Expand archive and profile presentation toward a fuller COC investigator card, aligned with `charSheetGenerator`-style sections while preserving local COC rule truth
+- **Goal:** Split character creation into a richer interview stage and a COC-bounded card finalization stage so builder output becomes a real person first and a legal investigator sheet second
 - **Status:** Completed
 
 ---
@@ -169,4 +169,66 @@
 | 47. Archive And Projection Boundary Audit | 1/1 | Completed | 2026-03-28 |
 
 ---
-*Last updated: 2026-03-28 for milestones vB.1.1 and vB.1.2*
+
+## vB.1.3 Phases
+
+- [x] **Phase 48: Interview Planner And Slot Coverage** - Make builder questioning smaller, more adaptive, and aligned with richer card sections
+- [x] **Phase 49: Structured Character Portrait Synthesis** - Summarize interview results into a reusable person-level portrait before card generation
+- [x] **Phase 50: COC-Bounded Rule Mapping And Dice Finalization** - Convert portrait into legal sheet recommendations and finalize via rules and dice
+- [x] **Phase 51: Builder Flow Integration And UX Polish** - Integrate the two-stage flow into archive channels without breaking existing archive operations
+
+### Phase 48: Interview Planner And Slot Coverage
+
+**Goal:** Replace oversized or generic builder prompts with a controlled dynamic interview that asks smaller, more human questions and covers the richer archive/card sections systematically.
+
+**Depends on:** vB.1.2 completion
+
+**Focus:**
+  1. Start from one-line concept and derive missing interview targets
+  2. Ask adaptive follow-ups without repeating or over-questioning
+  3. Stop when the person feels sufficiently shaped rather than when a fixed form is exhausted
+
+### Phase 49: Structured Character Portrait Synthesis
+
+**Goal:** Turn interview answers into a structured person-level portrait that is richer than raw notes and cleaner than freeform transcript text.
+
+**Depends on:** Phase 48
+
+**Focus:**
+  1. Summarize who this person is before generating a card
+  2. Capture long-lived identity, contradictions, desires, and weaknesses in reusable structure
+  3. Keep the portrait distinct from numeric card truth
+
+### Phase 50: COC-Bounded Rule Mapping And Dice Finalization
+
+**Goal:** Introduce a formal finalization stage where COC rules and dice convert a shaped person into a legal investigator card.
+
+**Depends on:** Phase 49
+
+**Focus:**
+  1. Map portrait to occupation/skill/finishing hints without inventing rules
+  2. Define what interview answers may influence versus what must come from rules and dice
+  3. Produce a card finalization contract that other tracks can consume safely
+
+### Phase 51: Builder Flow Integration And UX Polish
+
+**Goal:** Fit the new two-stage flow back into Discord archive operations so the experience feels coherent to players and maintainers.
+
+**Depends on:** Phase 50
+
+**Focus:**
+  1. Preserve current archive compatibility
+  2. Show clear transitions between interview and finalization
+  3. Keep archive channels usable while preparing for later Track C and Track D improvements
+
+## Progress Table (vB.1.3)
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 48. Interview Planner And Slot Coverage | 1/1 | Completed | 2026-03-28 |
+| 49. Structured Character Portrait Synthesis | 1/1 | Completed | 2026-03-28 |
+| 50. COC-Bounded Rule Mapping And Dice Finalization | 1/1 | Completed | 2026-03-28 |
+| 51. Builder Flow Integration And UX Polish | 1/1 | Completed | 2026-03-28 |
+
+---
+*Last updated: 2026-03-28 for milestones vB.1.1, vB.1.2, and vB.1.3*

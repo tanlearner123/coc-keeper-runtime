@@ -120,3 +120,58 @@ Milestone: Investigator Archive Card Completion
 - vB.1.2 requirements: 12 total
 - Mapped to phases: 12
 - Unmapped: 0 ✓
+
+---
+
+## vB.1.3 Requirements (Track B)
+
+Milestone: Interview-To-Sheet Character Creation
+
+### Interview Planner
+
+- [x] **IP-01**: Builder starts from a short character concept and uses adaptive follow-up questions instead of large generic prompts
+- [x] **IP-02**: Interview coverage maps to richer long-lived card/person sections without forcing every player through identical questions
+- [x] **IP-03**: Builder stops once the person is sufficiently shaped rather than after exhausting a rigid questionnaire
+
+### Character Portrait
+
+- [x] **CP-01**: Interview answers synthesize into a structured person-level portrait before any numeric card finalization
+- [x] **CP-02**: Portrait captures goal, weakness, beliefs, key past event, important ties, and other long-lived identity traits
+- [x] **CP-03**: Portrait synthesis preserves explicit user intent and labels AI-derived interpretation separately when needed
+
+### Rule Mapping And Finalization
+
+- [x] **RF-01**: Interview output may influence rule-bounded finishing recommendations, but may not invent numeric rules or break local COC rulebook constraints
+- [x] **RF-02**: Character creation flow explicitly separates:
+  - person shaping
+  - rule mapping
+  - dice-based finalization
+- [x] **RF-03**: Finalization stage explains which parts came from interview intent versus which parts came from COC rules and dice
+
+### Integration
+
+- [x] **IN-01**: Existing archive profiles and builder sessions remain backward compatible while the new two-stage flow is introduced
+- [x] **IN-02**: Archive-channel builder UX clearly signals whether the player is still shaping the person or already finalizing the sheet
+- [x] **IN-03**: The resulting contracts remain reusable for later projection, archive presentation, and future Track A/Track D work
+
+## vB.1.3 Traceability
+
+| Requirement | Planned Phase |
+|-------------|---------------|
+| IP-01 | Phase 48 |
+| IP-02 | Phase 48 |
+| IP-03 | Phase 48 |
+| CP-01 | Phase 49 |
+| CP-02 | Phase 49 |
+| CP-03 | Phase 49 |
+| RF-01 | Phase 50 |
+| RF-02 | Phase 50 |
+| RF-03 | Phase 50 |
+| IN-01 | Phase 51 |
+| IN-02 | Phase 51 |
+| IN-03 | Phase 51 |
+
+**Coverage:**
+- vB.1.3 requirements: 12 total
+- Mapped to phases: 12
+- Unmapped: 0 ✓
