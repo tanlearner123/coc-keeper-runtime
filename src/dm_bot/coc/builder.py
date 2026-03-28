@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Protocol
 
+from pydantic import BaseModel, Field
+
 from dm_bot.coc.archive import InvestigatorArchiveProfile, InvestigatorArchiveRepository
 from dm_bot.models.schemas import ModelRequest
 
@@ -19,9 +21,112 @@ class BuilderQuestionChoice:
 class BuilderSession:
     user_id: str
     visibility: str = "private"
+    raw_answers: dict[str, str] = field(default_factory=dict)
     answers: dict[str, str] = field(default_factory=dict)
     current_slot: str = "name"
     asked_slots: list[str] = field(default_factory=lambda: ["name"])
+
+
+class NormalizedBuilderAnswers(BaseModel):
+    name: str = ""
+    concept: str = ""
+    age: str = ""
+    occupation: str = ""
+    key_past_event: str = ""
+    life_goal: str = ""
+    weakness: str = ""
+    disposition: str = ""
+    favored_skills: list[str] = Field(default_factory=list)
+
+
+class ArchiveWritebackPayload(BaseModel):
+    name: str
+    occupation: str
+    age: int
+    background: str
+    portrait_summary: str = ""
+    concept: str = ""
+    occupation_detail: str = ""
+    specialty: str = ""
+    career_arc: str = ""
+    key_past_event: str = ""
+    core_belief: str = ""
+    life_goal: str = ""
+    material_desire: str = ""
+    weakness: str = ""
+    fear_or_taboo: str = ""
+    important_tie: str = ""
+    birthplace: str = ""
+    residence: str = ""
+    family: str = ""
+    education_background: str = ""
+    disposition: str = ""
+    favored_skills: list[str] = Field(default_factory=list)
+
+
+class AnswerNormalizer:
+    def normalize_slot(self, *, slot: str, raw: str, current_answers: dict[str, str] | None = None) -> dict[str, str]:
+        current_answers = current_answers or {}
+        text = _normalize_free_text(raw)
+        if slot == "name":
+            return {"name": text}
+        if slot == "concept":
+            payload = {"concept": text}
+            payload.update(_extract_concept_fields(text))
+            return payload
+        if slot == "age":
+            return {"age": _normalize_age(text)}
+        if slot == "occupation":
+            return {"occupation": _normalize_occupation(text)}
+        if slot == "favored_skills":
+            skills = _normalize_skill_list(text)
+            return {"favored_skills": ", ".join(skills)}
+        return {slot: text}
+
+    def normalized_contract(self, answers: dict[str, str]) -> NormalizedBuilderAnswers:
+        return NormalizedBuilderAnswers(
+            name=answers.get("name", ""),
+            concept=answers.get("concept", ""),
+            age=answers.get("age", ""),
+            occupation=answers.get("occupation", ""),
+            key_past_event=answers.get("key_past_event", ""),
+            life_goal=answers.get("life_goal", ""),
+            weakness=answers.get("weakness", ""),
+            disposition=answers.get("disposition", ""),
+            favored_skills=_normalize_skill_list(answers.get("favored_skills", "")),
+        )
+
+    def writeback_payload(
+        self,
+        *,
+        answers: dict[str, str],
+        semantic_fields: dict[str, str],
+    ) -> ArchiveWritebackPayload:
+        normalized = self.normalized_contract(answers)
+        return ArchiveWritebackPayload(
+            name=normalized.name,
+            occupation=normalized.occupation,
+            age=int(normalized.age),
+            background=_build_background(answers),
+            occupation_detail=semantic_fields.get("occupation_detail", ""),
+            specialty=semantic_fields.get("specialty", ""),
+            career_arc=semantic_fields.get("career_arc", ""),
+            core_belief=semantic_fields.get("core_belief", ""),
+            material_desire=semantic_fields.get("material_desire", ""),
+            fear_or_taboo=semantic_fields.get("fear_or_taboo", ""),
+            important_tie=semantic_fields.get("important_tie", ""),
+            birthplace="",
+            residence="",
+            family="",
+            education_background="",
+            disposition=normalized.disposition,
+            favored_skills=normalized.favored_skills,
+            portrait_summary=_build_portrait_summary(answers),
+            concept=normalized.concept,
+            life_goal=normalized.life_goal,
+            weakness=normalized.weakness,
+            key_past_event=normalized.key_past_event,
+        )
 
 
 class InterviewPlanner(Protocol):
@@ -30,6 +135,31 @@ class InterviewPlanner(Protocol):
 
 class ArchiveSemanticExtractor(Protocol):
     async def extract(self, session: BuilderSession) -> dict[str, str]: ...
+
+
+class CharacterSheetSynthesis(BaseModel):
+    occupation_detail: str = ""
+    specialty: str = ""
+    background: str = ""
+    career_arc: str = ""
+    key_past_event: str = ""
+    core_belief: str = ""
+    life_goal: str = ""
+    material_desire: str = ""
+    weakness: str = ""
+    fear_or_taboo: str = ""
+    important_tie: str = ""
+    disposition: str = ""
+    favored_skills: list[str] = Field(default_factory=list)
+    portrait_summary: str = ""
+    birthplace: str = ""
+    residence: str = ""
+    family: str = ""
+    education_background: str = ""
+
+
+class CharacterSheetSynthesizer(Protocol):
+    async def synthesize(self, session: BuilderSession, semantic_fields: dict[str, str]) -> CharacterSheetSynthesis: ...
 
 
 class HeuristicInterviewPlanner:
@@ -151,6 +281,106 @@ class ModelGuidedArchiveSemanticExtractor:
         return await self._fallback.extract(session)
 
 
+class HeuristicCharacterSheetSynthesizer:
+    async def synthesize(self, session: BuilderSession, semantic_fields: dict[str, str]) -> CharacterSheetSynthesis:
+        answers = session.answers
+        return CharacterSheetSynthesis(
+            occupation_detail=semantic_fields.get("occupation_detail", "") or _build_occupation_detail(answers),
+            specialty=semantic_fields.get("specialty", "") or _infer_specialty(answers),
+            background=_build_background_summary(answers),
+            career_arc=semantic_fields.get("career_arc", "") or _infer_career_arc(answers),
+            key_past_event=answers.get("key_past_event", ""),
+            core_belief=semantic_fields.get("core_belief", "") or _infer_core_belief(answers),
+            life_goal=answers.get("life_goal", ""),
+            material_desire=semantic_fields.get("material_desire", "") or _infer_material_desire(answers),
+            weakness=answers.get("weakness", ""),
+            fear_or_taboo=semantic_fields.get("fear_or_taboo", "") or _infer_fear_or_taboo(answers),
+            important_tie=semantic_fields.get("important_tie", "") or _infer_important_tie(answers),
+            disposition=answers.get("disposition", ""),
+            favored_skills=_normalize_skill_list(answers.get("favored_skills", "")),
+            portrait_summary=_build_portrait_summary(answers),
+        )
+
+
+class ModelGuidedCharacterSheetSynthesizer:
+    def __init__(self, *, model_client, fallback: CharacterSheetSynthesizer | None = None) -> None:
+        self._model_client = model_client
+        self._fallback = fallback or HeuristicCharacterSheetSynthesizer()
+
+    async def synthesize(self, session: BuilderSession, semantic_fields: dict[str, str]) -> CharacterSheetSynthesis:
+        request = ModelRequest(
+            system_prompt=(
+                "你是克苏鲁的呼唤角色卡整理器。"
+                "根据采访答案和已有语义字段，把人物整理为更连贯的长期档案。"
+                "不要编造采访里没有的具体事实，不要发明新职业，不要改动明确给出的年龄和职业。"
+                "输出必须是 JSON，对每个字段给出简洁中文；不确定就留空。"
+                "favored_skills 必须是字符串数组。"
+            ),
+            user_prompt=(
+                "采访答案:\n"
+                f"{json.dumps(session.answers, ensure_ascii=False)}\n"
+                "已有语义字段:\n"
+                f"{json.dumps(semantic_fields, ensure_ascii=False)}\n"
+                "请输出这些字段：occupation_detail, specialty, background, career_arc, key_past_event, "
+                "core_belief, life_goal, material_desire, weakness, fear_or_taboo, important_tie, disposition, "
+                "favored_skills, portrait_summary, birthplace, residence, family, education_background。"
+            ),
+            response_format={"type": "json_object"},
+        )
+        try:
+            response = await self._model_client.call_router(request)
+            payload = json.loads(response.content)
+            normalized = {
+                key: payload.get(key, [] if key == "favored_skills" else "")
+                for key in CharacterSheetSynthesis.model_fields
+            }
+            if isinstance(normalized["favored_skills"], str):
+                normalized["favored_skills"] = _normalize_skill_list(normalized["favored_skills"])
+            elif isinstance(normalized["favored_skills"], list):
+                normalized["favored_skills"] = [str(item).strip() for item in normalized["favored_skills"] if str(item).strip()]
+            synthesis = CharacterSheetSynthesis.model_validate(normalized)
+            if synthesis.background or synthesis.career_arc or synthesis.portrait_summary:
+                return synthesis
+        except Exception:
+            pass
+        return await self._fallback.synthesize(session, semantic_fields)
+
+
+class SectionNormalizer:
+    def to_writeback(
+        self,
+        *,
+        answers: dict[str, str],
+        synthesis: CharacterSheetSynthesis,
+        answer_normalizer: AnswerNormalizer,
+    ) -> ArchiveWritebackPayload:
+        normalized = answer_normalizer.normalized_contract(answers)
+        return ArchiveWritebackPayload(
+            name=normalized.name,
+            occupation=normalized.occupation,
+            age=int(normalized.age),
+            background=synthesis.background or _build_background_summary(answers),
+            occupation_detail=synthesis.occupation_detail,
+            specialty=synthesis.specialty,
+            career_arc=synthesis.career_arc,
+            key_past_event=synthesis.key_past_event or normalized.key_past_event,
+            core_belief=synthesis.core_belief,
+            life_goal=synthesis.life_goal or normalized.life_goal,
+            material_desire=synthesis.material_desire,
+            weakness=synthesis.weakness or normalized.weakness,
+            fear_or_taboo=synthesis.fear_or_taboo,
+            important_tie=synthesis.important_tie,
+            disposition=synthesis.disposition or normalized.disposition,
+            favored_skills=synthesis.favored_skills or normalized.favored_skills,
+            portrait_summary=synthesis.portrait_summary or _build_portrait_summary(answers),
+            concept=normalized.concept,
+            birthplace=synthesis.birthplace,
+            residence=synthesis.residence,
+            family=synthesis.family,
+            education_background=synthesis.education_background,
+        )
+
+
 class ConversationalCharacterBuilder:
     INTRO_QUESTION = "先给这位调查员起个名字。"
     CONCEPT_QUESTION = "用一句短话描述这个人的人物骨架，例如“38岁的落魄临床医生”。"
@@ -162,11 +392,17 @@ class ConversationalCharacterBuilder:
         roll_provider=None,
         interview_planner: InterviewPlanner | None = None,
         semantic_extractor: ArchiveSemanticExtractor | None = None,
+        answer_normalizer: AnswerNormalizer | None = None,
+        synthesizer: CharacterSheetSynthesizer | None = None,
+        section_normalizer: SectionNormalizer | None = None,
     ) -> None:
         self._archive_repository = archive_repository
         self._roll_provider = roll_provider or self._default_roll_provider
         self._interview_planner = interview_planner or HeuristicInterviewPlanner()
         self._semantic_extractor = semantic_extractor or HeuristicArchiveSemanticExtractor()
+        self._answer_normalizer = answer_normalizer or AnswerNormalizer()
+        self._synthesizer = synthesizer or HeuristicCharacterSheetSynthesizer()
+        self._section_normalizer = section_normalizer or SectionNormalizer()
         self._sessions: dict[str, BuilderSession] = {}
 
     def start(self, *, user_id: str, visibility: str = "private") -> str:
@@ -179,15 +415,15 @@ class ConversationalCharacterBuilder:
         session = self._sessions[user_id]
         slot = session.current_slot
         answer = answer.strip()
-        session.answers[slot] = answer
+        session.raw_answers[slot] = answer
+        session.answers.update(
+            self._answer_normalizer.normalize_slot(slot=slot, raw=answer, current_answers=session.answers)
+        )
 
         if slot == "name":
             session.current_slot = "concept"
             session.asked_slots.append("concept")
             return self.CONCEPT_QUESTION, None
-
-        if slot == "concept":
-            session.answers.update(_extract_concept_fields(answer))
 
         next_question = await self._next_question(session)
         if next_question is not None:
@@ -196,28 +432,13 @@ class ConversationalCharacterBuilder:
             return next_question.question, None
 
         semantic_fields = await self._semantic_extractor.extract(session)
-        profile = self._archive_repository.create_profile(
-            user_id=user_id,
-            name=session.answers["name"],
-            occupation=session.answers["occupation"],
-            age=int(session.answers["age"]),
-            background=_build_background(session.answers),
-            occupation_detail=semantic_fields.get("occupation_detail", ""),
-            specialty=semantic_fields.get("specialty", ""),
-            career_arc=semantic_fields.get("career_arc", ""),
-            core_belief=semantic_fields.get("core_belief", ""),
-            material_desire=semantic_fields.get("material_desire", ""),
-            fear_or_taboo=semantic_fields.get("fear_or_taboo", ""),
-            important_tie=semantic_fields.get("important_tie", ""),
-            disposition=session.answers.get("disposition", ""),
-            favored_skills=[item.strip() for item in session.answers.get("favored_skills", "").split(",") if item.strip()],
-            portrait_summary=_build_portrait_summary(session.answers),
-            concept=session.answers.get("concept", ""),
-            life_goal=session.answers.get("life_goal", ""),
-            weakness=session.answers.get("weakness", ""),
-            key_past_event=session.answers.get("key_past_event", ""),
-            generation=self._generate_stats(),
+        synthesis = await self._synthesizer.synthesize(session, semantic_fields)
+        payload = self._section_normalizer.to_writeback(
+            answers=session.answers,
+            synthesis=synthesis,
+            answer_normalizer=self._answer_normalizer,
         )
+        profile = self._archive_repository.create_profile(user_id=user_id, generation=self._generate_stats(), **payload.model_dump())
         del self._sessions[user_id]
         return f"建卡完成：{profile.name} / {profile.coc.occupation}", profile
 
@@ -281,6 +502,30 @@ def _extract_concept_fields(concept: str) -> dict[str, str]:
     return payload
 
 
+def _normalize_free_text(raw: str) -> str:
+    return re.sub(r"\s+", " ", raw).strip()
+
+
+def _normalize_age(raw: str) -> str:
+    match = re.search(r"(\d{1,2})", raw)
+    return match.group(1) if match else raw.strip()
+
+
+def _normalize_occupation(raw: str) -> str:
+    normalized = _normalize_free_text(raw)
+    normalized = re.sub(r"^\s*我(?:是|想扮演)?(?:一个|一位)?", "", normalized)
+    normalized = normalized.strip(" ，。；、")
+    return normalized
+
+
+def _normalize_skill_list(raw: str) -> list[str]:
+    text = _normalize_free_text(raw)
+    if not text:
+        return []
+    text = text.replace("，", ",").replace("、", ",").replace("；", ",").replace("/", ",")
+    return [item.strip() for item in text.split(",") if item.strip()]
+
+
 def _past_event_question(concept: str, occupation: str) -> str:
     if any(keyword in concept for keyword in DOWNFALL_KEYWORDS):
         return "你为什么会落到这一步？最近究竟发生了什么，把他拖进了现在的困境？"
@@ -296,6 +541,17 @@ def _past_event_question(concept: str, occupation: str) -> str:
 def _build_background(answers: dict[str, str]) -> str:
     snippets = [answers.get("concept", ""), answers.get("key_past_event", "")]
     return " ".join(part.strip() for part in snippets if part and part.strip())
+
+
+def _build_background_summary(answers: dict[str, str]) -> str:
+    concept = answers.get("concept", "").strip()
+    event = answers.get("key_past_event", "").strip()
+    goal = answers.get("life_goal", "").strip()
+    if concept and event and goal:
+        return f"{concept}。曾因{event}而被推到人生的低谷，如今仍想{goal}"
+    if concept and event:
+        return f"{concept}。他的命运被这样一件事改写：{event}"
+    return _build_background(answers)
 
 
 def _build_occupation_detail(answers: dict[str, str]) -> str:

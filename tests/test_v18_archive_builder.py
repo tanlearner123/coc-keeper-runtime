@@ -192,13 +192,14 @@ def test_conversational_builder_creates_archive_profile() -> None:
     assert profiles[0].coc.attributes.int == 70
     assert profiles[0].life_goal.startswith("我想查清")
     assert "执拗" in profiles[0].weakness
+    assert "低谷" in profiles[0].background or "命运" in profiles[0].background
     assert profiles[0].finishing.recommended_interest_skills
     assert "规则" in profiles[0].finishing.rules_note
 
 
 def test_builder_uses_concept_to_ask_a_more_specific_follow_up() -> None:
     from dm_bot.coc.archive import InvestigatorArchiveRepository
-    from dm_bot.coc.builder import ConversationalCharacterBuilder
+    from dm_bot.coc.builder import AnswerNormalizer, ConversationalCharacterBuilder
 
     builder = ConversationalCharacterBuilder(
         archive_repository=InvestigatorArchiveRepository(),
@@ -215,6 +216,25 @@ def test_builder_uses_concept_to_ask_a_more_specific_follow_up() -> None:
 
     assert profile is None
     assert "落魄" in prompt or "发生了什么" in prompt
+
+    normalizer = AnswerNormalizer()
+    normalized = normalizer.normalized_contract(builder._sessions["user-1"].answers)
+    assert normalized.age == "38"
+    assert normalized.occupation == "临床医生"
+
+
+def test_answer_normalizer_canonicalizes_age_occupation_and_skills() -> None:
+    from dm_bot.coc.builder import AnswerNormalizer
+
+    normalizer = AnswerNormalizer()
+
+    assert normalizer.normalize_slot(slot="age", raw=" 38 岁左右 ", current_answers={}) == {"age": "38"}
+    assert normalizer.normalize_slot(slot="occupation", raw="我是一个 临床医生 ", current_answers={}) == {"occupation": "临床医生"}
+    assert normalizer.normalize_slot(
+        slot="favored_skills",
+        raw="医学， 急救、心理学/聆听",
+        current_answers={},
+    ) == {"favored_skills": "医学, 急救, 心理学, 聆听"}
 
 
 def test_archive_channel_plain_messages_advance_builder_session() -> None:

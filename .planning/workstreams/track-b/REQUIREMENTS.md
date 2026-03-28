@@ -41,7 +41,7 @@ Milestone: Archive And Builder Normalization
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AI-01 | Phase 41 | Pending |
+| AI-01 | Phase 41 | Completed |
 | AI-02 | Phase 42 | Pending |
 | AI-03 | Phase 42 | Pending |
 | AI-04 | Phase 42 | Pending |
@@ -49,12 +49,12 @@ Milestone: Archive And Builder Normalization
 | FN-02 | Phase 42 | Pending |
 | FN-03 | Phase 42 | Pending |
 | FN-04 | Phase 42 | Pending |
-| FN-05 | Phase 40 | Pending |
-| BC-01 | Phase 40 | Pending |
-| BC-02 | Phase 40 | Pending |
-| BC-03 | Phase 41 | Pending |
-| BC-04 | Phase 41 | Pending |
-| BC-05 | Phase 41 | Pending |
+| FN-05 | Phase 40 | Completed |
+| BC-01 | Phase 40 | Completed |
+| BC-02 | Phase 40 | Completed |
+| BC-03 | Phase 41 | Completed |
+| BC-04 | Phase 41 | Completed |
+| BC-05 | Phase 41 | Completed |
 | BC-06 | Phase 42 | Pending |
 | PS-01 | Phase 42 | Pending |
 | PS-02 | Phase 42 | Pending |

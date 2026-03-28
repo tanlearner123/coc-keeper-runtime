@@ -15,6 +15,7 @@ class ArchiveFinishingRecommendation(BaseModel):
 
 
 class InvestigatorArchiveProfile(BaseModel):
+    schema_version: int = 2
     profile_id: str
     user_id: str
     name: str
@@ -32,6 +33,10 @@ class InvestigatorArchiveProfile(BaseModel):
     weakness: str = ""
     fear_or_taboo: str = ""
     important_tie: str = ""
+    birthplace: str = ""
+    residence: str = ""
+    family: str = ""
+    education_background: str = ""
     disposition: str = ""
     favored_skills: list[str] = Field(default_factory=list)
     portrait_summary: str = ""
@@ -67,6 +72,10 @@ class InvestigatorArchiveProfile(BaseModel):
             f"弱点：{self.weakness or '未记录'}",
             f"恐惧/禁忌：{self.fear_or_taboo or '未记录'}",
             f"重要关系：{self.important_tie or '未记录'}",
+            f"出生地：{self.birthplace or '未记录'}",
+            f"现居地：{self.residence or '未记录'}",
+            f"家庭：{self.family or '未记录'}",
+            f"教育：{self.education_background or '未记录'}",
             f"处事方式：{self.disposition or '未记录'}",
             "",
             "【数值】",
@@ -109,6 +118,10 @@ class InvestigatorArchiveRepository:
         weakness: str = "",
         fear_or_taboo: str = "",
         important_tie: str = "",
+        birthplace: str = "",
+        residence: str = "",
+        family: str = "",
+        education_background: str = "",
         disposition: str,
         favored_skills: list[str],
         generation: dict[str, int],
@@ -152,6 +165,10 @@ class InvestigatorArchiveRepository:
             weakness=weakness,
             fear_or_taboo=fear_or_taboo,
             important_tie=important_tie,
+            birthplace=birthplace,
+            residence=residence,
+            family=family,
+            education_background=education_background,
             disposition=disposition,
             favored_skills=favored,
             portrait_summary=portrait_summary or f"{occupation}。{background} 性格上{disposition}",

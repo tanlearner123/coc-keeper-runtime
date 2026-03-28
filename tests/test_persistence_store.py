@@ -128,3 +128,60 @@ def test_persistence_store_saves_and_restores_archive_profiles(tmp_path: Path) -
     assert restored_profile.name == "林秋"
     assert restored_profile.coc.occupation == "记者"
     assert restored_profile.status == "active"
+
+
+def test_archive_repository_imports_older_profile_payload_with_new_defaults() -> None:
+    repo = InvestigatorArchiveRepository()
+    legacy_payload = {
+        "user-1": {
+            "profile-1": {
+                "profile_id": "profile-1",
+                "user_id": "user-1",
+                "name": "林秋",
+                "occupation": "记者",
+                "age": 26,
+                "background": "夜班记者",
+                "disposition": "冷静",
+                "favored_skills": ["图书馆使用", "聆听"],
+                "portrait_summary": "夜班记者。",
+                "status": "active",
+                "finishing": {
+                    "recommended_occupation_skills": [],
+                    "recommended_interest_skills": [],
+                    "allowed_adjustments": [],
+                    "rules_note": "",
+                },
+                "coc": {
+                    "occupation": "记者",
+                    "age": 26,
+                    "san": 70,
+                    "hp": 10,
+                    "mp": 14,
+                    "luck": 45,
+                    "build": 0,
+                    "damage_bonus": "0",
+                    "move_rate": 8,
+                    "attributes": {
+                        "str": 50,
+                        "con": 55,
+                        "dex": 60,
+                        "app": 65,
+                        "pow": 70,
+                        "siz": 50,
+                        "int": 75,
+                        "edu": 80,
+                    },
+                    "skills": {"图书馆使用": 50, "聆听": 50},
+                },
+            }
+        }
+    }
+
+    repo.import_state(legacy_payload)
+    profile = repo.get_profile("user-1", "profile-1")
+
+    assert profile.schema_version == 2
+    assert profile.birthplace == ""
+    assert profile.residence == ""
+    assert profile.family == ""
+    assert profile.education_background == ""

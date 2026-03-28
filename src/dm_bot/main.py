@@ -10,6 +10,7 @@ from dm_bot.coc.assets import COCAssetLibrary, COCReference
 from dm_bot.coc.builder import (
     ConversationalCharacterBuilder,
     ModelGuidedArchiveSemanticExtractor,
+    ModelGuidedCharacterSheetSynthesizer,
     ModelGuidedInterviewPlanner,
 )
 from dm_bot.config import Settings, get_settings
@@ -62,6 +63,7 @@ def build_runtime(settings: Settings | None = None) -> RuntimeBundle:
         archive_repository=archive_repository,
         interview_planner=ModelGuidedInterviewPlanner(model_client=model_client),
         semantic_extractor=ModelGuidedArchiveSemanticExtractor(model_client=model_client),
+        synthesizer=ModelGuidedCharacterSheetSynthesizer(model_client=model_client),
     )
     gameplay = GameplayOrchestrator(
         importer=CharacterImporter(sources={"dicecloud_snapshot": DicecloudSnapshotSource(fixtures={})}),
