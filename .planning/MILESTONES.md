@@ -2,6 +2,23 @@
 
 Historical milestones remain linear for GSD continuity. Each milestone now includes a primary track label so collaborators can understand where it belongs in the long-term product map.
 
+## vB.1.1 [Track B] B1 Archive And Builder Normalization (Planned: 2026-03-28)
+
+**Goal:**
+
+- Tighten archive-builder mapping with better AI summarization during builder flow, aligned with standard COC character sheet sections.
+
+**Planned phases:** 4 phases total
+
+**Planned focus:**
+
+- Fix AI summarization in builder flow (currently copies user input verbatim)
+- Add Pydantic contracts for builder-to-archive communication
+- Normalize archive fields to COC 7e character sheet structure
+- Ensure archive-projection sync works automatically
+
+---
+
 ## v2.2 [Governance] GSD Track 化治理重构 (Planned: 2026-03-28)
 
 **Goal:**
