@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **vC.1.1** — Channel Governance (Phases 44-46) — SHIPPED 2026-03-28
-- 📋 **vC.1.2** — Multiplayer Session Governance (planned)
+- 🔄 **vC.1.2** — Multiplayer Session Governance (Phase 47 in progress)
 
 ---
 
@@ -20,9 +20,11 @@
 
 ---
 
-## vC.1.2 Next (Planned)
+## vC.1.2 Phases (IN PROGRESS)
 
 **Goal:** Add explicit multiplayer session phases, structured onboarding, admin-start flow, scene-round collection/resolution, and clearer message-intent routing plus campaign/adventure status surfaces.
+
+- [ ] Phase 47: Session Phases (1/1 plan) — 2026-03-28
 
 **Planned focus:**
 - ready-check plus admin-start discipline
@@ -54,7 +56,8 @@
 | 44. Channel Structure | 1/1 | ✅ Complete | 2026-03-28 |
 | 45. Command Routing | 1/1 | ✅ Complete | 2026-03-28 |
 | 46. Guidance & Polish | 1/1 | ✅ Complete | 2026-03-28 |
+| 47. Session Phases | 1/1 | 📋 Planned | — |
 
 ---
 
-*Last updated: 2026-03-28 after vC.1.1 milestone*
+*Last updated: 2026-03-28 — Added Phase 47 for vC.1.2*
