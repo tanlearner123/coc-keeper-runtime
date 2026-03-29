@@ -134,6 +134,7 @@ class AdventureTrigger(BaseModel):
     action_id: str = ""
     pending_roll_id: str = ""
     roll_action: str = ""
+    roll_label: str = ""
     conditions: TriggerCondition = Field(default_factory=TriggerCondition)
     effects: list[TriggerEffect] = Field(default_factory=list)
     table_summary: str = ""
@@ -166,14 +167,20 @@ class AdventurePackage(BaseModel):
             location_ids = {location.id for location in self.locations}
             for location in self.locations:
                 if location.scene_id not in scene_ids:
-                    raise ValueError("location.scene_id must reference an existing scene")
+                    raise ValueError(
+                        "location.scene_id must reference an existing scene"
+                    )
                 for connection in location.connections:
                     if connection.to_location_id not in location_ids:
-                        raise ValueError("location connection must reference an existing location")
+                        raise ValueError(
+                            "location connection must reference an existing location"
+                        )
             if self.start_location_id is None:
                 self.start_location_id = self.start_scene_id
             if self.start_location_id not in location_ids:
-                raise ValueError("start_location_id must reference an existing location")
+                raise ValueError(
+                    "start_location_id must reference an existing location"
+                )
         elif self.start_location_id is None:
             self.start_location_id = self.start_scene_id
         if self.story_nodes:
@@ -181,7 +188,9 @@ class AdventurePackage(BaseModel):
             if self.start_story_node_id is None:
                 self.start_story_node_id = self.story_nodes[0].id
             if self.start_story_node_id not in node_ids:
-                raise ValueError("start_story_node_id must reference an existing story node")
+                raise ValueError(
+                    "start_story_node_id must reference an existing story node"
+                )
         return self
 
     def scene_by_id(self, scene_id: str) -> AdventureScene:
@@ -202,7 +211,10 @@ class AdventurePackage(BaseModel):
             scene_id=scene.id,
             title=scene.title,
             landmarks=list(scene.guidance.ambient_focus),
-            connections=[AdventureLocationConnection(to_location_id=target, keywords=[target]) for target in scene.exits],
+            connections=[
+                AdventureLocationConnection(to_location_id=target, keywords=[target])
+                for target in scene.exits
+            ],
         )
 
     def trigger_by_id(self, trigger_id: str) -> AdventureTrigger:
@@ -223,9 +235,15 @@ class AdventurePackage(BaseModel):
     def public_state(self, module_state: dict[str, object]) -> dict[str, object]:
         visible: dict[str, object] = {}
         for field in self.state_fields:
-            if field.visibility in {"public", "discoverable"} and field.key in module_state:
+            if (
+                field.visibility in {"public", "discoverable"}
+                and field.key in module_state
+            ):
                 visible[field.key] = module_state[field.key]
         return visible
 
     def gm_state(self, module_state: dict[str, object]) -> dict[str, object]:
-        return {field.key: module_state.get(field.key, field.default) for field in self.state_fields}
+        return {
+            field.key: module_state.get(field.key, field.default)
+            for field in self.state_fields
+        }
