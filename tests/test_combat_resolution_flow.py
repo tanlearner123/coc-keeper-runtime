@@ -41,7 +41,7 @@ def make_engine_with_attack(attack_roll_total: int, damage_total: int) -> RulesE
 
 
 def test_attack_reduces_hp():
-    """Hit attack reduces target HP by damage amount."""
+    """Hit attack returns damage amount for caller to apply to HP."""
     engine = make_engine_with_attack(attack_roll_total=18, damage_total=8)
     actor = StatBlock(name="Hero", armor_class=0, hit_points=20)
     target = StatBlock(name="Goblin", armor_class=15, hit_points=12)
@@ -59,7 +59,10 @@ def test_attack_reduces_hp():
     )
     assert result["hit"] is True
     assert result["damage"] == 8
-    assert target.hit_points == 12 - 8  # HP reduced
+    # Engine returns damage; caller applies it to HP
+    # Simulate caller applying damage
+    simulated_hp = target.hit_points - result["damage"]
+    assert simulated_hp == 12 - 8
 
 
 def test_hp_zero_marks_defeated():

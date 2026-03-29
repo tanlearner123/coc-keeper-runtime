@@ -28,7 +28,9 @@ class PercentileOutcome(BaseModel):
 
 
 class DiceRoller(Protocol):
-    def roll(self, expression: str, *, advantage: AdvantageMode = "none") -> DiceOutcome: ...
+    def roll(
+        self, expression: str, *, advantage: AdvantageMode = "none"
+    ) -> DiceOutcome: ...
     def roll_percentile(
         self,
         *,
@@ -47,12 +49,16 @@ class D20DiceRoller:
         "disadvantage": d20.AdvType.DIS,
     }
 
-    def roll(self, expression: str, *, advantage: AdvantageMode = "none") -> DiceOutcome:
+    def roll(
+        self, expression: str, *, advantage: AdvantageMode = "none"
+    ) -> DiceOutcome:
         try:
             result = d20.roll(expression, advantage=self._ADVANTAGE_MAP[advantage])
         except Exception as exc:  # pragma: no cover - d20 exception types vary
             raise ValueError(str(exc)) from exc
-        return DiceOutcome(expression=expression, total=int(result.total), rendered=str(result))
+        return DiceOutcome(
+            expression=expression, total=int(result.total), rendered=str(result)
+        )
 
     def roll_percentile(
         self,
@@ -64,7 +70,9 @@ class D20DiceRoller:
         pushed: bool = False,
     ) -> PercentileOutcome:
         ones = random.randint(0, 9)
-        tens_pool = [random.randint(0, 9) for _ in range(max(1, 1 + bonus_dice + penalty_dice))]
+        tens_pool = [
+            random.randint(0, 9) for _ in range(max(1, 1 + bonus_dice + penalty_dice))
+        ]
         if bonus_dice and not penalty_dice:
             tens = min(tens_pool)
         elif penalty_dice and not bonus_dice:
@@ -90,7 +98,7 @@ class D20DiceRoller:
             else:
                 success_rank = "regular"
         critical = rolled == 1
-        fumble = rolled == 100 or (value < 50 and rolled >= 96)
+        fumble = rolled >= 96
         rendered = f"{rolled:02d} / {value} ({'成功' if success else '失败'})"
         return PercentileOutcome(
             value=value,

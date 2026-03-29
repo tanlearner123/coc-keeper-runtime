@@ -15,18 +15,39 @@ def make_engine(stub_values: list[int]) -> tuple[RulesEngine, list[int]]:
     def stub_roller(
         *, value, difficulty="regular", bonus_dice=0, penalty_dice=0, pushed=False
     ):
+        rolled = stub_values[call_count[0] % len(stub_values)]
+        thresholds = {
+            "regular": value,
+            "hard": value // 2,
+            "extreme": value // 5,
+        }
+        threshold = thresholds.get(difficulty, value)
+        success = rolled <= threshold
+        rank = "failure"
+        if rolled == 1:
+            success = True
+            rank = "critical"
+        elif success:
+            if rolled <= thresholds["extreme"]:
+                rank = "extreme"
+            elif rolled <= thresholds["hard"]:
+                rank = "hard"
+            else:
+                rank = "regular"
+        critical = rolled == 1
+        fumble = rolled >= 96  # COC spec: fumble on 96-100
         result = {
             "value": value,
             "difficulty": difficulty,
             "bonus_dice": bonus_dice,
             "penalty_dice": penalty_dice,
             "pushed": pushed,
-            "rolled": stub_values[call_count[0] % len(stub_values)],
-            "success": True,
-            "success_rank": "success",
-            "critical": False,
-            "fumble": False,
-            "rendered": f"{stub_values[call_count[0] % len(stub_values)]} / {value}",
+            "rolled": rolled,
+            "success": success,
+            "success_rank": rank,
+            "critical": critical,
+            "fumble": fumble,
+            "rendered": f"{rolled:02d} / {value}",
         }
         call_count[0] += 1
         return result

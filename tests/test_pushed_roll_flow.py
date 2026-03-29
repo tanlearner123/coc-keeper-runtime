@@ -41,20 +41,21 @@ def test_pushed_roll_stores_field_in_outcome():
 
     class StubDiceRoller:
         def roll_percentile(self, **kw):
-            class P:
-                rolled = kw.get("value", 50) - 1
-                success = True
-                success_rank = "success"
-                critical = False
-                fumble = False
-                value = kw.get("value", 50)
-                difficulty = kw.get("difficulty", "regular")
-                bonus_dice = kw.get("bonus_dice", 0)
-                penalty_dice = kw.get("penalty_dice", 0)
-                pushed = kw.get("pushed", False)
-                rendered = f"{rolled} / {self.value}"
-
-            return P()
+            v = kw.get("value", 50)
+            rolled = v - 1
+            return {
+                "value": v,
+                "difficulty": kw.get("difficulty", "regular"),
+                "bonus_dice": kw.get("bonus_dice", 0),
+                "penalty_dice": kw.get("penalty_dice", 0),
+                "pushed": kw.get("pushed", False),
+                "rolled": rolled,
+                "success": True,
+                "success_rank": "success",
+                "critical": False,
+                "fumble": False,
+                "rendered": f"{rolled:02d} / {v}",
+            }
 
         def roll(self, expr, advantage="none"):
             class R:
@@ -71,7 +72,6 @@ def test_pushed_roll_stores_field_in_outcome():
             parameters={"label": "Spot", "value": 50, "pushed": True},
         )
     )
-    # pushed flag should be True in the result
     assert result.get("pushed") is True
 
 
@@ -82,24 +82,23 @@ def test_pushed_roll_triggers_reroll():
 
     class StubDiceRoller:
         def roll_percentile(self, **kw):
+            v = kw.get("value", 50)
             # First call = initial fail (70), second call = second fail (96)
             rolled = 70 if call[0] == 0 else 96
             call[0] += 1
-
-            class P:
-                self.rolled = rolled
-                self.success = False
-                self.success_rank = "failure"
-                self.critical = False
-                self.fumble = rolled == 96  # second failure = fumble
-                self.value = kw.get("value", 50)
-                self.difficulty = kw.get("difficulty", "regular")
-                self.bonus_dice = kw.get("bonus_dice", 0)
-                self.penalty_dice = kw.get("penalty_dice", 0)
-                self.pushed = kw.get("pushed", False)
-                self.rendered = f"{rolled} / {self.value}"
-
-            return P()
+            return {
+                "value": v,
+                "difficulty": kw.get("difficulty", "regular"),
+                "bonus_dice": kw.get("bonus_dice", 0),
+                "penalty_dice": kw.get("penalty_dice", 0),
+                "pushed": kw.get("pushed", False),
+                "rolled": rolled,
+                "success": False,
+                "success_rank": "failure",
+                "critical": False,
+                "fumble": rolled == 96,
+                "rendered": f"{rolled:02d} / {v}",
+            }
 
         def roll(self, expr, advantage="none"):
             class R:
@@ -121,30 +120,29 @@ def test_pushed_roll_triggers_reroll():
 
 
 def test_pushed_roll_second_failure_applies_worse_consequence():
-    """Two consecutive failures with pushed=True apply worse consequence (fumble)."""
+    """Two consecutive failures with pushed=True apply worse consequence."""
     compendium = FixtureCompendium(baseline="2014", fixtures={})
     call = [0]
 
     class StubDiceRoller:
         def roll_percentile(self, **kw):
+            v = kw.get("value", 50)
             # First roll = failure (70), second roll = failure (85)
             rolled = 70 if call[0] == 0 else 85
             call[0] += 1
-
-            class P:
-                self.rolled = rolled
-                self.success = False
-                self.success_rank = "failure"
-                self.critical = False
-                self.fumble = rolled >= 96  # Only fumble on 96+
-                self.value = kw.get("value", 50)
-                self.difficulty = kw.get("difficulty", "regular")
-                self.bonus_dice = kw.get("bonus_dice", 0)
-                self.penalty_dice = kw.get("penalty_dice", 0)
-                self.pushed = kw.get("pushed", False)
-                self.rendered = f"{rolled} / {self.value}"
-
-            return P()
+            return {
+                "value": v,
+                "difficulty": kw.get("difficulty", "regular"),
+                "bonus_dice": kw.get("bonus_dice", 0),
+                "penalty_dice": kw.get("penalty_dice", 0),
+                "pushed": kw.get("pushed", False),
+                "rolled": rolled,
+                "success": False,
+                "success_rank": "failure",
+                "critical": False,
+                "fumble": rolled >= 96,
+                "rendered": f"{rolled:02d} / {v}",
+            }
 
         def roll(self, expr, advantage="none"):
             class R:
@@ -174,24 +172,24 @@ def test_pushed_roll_second_success_recovers():
 
     class StubDiceRoller:
         def roll_percentile(self, **kw):
+            v = kw.get("value", 50)
             # First call = initial fail (70), second call = success (30)
             rolled = 70 if call[0] == 0 else 30
             call[0] += 1
-
-            class P:
-                self.rolled = rolled
-                self.success = rolled <= kw.get("value", 50)
-                self.success_rank = "hard" if self.success else "failure"
-                self.critical = False
-                self.fumble = False
-                self.value = kw.get("value", 50)
-                self.difficulty = kw.get("difficulty", "regular")
-                self.bonus_dice = kw.get("bonus_dice", 0)
-                self.penalty_dice = kw.get("penalty_dice", 0)
-                self.pushed = kw.get("pushed", False)
-                self.rendered = f"{rolled} / {self.value}"
-
-            return P()
+            success = rolled <= v
+            return {
+                "value": v,
+                "difficulty": kw.get("difficulty", "regular"),
+                "bonus_dice": kw.get("bonus_dice", 0),
+                "penalty_dice": kw.get("penalty_dice", 0),
+                "pushed": kw.get("pushed", False),
+                "rolled": rolled,
+                "success": success,
+                "success_rank": "hard" if success else "failure",
+                "critical": False,
+                "fumble": False,
+                "rendered": f"{rolled:02d} / {v}",
+            }
 
         def roll(self, expr, advantage="none"):
             class R:
@@ -220,20 +218,20 @@ def test_pushed_roll_persists_through_engine():
 
     class StubDiceRoller:
         def roll_percentile(self, **kw):
-            class P:
-                rolled = 25
-                success = True
-                success_rank = "regular"
-                critical = False
-                fumble = False
-                value = kw.get("value", 50)
-                difficulty = kw.get("difficulty", "regular")
-                bonus_dice = kw.get("bonus_dice", 0)
-                penalty_dice = kw.get("penalty_dice", 0)
-                pushed = kw.get("pushed", False)
-                rendered = f"25 / {value}"
-
-            return P()
+            v = kw.get("value", 50)
+            return {
+                "value": v,
+                "difficulty": kw.get("difficulty", "regular"),
+                "bonus_dice": kw.get("bonus_dice", 0),
+                "penalty_dice": kw.get("penalty_dice", 0),
+                "pushed": kw.get("pushed", False),
+                "rolled": 25,
+                "success": True,
+                "success_rank": "regular",
+                "critical": False,
+                "fumble": False,
+                "rendered": f"25 / {v}",
+            }
 
         def roll(self, expr, advantage="none"):
             class R:

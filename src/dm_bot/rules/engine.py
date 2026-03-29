@@ -58,7 +58,11 @@ class RulesEngine:
         advantage = str(action.parameters.get("advantage", "none"))
         attack_roll = self._roll(f"1d20+{attack_bonus}", advantage=advantage)
         damage_expression = str(action.parameters.get("damage_expression", "0"))
-        damage_roll = self._roll(damage_expression) if attack_roll.total >= action.target.armor_class else None
+        damage_roll = (
+            self._roll(damage_expression)
+            if attack_roll.total >= action.target.armor_class
+            else None
+        )
         return {
             "action": "attack_roll",
             "actor": action.actor.name,
@@ -73,7 +77,9 @@ class RulesEngine:
             "hit": attack_roll.total >= action.target.armor_class,
         }
 
-    def _execute_check_like(self, action: RuleAction, *, kind: str) -> dict[str, object]:
+    def _execute_check_like(
+        self, action: RuleAction, *, kind: str
+    ) -> dict[str, object]:
         modifier = int(action.parameters.get("modifier", 0))
         advantage = str(action.parameters.get("advantage", "none"))
         label = str(action.parameters.get("label", kind))
@@ -129,6 +135,15 @@ class RulesEngine:
             penalty_dice=penalty_dice,
             pushed=pushed,
         )
+        # Pushed roll re-roll: if pushed=True and first roll failed, roll again
+        if pushed and not outcome.success:
+            outcome = self._roll_percentile(
+                value=value,
+                difficulty=difficulty,
+                bonus_dice=bonus_dice,
+                penalty_dice=penalty_dice,
+                pushed=False,  # Second roll is not pushed
+            )
         return {
             "action": "coc_skill_check",
             "actor": action.actor.name,
