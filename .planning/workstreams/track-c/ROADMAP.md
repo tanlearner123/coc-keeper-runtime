@@ -72,7 +72,7 @@
   4. Inactive or unloaded states are explained explicitly instead of failing silently
 
 ### Phase 53: Handling Reason Surfaces
-- Status: Not Started
+- Status: ✅ Context Ready
 - Plans: 0/0
 - Completed: -
 - Goal: Add concise player-facing explanations for why messages were ignored, buffered, deferred, or otherwise routed differently.
@@ -127,9 +127,9 @@
 | 48. Pre-Play Onboarding | 1/1 | ✅ Complete | 2026-03-28 |
 | 49. Scene Round Collection | 1/1 | ✅ Complete | 2026-03-28 |
 | 50. Message Intent Routing | 1/1 | ✅ Complete | 2026-03-28 |
-| 51. Visibility Core Contracts | 1/1 | Complete    | 2026-03-29 |
-| 52. Player Status Surfaces | - | ○ Not Started | - |
-| 53. Handling Reason Surfaces | - | ○ Not Started | - |
+| 51. Visibility Core Contracts | 1/1 | ✅ Complete | 2026-03-29 |
+| 52. Player Status Surfaces | 1/1 | ✅ Complete | 2026-03-29 |
+| 53. Handling Reason Surfaces | - | ✅ Context Ready | - |
 | 54. KP Ops Surfaces | - | ○ Not Started | - |
 | 55. Activity-Ready Boundary Polish | - | ○ Not Started | - |
 
