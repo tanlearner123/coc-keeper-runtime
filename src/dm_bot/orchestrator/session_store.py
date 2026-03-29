@@ -308,13 +308,19 @@ class SessionStore:
                     error=SelectProfileError.PROFILE_NOT_FOUND.value,
                     error_message=f"档案 `{profile_id}` 不存在。",
                 )
-            if getattr(profile, "status", "active") != "active":
+            if isinstance(profile, dict):
+                profile_status = profile.get("status", "active")
+                profile_user_id = profile.get("user_id", "")
+            else:
+                profile_status = getattr(profile, "status", "active")
+                profile_user_id = getattr(profile, "user_id", "")
+            if profile_status != "active":
                 return ValidationResult(
                     success=False,
                     error=SelectProfileError.PROFILE_INACTIVE.value,
                     error_message=f"档案 `{profile_id}` 已归档，无法选用。",
                 )
-            if str(getattr(profile, "user_id", "")) != user_id:
+            if str(profile_user_id) != user_id:
                 return ValidationResult(
                     success=False,
                     error=SelectProfileError.NOT_PROFILE_OWNER.value,
