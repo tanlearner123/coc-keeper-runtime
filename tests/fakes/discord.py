@@ -30,6 +30,17 @@ class FakeFollowup:
         self.send = AsyncMock(side_effect=track_send)
 
 
+class FakeChannel:
+    def __init__(self, channel_id: str = "chan-1") -> None:
+        self.id = channel_id
+        self.messages: list[str] = []
+
+        async def track_send(content: str) -> None:
+            self.messages.append(content)
+
+        self.send = AsyncMock(side_effect=track_send)
+
+
 def fake_user(user_id: str = "user-1", display_name: str = "TestUser") -> Any:
     return type("User", (), {"id": user_id, "display_name": display_name})()
 
@@ -54,6 +65,7 @@ def fake_interaction(
     interaction.user = fake_user(user_id, display_name)
     interaction.channel_id = channel_id
     interaction.guild_id = guild_id
+    interaction.channel = FakeChannel(channel_id)
     interaction.response = FakeResponse()
     interaction.followup = FakeFollowup()
     interaction.extras = extras or {}

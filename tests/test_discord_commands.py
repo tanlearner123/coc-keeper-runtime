@@ -9,36 +9,13 @@ Phase 61 - Discord Command Layer Validation
 from __future__ import annotations
 
 import asyncio
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
 
 from dm_bot.discord_bot.commands import BotCommands
-from dm_bot.orchestrator.session_store import SessionStore, CampaignMember
-
-
-class FakeResponse:
-    def __init__(self) -> None:
-        self.deferred = False
-        self.messages: list[tuple[str, bool]] = []
-        self.send_message = AsyncMock()
-
-    async def defer(self, *, thinking: bool = False, ephemeral: bool = False) -> None:
-        self.deferred = True
-
-
-class FakeFollowup:
-    def __init__(self) -> None:
-        self.messages: list[str] = []
-        self.sent_messages: list[FakeSentMessage] = []
-
-    async def send(self, content: str, **kwargs) -> None:
-        self.messages.append(content)
-        sent = FakeSentMessage(content)
-        self.sent_messages.append(sent)
-        if kwargs.get("wait"):
-            return sent
-        return None
+from dm_bot.orchestrator.session_store import SessionStore
+from tests.fakes.discord import fake_interaction, FakeFollowup
 
 
 class FakeSentMessage:
@@ -63,29 +40,7 @@ class FakeChannel:
         return sent
 
 
-class FakeInteraction:
-    """Fake Discord interaction for testing command handlers."""
-
-    def __init__(
-        self,
-        *,
-        channel_id: str = "chan-1",
-        guild_id: str = "g1",
-        user_id: str = "user-1",
-    ) -> None:
-        self.channel_id = channel_id
-        self.guild_id = guild_id
-        self.user = type(
-            "User", (), {"id": user_id, "display_name": f"User{user_id}"}
-        )()
-        self.response = FakeResponse()
-        self.followup = FakeFollowup()
-        self.channel = FakeChannel()
-
-
 class FakeProfile:
-    """Fake archive profile for testing select_profile."""
-
     def __init__(
         self, profile_id: str, user_id: str, name: str = "Test Investigator"
     ) -> None:
@@ -93,6 +48,19 @@ class FakeProfile:
         self.user_id = user_id
         self.name = name
         self.status = "active"
+
+
+def _fake_interaction_with_channel(
+    *,
+    channel_id: str = "chan-1",
+    guild_id: str = "g1",
+    user_id: str = "user-1",
+):
+    interaction = fake_interaction(
+        channel_id=channel_id, guild_id=guild_id, user_id=user_id
+    )
+    interaction.channel = FakeChannel()
+    return interaction
 
 
 def _make_bot_commands(store: SessionStore) -> BotCommands:
@@ -120,7 +88,9 @@ async def test_bind_campaign_creates_session_with_correct_fields():
     store = SessionStore()
     cmd = _make_bot_commands(store)
 
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = _fake_interaction_with_channel(
+        channel_id="chan-1", guild_id="g1", user_id="owner"
+    )
 
     await cmd.bind_campaign(interaction, campaign_id="camp-1")
 
@@ -138,7 +108,9 @@ async def test_bind_campaign_adds_owner_to_member_ids():
     store = SessionStore()
     cmd = _make_bot_commands(store)
 
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = _fake_interaction_with_channel(
+        channel_id="chan-1", guild_id="g1", user_id="owner"
+    )
 
     await cmd.bind_campaign(interaction, campaign_id="camp-1")
 
@@ -155,13 +127,13 @@ async def test_join_campaign_adds_member_to_session():
     cmd = _make_bot_commands(store)
 
     # Owner binds first
-    owner_interaction = FakeInteraction(
+    owner_interaction = fake_interaction(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
     await cmd.bind_campaign(owner_interaction, campaign_id="camp-1")
 
     # Guest joins
-    guest_interaction = FakeInteraction(
+    guest_interaction = _fake_interaction_with_channel(
         channel_id="chan-1", guild_id="g1", user_id="guest"
     )
     await cmd.join_campaign(guest_interaction)
@@ -178,7 +150,7 @@ async def test_join_campaign_rejects_unbound_channel():
     store = SessionStore()
     cmd = _make_bot_commands(store)
 
-    interaction = FakeInteraction(
+    interaction = _fake_interaction_with_channel(
         channel_id="unbound-chan", guild_id="g1", user_id="user-x"
     )
 
@@ -196,7 +168,7 @@ async def test_join_campaign_rejects_duplicate_member():
     cmd = _make_bot_commands(store)
 
     # Owner binds
-    owner_interaction = FakeInteraction(
+    owner_interaction = _fake_interaction_with_channel(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
     await cmd.bind_campaign(owner_interaction, campaign_id="camp-1")
@@ -219,7 +191,9 @@ async def test_select_profile_updates_session_state():
     cmd = _make_bot_commands(store)
 
     # Setup: bind campaign with owner as member
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = _fake_interaction_with_channel(
+        channel_id="chan-1", guild_id="g1", user_id="owner"
+    )
     await cmd.bind_campaign(interaction, campaign_id="camp-1")
 
     # Mock archive_repository to return valid profile
@@ -230,7 +204,7 @@ async def test_select_profile_updates_session_state():
     cmd._archive_repository.get_profile = MagicMock(return_value=fake_profile)
 
     # Select profile
-    select_interaction = FakeInteraction(
+    select_interaction = _fake_interaction_with_channel(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
     await cmd.select_profile(select_interaction, profile_id="prof-1")
@@ -247,13 +221,13 @@ async def test_select_profile_rejects_non_member():
     cmd = _make_bot_commands(store)
 
     # Bind campaign (owner will be member)
-    owner_interaction = FakeInteraction(
+    owner_interaction = _fake_interaction_with_channel(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
     await cmd.bind_campaign(owner_interaction, campaign_id="camp-1")
 
     # Non-member tries to select profile
-    outsider_interaction = FakeInteraction(
+    outsider_interaction = _fake_interaction_with_channel(
         channel_id="chan-1", guild_id="g1", user_id="outsider"
     )
     await cmd.select_profile(outsider_interaction, profile_id="prof-1")
@@ -270,7 +244,9 @@ async def test_ready_sets_player_ready_on_success():
     cmd = _make_bot_commands(store)
 
     # Setup: bind campaign with owner and selected profile
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = _fake_interaction_with_channel(
+        channel_id="chan-1", guild_id="g1", user_id="owner"
+    )
     await cmd.bind_campaign(interaction, campaign_id="camp-1")
 
     # Set selected profile
@@ -280,7 +256,7 @@ async def test_ready_sets_player_ready_on_success():
     session.active_characters["owner"] = "Test Investigator"
 
     # Ready up
-    ready_interaction = FakeInteraction(
+    ready_interaction = fake_interaction(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
     await cmd.ready(ready_interaction)
@@ -296,7 +272,9 @@ async def test_ready_rejects_no_profile_selected():
     store = SessionStore()
     cmd = _make_bot_commands(store)
 
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = _fake_interaction_with_channel(
+        channel_id="chan-1", guild_id="g1", user_id="owner"
+    )
     await cmd.bind_campaign(interaction, campaign_id="camp-1")
 
     await cmd.ready(interaction)
@@ -337,11 +315,13 @@ async def test_load_adventure_loads_adventure():
     )
 
     # Setup: bind campaign
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = _fake_interaction_with_channel(
+        channel_id="chan-1", guild_id="g1", user_id="owner"
+    )
     await cmd.bind_campaign(interaction, campaign_id="camp-1")
 
     # Load adventure
-    load_interaction = FakeInteraction(
+    load_interaction = fake_interaction(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
     await cmd.load_adventure(load_interaction, adventure_id="mad_mansion")
