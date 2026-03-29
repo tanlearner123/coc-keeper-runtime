@@ -465,7 +465,9 @@ class SessionStore:
                 "session_phase": session.session_phase.value,
                 "player_ready": dict(session.player_ready),
                 "admin_started": session.admin_started,
-                "phase_history": session.phase_history,
+                "phase_history": [
+                    (phase, ts.isoformat()) for phase, ts in session.phase_history
+                ],
                 "onboarding_completed": dict(session.onboarding_completed),
                 "onboarding_content": dict(session.onboarding_content),
                 "pending_actions": dict(session.pending_actions),
@@ -545,7 +547,10 @@ class SessionStore:
                 session_phase=SessionPhase(raw.get("session_phase", "lobby")),
                 player_ready=dict(raw.get("player_ready", {})),
                 admin_started=raw.get("admin_started", False),
-                phase_history=list(raw.get("phase_history", [])),
+                phase_history=[
+                    (phase, datetime.fromisoformat(ts))
+                    for phase, ts in raw.get("phase_history", [])
+                ],
                 onboarding_completed=dict(raw.get("onboarding_completed", {})),
                 onboarding_content=dict(raw.get("onboarding_content", {})),
                 pending_actions=dict(raw.get("pending_actions", {})),
