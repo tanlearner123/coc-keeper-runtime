@@ -3,6 +3,26 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
+class SelectProfileError(str, Enum):
+    NO_SESSION = "no_session"
+    NOT_MEMBER = "not_member"
+    PROFILE_NOT_FOUND = "profile_not_found"
+    PROFILE_INACTIVE = "profile_inactive"
+    NOT_PROFILE_OWNER = "not_profile_owner"
+
+
+class ReadyGateError(str, Enum):
+    NO_SESSION = "no_session"
+    NOT_MEMBER = "not_member"
+    NO_PROFILE_SELECTED = "no_profile_selected"
+
+
+class ValidationResult(BaseModel):
+    success: bool = True
+    error: str | None = None
+    error_message: str | None = None
+
+
 class CampaignRole(str, Enum):
     """Explicit campaign membership roles."""
 
@@ -260,13 +280,73 @@ class SessionStore:
         return session
 
     def select_archive_profile(
-        self, *, channel_id: str, user_id: str, profile_id: str
-    ) -> CampaignSession:
-        session = self._sessions[channel_id]
+        self,
+        *,
+        channel_id: str,
+        user_id: str,
+        profile_id: str,
+        profiles: dict[str, object] | None = None,
+    ) -> ValidationResult:
+        session = self._sessions.get(channel_id)
+        if session is None:
+            return ValidationResult(
+                success=False,
+                error=SelectProfileError.NO_SESSION.value,
+                error_message="当前频道没有绑定战役。",
+            )
+        if user_id not in session.members:
+            return ValidationResult(
+                success=False,
+                error=SelectProfileError.NOT_MEMBER.value,
+                error_message="你还不是这个战役的成员。请先使用 /join_campaign 加入。",
+            )
+        if profiles is not None:
+            profile = profiles.get(profile_id)
+            if profile is None:
+                return ValidationResult(
+                    success=False,
+                    error=SelectProfileError.PROFILE_NOT_FOUND.value,
+                    error_message=f"档案 `{profile_id}` 不存在。",
+                )
+            if getattr(profile, "status", "active") != "active":
+                return ValidationResult(
+                    success=False,
+                    error=SelectProfileError.PROFILE_INACTIVE.value,
+                    error_message=f"档案 `{profile_id}` 已归档，无法选用。",
+                )
+            if str(getattr(profile, "user_id", "")) != user_id:
+                return ValidationResult(
+                    success=False,
+                    error=SelectProfileError.NOT_PROFILE_OWNER.value,
+                    error_message="你只能选用自己的档案。",
+                )
         session.selected_profiles[user_id] = profile_id
         if user_id in session.members:
             session.members[user_id].selected_profile_id = profile_id
-        return session
+        return ValidationResult(success=True)
+
+    def validate_ready(self, *, channel_id: str, user_id: str) -> ValidationResult:
+        session = self._sessions.get(channel_id)
+        if session is None:
+            return ValidationResult(
+                success=False,
+                error=ReadyGateError.NO_SESSION.value,
+                error_message="当前频道没有绑定战役。",
+            )
+        member = session.members.get(user_id)
+        if member is None:
+            return ValidationResult(
+                success=False,
+                error=ReadyGateError.NOT_MEMBER.value,
+                error_message="你还不是这个战役的成员。请先使用 /join_campaign 加入。",
+            )
+        if not member.selected_profile_id and not member.active_character_name:
+            return ValidationResult(
+                success=False,
+                error=ReadyGateError.NO_PROFILE_SELECTED.value,
+                error_message="请先使用 /select_profile 选择一个调查员档案，或提供角色名称。",
+            )
+        return ValidationResult(success=True)
 
     def selected_profile_for(self, *, channel_id: str, user_id: str) -> str | None:
         session = self._sessions.get(channel_id)
