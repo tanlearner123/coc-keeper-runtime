@@ -15,72 +15,7 @@ import pytest
 
 from dm_bot.discord_bot.commands import BotCommands
 from dm_bot.orchestrator.session_store import SessionStore
-
-
-class FakeResponse:
-    def __init__(self) -> None:
-        self.deferred = False
-        self.messages: list[tuple[str, bool]] = []
-
-    async def send_message(self, content: str, ephemeral: bool = False) -> None:
-        self.messages.append((content, ephemeral))
-
-    async def defer(self, *, thinking: bool = False, ephemeral: bool = False) -> None:
-        self.deferred = True
-
-
-class FakeFollowup:
-    def __init__(self) -> None:
-        self.messages: list[str] = []
-        self.sent_messages: list[FakeSentMessage] = []
-
-    async def send(self, content: str, **kwargs) -> None:
-        self.messages.append(content)
-        sent = FakeSentMessage(content)
-        self.sent_messages.append(sent)
-        if kwargs.get("wait"):
-            return sent
-        return None
-
-
-class FakeSentMessage:
-    def __init__(self, content: str) -> None:
-        self.content = content
-        self.edits: list[str] = []
-
-    async def edit(self, *, content: str) -> None:
-        self.content = content
-        self.edits.append(content)
-
-
-class FakeChannel:
-    def __init__(self) -> None:
-        self.messages: list[str] = []
-        self.sent_messages: list[FakeSentMessage] = []
-
-    async def send(self, content: str) -> None:
-        self.messages.append(content)
-        sent = FakeSentMessage(content)
-        self.sent_messages.append(sent)
-        return sent
-
-
-class FakeInteraction:
-    def __init__(
-        self,
-        *,
-        channel_id: str = "chan-1",
-        guild_id: str = "g1",
-        user_id: str = "user-1",
-    ) -> None:
-        self.channel_id = channel_id
-        self.guild_id = guild_id
-        self.user = type(
-            "User", (), {"id": user_id, "display_name": f"User{user_id}"}
-        )()
-        self.response = FakeResponse()
-        self.followup = FakeFollowup()
-        self.channel = FakeChannel()
+from tests.fakes.discord import fake_interaction
 
 
 class FakeProfile:
@@ -112,10 +47,10 @@ async def test_full_lobby_flow_bind_join_select_ready():
     store = SessionStore()
     cmd = _make_bot_commands(store)
 
-    owner_interaction = FakeInteraction(
+    owner_interaction = fake_interaction(
         channel_id="chan-1", guild_id="g1", user_id="owner"
     )
-    guest_interaction = FakeInteraction(
+    guest_interaction = fake_interaction(
         channel_id="chan-1", guild_id="g1", user_id="guest"
     )
 
@@ -185,7 +120,7 @@ async def test_lobby_flow_state_persistence():
     store = SessionStore()
     cmd = _make_bot_commands(store)
 
-    interaction = FakeInteraction(channel_id="chan-1", guild_id="g1", user_id="owner")
+    interaction = fake_interaction(channel_id="chan-1", guild_id="g1", user_id="owner")
     profile = FakeProfile(
         profile_id="prof-1", user_id="owner", name="Test Investigator"
     )

@@ -1,28 +1,13 @@
 import asyncio
 import json
 
-from dm_bot.models.schemas import ModelResponse
 from dm_bot.narration.service import NarrationRequest, NarrationService
 from dm_bot.router.contracts import TurnPlan
-
-
-class StubClient:
-    def __init__(self) -> None:
-        self.requests = []
-        self.stream_requests = []
-
-    async def call_narrator(self, request):
-        self.requests.append(request)
-        return ModelResponse(model="test", content="回复")
-
-    async def stream_narrator(self, request):
-        self.stream_requests.append(request)
-        yield "回"
-        yield "复"
+from tests.fakes.models import FastMock
 
 
 def test_narration_service_uses_dm_focused_chinese_prompt() -> None:
-    client = StubClient()
+    client = FastMock()
     service = NarrationService(client)
 
     asyncio.run(
@@ -42,14 +27,14 @@ def test_narration_service_uses_dm_focused_chinese_prompt() -> None:
         )
     )
 
-    request = client.requests[0]
+    request = client.narrator_requests[0]
     assert "Chinese Call of Cthulhu Keeper" in request.system_prompt
     payload = json.loads(request.user_prompt)
     assert payload["player_input"] == "我推开门。"
 
 
 def test_narration_service_includes_public_and_gm_adventure_context() -> None:
-    client = StubClient()
+    client = FastMock()
     service = NarrationService(client)
 
     asyncio.run(
@@ -74,14 +59,20 @@ def test_narration_service_includes_public_and_gm_adventure_context() -> None:
         )
     )
 
-    request = client.requests[0]
+    request = client.narrator_requests[0]
     payload = json.loads(request.user_prompt)
-    assert payload["state_snapshot"]["adventure"]["public"]["state"]["time_remaining"] == 180
-    assert payload["state_snapshot"]["adventure"]["gm"]["state"]["administrator_truth"] == "奈亚化身"
+    assert (
+        payload["state_snapshot"]["adventure"]["public"]["state"]["time_remaining"]
+        == 180
+    )
+    assert (
+        payload["state_snapshot"]["adventure"]["gm"]["state"]["administrator_truth"]
+        == "奈亚化身"
+    )
 
 
 def test_narration_service_streams_chunks() -> None:
-    client = StubClient()
+    client = FastMock(narrator_content="回复")
     service = NarrationService(client)
 
     async def collect() -> list[str]:
@@ -106,4 +97,4 @@ def test_narration_service_streams_chunks() -> None:
     chunks = asyncio.run(collect())
 
     assert chunks == ["回", "复"]
-    assert client.stream_requests
+    assert client.narrator_requests

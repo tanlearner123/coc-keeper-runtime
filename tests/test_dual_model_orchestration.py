@@ -4,30 +4,13 @@ import pytest
 from pydantic import ValidationError
 
 from dm_bot.config import Settings
-from dm_bot.models.schemas import ModelResponse, TurnEnvelope
+from dm_bot.models.schemas import TurnEnvelope
 from dm_bot.runtime.model_checks import build_model_snapshot
 from dm_bot.router.contracts import TurnPlan
 from dm_bot.router.service import RouterError, RouterService
 from dm_bot.narration.service import NarrationRequest, NarrationService
 from dm_bot.orchestrator.turn_runner import TurnRunner
-
-
-class StubOllamaClient:
-    def __init__(self, *, router_content: str = "", narrator_content: str = "") -> None:
-        self.router_model = "router-test"
-        self.narrator_model = "narrator-test"
-        self.router_requests = []
-        self.narrator_requests = []
-        self._router_content = router_content
-        self._narrator_content = narrator_content
-
-    async def call_router(self, request):
-        self.router_requests.append(request)
-        return ModelResponse(model=self.router_model, content=self._router_content)
-
-    async def call_narrator(self, request):
-        self.narrator_requests.append(request)
-        return ModelResponse(model=self.narrator_model, content=self._narrator_content)
+from tests.fakes.models import FastMock
 
 
 def test_turn_plan_requires_structured_mode() -> None:
@@ -43,7 +26,7 @@ def test_turn_plan_requires_structured_mode() -> None:
 
 
 def test_router_service_returns_validated_turn_plan() -> None:
-    client = StubOllamaClient(
+    client = FastMock(
         router_content='{"mode":"dm","tool_calls":[],"state_intents":[],"narration_brief":"keep it short"}'
     )
     service = RouterService(client)
@@ -64,7 +47,7 @@ def test_router_service_returns_validated_turn_plan() -> None:
 
 
 def test_router_service_rejects_invalid_json_payload() -> None:
-    client = StubOllamaClient(router_content="not-json")
+    client = FastMock(router_content="not-json")
     service = RouterService(client)
     envelope = TurnEnvelope(
         campaign_id="camp-1",
@@ -79,7 +62,7 @@ def test_router_service_rejects_invalid_json_payload() -> None:
 
 
 def test_router_service_normalizes_common_schema_aliases() -> None:
-    client = StubOllamaClient(
+    client = FastMock(
         router_content=(
             '{"mode":"dm","tool_calls":[{"tool":"lookup_rule","params":{"topic":"stealth"}}],'
             '"state_intents":["exploring"],"narration_brief":"brief"}'
@@ -102,7 +85,7 @@ def test_router_service_normalizes_common_schema_aliases() -> None:
 
 
 def test_router_service_normalizes_string_tool_calls() -> None:
-    client = StubOllamaClient(
+    client = FastMock(
         router_content='{"mode":"dm","tool_calls":["use flashlights"],"state_intents":[],"narration_brief":"brief"}'
     )
     service = RouterService(client)
@@ -121,7 +104,7 @@ def test_router_service_normalizes_string_tool_calls() -> None:
 
 
 def test_turn_runner_passes_compact_context_to_narrator() -> None:
-    client = StubOllamaClient(
+    client = FastMock(
         router_content=(
             '{"mode":"scene","tool_calls":[{"name":"lookup_rule","arguments":{"topic":"stealth"}}],'
             '"state_intents":[{"kind":"scene_focus","payload":{"speaker":"守卫"}}],'
@@ -165,7 +148,9 @@ def test_turn_runner_includes_guidance_context_from_gameplay() -> None:
     gameplay = GameplayOrchestrator(
         importer=None,
         registry=CharacterRegistry(),
-        rules_engine=RulesEngine(compendium=FixtureCompendium(baseline="2014", fixtures={})),
+        rules_engine=RulesEngine(
+            compendium=FixtureCompendium(baseline="2014", fixtures={})
+        ),
     )
     gameplay.load_adventure(
         AdventurePackage.model_validate(
@@ -186,19 +171,23 @@ def test_turn_runner_includes_guidance_context_from_gameplay() -> None:
                                 "title": "石钟",
                                 "keywords": ["钟"],
                                 "judgement": "auto",
-                                "result_text": "钟针在倒退。"
+                                "result_text": "钟针在倒退。",
                             }
-                        ]
+                        ],
                     }
                 ],
             }
         )
     )
-    client = StubOllamaClient(
+    client = FastMock(
         router_content='{"mode":"dm","tool_calls":[],"state_intents":[],"narration_brief":"brief"}',
         narrator_content="你看到石钟的指针正在倒退。",
     )
-    runner = TurnRunner(router=RouterService(client), narrator=NarrationService(client), gameplay=gameplay)
+    runner = TurnRunner(
+        router=RouterService(client),
+        narrator=NarrationService(client),
+        gameplay=gameplay,
+    )
 
     result = asyncio.run(
         runner.run_turn(
@@ -225,17 +214,25 @@ def test_turn_runner_includes_player_specific_panel_and_story_context() -> None:
     gameplay = GameplayOrchestrator(
         importer=None,
         registry=CharacterRegistry(),
-        rules_engine=RulesEngine(compendium=FixtureCompendium(baseline="2014", fixtures={})),
+        rules_engine=RulesEngine(
+            compendium=FixtureCompendium(baseline="2014", fixtures={})
+        ),
     )
     gameplay.load_adventure(load_adventure("fuzhe"))
-    gameplay.ensure_investigator_panel(user_id="user-1", display_name="Alice", role="magical_girl")
+    gameplay.ensure_investigator_panel(
+        user_id="user-1", display_name="Alice", role="magical_girl"
+    )
     gameplay.seed_role_knowledge(user_id="user-1", role="magical_girl")
 
-    client = StubOllamaClient(
+    client = FastMock(
         router_content='{"mode":"dm","tool_calls":[],"state_intents":[],"narration_brief":"brief"}',
         narrator_content="你意识到聊天室中的任务提示与你眼前的异常有关。",
     )
-    runner = TurnRunner(router=RouterService(client), narrator=NarrationService(client), gameplay=gameplay)
+    runner = TurnRunner(
+        router=RouterService(client),
+        narrator=NarrationService(client),
+        gameplay=gameplay,
+    )
 
     asyncio.run(
         runner.run_turn(
@@ -270,4 +267,6 @@ def test_model_snapshot_reports_router_and_narrator_readiness(monkeypatch) -> No
 
     assert snapshot.status == "ok"
     assert snapshot.checks["router_model"].name == "qwen3:1.7b"
-    assert snapshot.checks["narrator_model"].name == "collective-v0.1-chinese-roleplay-8b"
+    assert (
+        snapshot.checks["narrator_model"].name == "collective-v0.1-chinese-roleplay-8b"
+    )

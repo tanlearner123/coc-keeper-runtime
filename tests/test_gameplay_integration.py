@@ -9,28 +9,7 @@ from dm_bot.orchestrator.turn_runner import TurnRunner
 from dm_bot.router.contracts import TurnPlan
 from dm_bot.rules.compendium import FixtureCompendium
 from dm_bot.rules.engine import RulesEngine
-
-
-class FakeResponse:
-    def __init__(self) -> None:
-        self.messages: list[tuple[str, bool]] = []
-
-    async def send_message(self, content: str, ephemeral: bool = False) -> None:
-        self.messages.append((content, ephemeral))
-
-
-class FakeInteraction:
-    def __init__(
-        self,
-        *,
-        channel_id: str = "chan-1",
-        guild_id: str = "guild-1",
-        user_id: str = "user-1",
-    ) -> None:
-        self.channel_id = channel_id
-        self.guild_id = guild_id
-        self.user = type("User", (), {"id": user_id})()
-        self.response = FakeResponse()
+from tests.fakes.discord import fake_interaction
 
 
 class StubRouter:
@@ -104,7 +83,7 @@ def test_commands_can_switch_scene_mode_and_start_combat() -> None:
     commands = BotCommands(
         settings=None, session_store=None, turn_coordinator=None, gameplay=gameplay
     )
-    interaction = FakeInteraction()
+    interaction = fake_interaction()
 
     asyncio.run(commands.enter_scene(interaction, speakers="守卫,酒馆老板"))
     assert gameplay.mode_state.mode == "scene"

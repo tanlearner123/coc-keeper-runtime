@@ -1,18 +1,9 @@
 from __future__ import annotations
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 import pytest
 
 from dm_bot.orchestrator.session_store import SessionStore, ValidationResult
-
-
-def _make_interaction(user_id="user-1", channel_id="chan-1", guild_id="g1"):
-    interaction = MagicMock()
-    interaction.user.id = user_id
-    interaction.channel_id = channel_id
-    interaction.guild_id = guild_id
-    interaction.response = AsyncMock()
-    interaction.followup = AsyncMock()
-    return interaction
+from tests.fakes.discord import fake_interaction
 
 
 @pytest.mark.asyncio
@@ -33,7 +24,7 @@ async def test_select_profile_rejects_non_member():
     )
     cmd._persist_sessions = MagicMock()
 
-    interaction = _make_interaction(user_id="user-2", channel_id="chan-1")
+    interaction = fake_interaction(user_id="user-2", channel_id="chan-1")
     await cmd.select_profile(interaction, profile_id="prof-1")
 
     interaction.response.send_message.assert_called_once()
@@ -61,7 +52,7 @@ async def test_select_profile_success():
     )
     cmd._persist_sessions = MagicMock()
 
-    interaction = _make_interaction(user_id="user-1", channel_id="chan-1")
+    interaction = fake_interaction(user_id="user-1", channel_id="chan-1")
     await cmd.select_profile(interaction, profile_id="prof-1")
 
     interaction.response.send_message.assert_called_once()
@@ -87,7 +78,7 @@ async def test_ready_rejects_no_profile():
         persistence_store=MagicMock(),
     )
 
-    interaction = _make_interaction(user_id="user-1", channel_id="chan-1")
+    interaction = fake_interaction(user_id="user-1", channel_id="chan-1")
     await cmd.ready(interaction)
 
     interaction.response.send_message.assert_called_once()
@@ -116,7 +107,7 @@ async def test_ready_success():
     )
     cmd._persist_sessions = MagicMock()
 
-    interaction = _make_interaction(user_id="user-1", channel_id="chan-1")
+    interaction = fake_interaction(user_id="user-1", channel_id="chan-1")
     await cmd.ready(interaction)
 
     interaction.response.send_message.assert_called_once()
