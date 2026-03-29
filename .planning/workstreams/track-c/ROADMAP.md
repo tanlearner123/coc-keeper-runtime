@@ -60,9 +60,9 @@
   4. Existing player snapshot state can be exposed without redefining character semantics
 
 ### Phase 52: Player Status Surfaces
-- Status: Not Started
-- Plans: 0/0
-- Completed: -
+- Status: Complete
+- Plans: 1/1
+- Completed: 2026-03-29
 - Goal: Add player-facing shared status surfaces for current campaign/adventure/session identity and waiting state.
 - Requirements: PLAY-01, PLAY-02, CURR-01, CURR-02
 - Success Criteria:
