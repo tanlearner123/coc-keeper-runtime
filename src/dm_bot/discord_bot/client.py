@@ -308,8 +308,11 @@ class DiscordDmBot(commands.Bot):
             await self.handlers.load_adventure(interaction, adventure_id=adventure_id)
 
         @self.tree.command(
-            name="ready", description="Mark yourself ready for the loaded adventure"
+            name="ready", description="Mark yourself as ready for the campaign"
         )
+        async def ready(interaction: discord.Interaction) -> None:
+            await self.handlers.ready(interaction)
+
         @app_commands.describe(
             character_name="Optional character or role name for this run"
         )

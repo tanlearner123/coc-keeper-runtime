@@ -485,33 +485,56 @@ class BotCommands:
         await interaction.response.send_message(profile.detail_view(), ephemeral=True)
 
     async def select_profile(self, interaction, *, profile_id: str) -> None:
-        if self._archive_repository is None:
+        if self._session_store is None:
             await interaction.response.send_message(
-                "archive repository is not configured", ephemeral=True
+                "session store is not configured", ephemeral=True
             )
             return
-        session = self._session_store.get_by_channel(str(interaction.channel_id))
-        if session is None:
+
+        channel_id = str(interaction.channel_id)
+        user_id = str(interaction.user.id)
+
+        # Load profiles from archive repository for ownership check
+        profiles = {}
+        if self._archive_repository is not None:
+            try:
+                user_profiles = self._archive_repository.list_profiles(user_id=user_id)
+                for p in user_profiles:
+                    profiles[p.profile_id] = p
+            except Exception:
+                pass
+
+        result = self._session_store.select_archive_profile(
+            channel_id=channel_id,
+            user_id=user_id,
+            profile_id=profile_id,
+            profiles=profiles if profiles else None,
+        )
+
+        if not result.success:
             await interaction.response.send_message(
-                "no campaign bound to this channel", ephemeral=True
+                result.error_message, ephemeral=True
             )
             return
-        profile = self._archive_repository.get_profile(
-            str(interaction.user.id), profile_id
-        )
-        self._session_store.select_archive_profile(
-            channel_id=str(interaction.channel_id),
-            user_id=str(interaction.user.id),
-            profile_id=profile.profile_id,
-        )
+
         self._persist_sessions()
-        await self._sync_profile_projection_for_channel(
-            channel_id=str(interaction.channel_id),
-            user_id=str(interaction.user.id),
-            profile=profile,
-        )
+
+        # Re-fetch profile object for projection sync (profiles dict was only for validation)
+        profile = None
+        if self._archive_repository is not None:
+            try:
+                profile = self._archive_repository.get_profile(user_id, profile_id)
+            except Exception:
+                pass
+
+        if profile is not None:
+            await self._sync_profile_projection_for_channel(
+                channel_id=channel_id, user_id=user_id, profile=profile
+            )
+
         await interaction.response.send_message(
-            f"已为本团选择档案角色 `{profile.name}`。", ephemeral=True
+            f"已选择档案 `{profile.name if profile else profile_id}`。使用 `/ready` 就位。",
+            ephemeral=True,
         )
 
     async def archive_profile(self, interaction, *, profile_id: str) -> None:
@@ -764,6 +787,35 @@ class BotCommands:
         )
         await interaction.channel.send(
             f"《{adventure.title}》已加载。已加入玩家请使用 `/ready` 完成就位；如未导入角色，可在 `/ready` 时填写角色名。"
+        )
+
+    async def ready(self, interaction) -> None:
+        if self._session_store is None:
+            await interaction.response.send_message(
+                "session store is not configured", ephemeral=True
+            )
+            return
+
+        channel_id = str(interaction.channel_id)
+        user_id = str(interaction.user.id)
+
+        result = self._session_store.validate_ready(
+            channel_id=channel_id, user_id=user_id
+        )
+
+        if not result.success:
+            await interaction.response.send_message(
+                result.error_message, ephemeral=True
+            )
+            return
+
+        session = self._session_store.get_by_channel(channel_id)
+        session.set_player_ready(user_id, True)
+        self._persist_sessions()
+
+        char_name = session.active_characters.get(user_id, "调查员")
+        await interaction.response.send_message(
+            f"**{char_name}** 已就位！", ephemeral=False
         )
 
     async def ready_for_adventure(
