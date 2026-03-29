@@ -8,40 +8,7 @@ from dm_bot.orchestrator.turn_runner import TurnRunner
 from dm_bot.router.contracts import TurnPlan
 from dm_bot.rules.compendium import FixtureCompendium
 from dm_bot.rules.engine import RulesEngine
-
-
-class FakeResponse:
-    def __init__(self) -> None:
-        self.messages: list[tuple[str, bool]] = []
-
-    async def send_message(self, content: str, ephemeral: bool = False) -> None:
-        self.messages.append((content, ephemeral))
-
-    async def defer(self, *, thinking: bool = False, ephemeral: bool = False) -> None:
-        return None
-
-
-class FakeFollowup:
-    def __init__(self) -> None:
-        self.messages: list[str] = []
-
-    async def send(self, content: str) -> None:
-        self.messages.append(content)
-
-
-class FakeInteraction:
-    def __init__(
-        self,
-        *,
-        channel_id: str = "chan-1",
-        guild_id: str = "guild-1",
-        user_id: str = "user-1",
-    ) -> None:
-        self.channel_id = channel_id
-        self.guild_id = guild_id
-        self.user = type("User", (), {"id": user_id})()
-        self.response = FakeResponse()
-        self.followup = FakeFollowup()
+from tests.fakes.discord import fake_interaction
 
 
 class StubRouter:
@@ -146,7 +113,7 @@ def test_import_character_command_registers_snapshot_character() -> None:
     commands = BotCommands(
         settings=None, session_store=None, turn_coordinator=None, gameplay=gameplay
     )
-    interaction = FakeInteraction(user_id="user-7")
+    interaction = fake_interaction(user_id="user-7")
 
     asyncio.run(
         commands.import_character(
