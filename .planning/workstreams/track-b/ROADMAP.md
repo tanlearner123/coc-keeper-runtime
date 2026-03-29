@@ -14,7 +14,7 @@
 **vB.1.4** - B4 Identity Projection And Character Ownership
 - **Primary Track:** Track B - 人物构建与管理层
 - **Goal:** Strengthen Discord-user-to-character ownership so multiplayer campaign membership and role projection stay explicit, auditable, and immune to admin/owner identity bleed
-- **Status:** Planned
+- **Status:** Complete ✓
 
 ---
 
@@ -283,12 +283,16 @@
 **Requirements:** REQ-002, REQ-003, REQ-008
 
 **Success Criteria** (what must be TRUE):
-  1. A non-member attempting to select a profile gets rejected
-  2. A user attempting to select someone else's archive profile gets rejected
-  3. Running `/ready` fails if the user has not selected a profile or is not a member
+  1. A non-member attempting to select a profile gets rejected with explicit error
+  2. A user attempting to select someone else's archive profile gets rejected with explicit error
+  3. Running `/ready` fails with explicit error if the user has not selected a profile or is not a member
 
 **What This Does NOT Include:**
   - Modifying gameplay loops, combat resolution, or dice rolling mechanics
+
+**Plans:**
+- `54-01` — Validation Logic (TDD) — SelectProfileError/ReadyGateError enums, updated select_archive_profile(), validate_ready()
+- `54-02` — Discord Command Wiring — /select_profile and /ready slash commands with validation
 
 ## Progress Table (vB.1.4)
 
@@ -296,7 +300,7 @@
 |-------|----------------|--------|-----------|
 | 52. Foundational Identity Models | 1/1 | Complete   | 2026-03-29 |
 | 53. Join Flow and Membership Gates | 1/1 | Complete    | 2026-03-29 |
-| 54. Character Selection and Ready Validation | 1/2 | In Progress|  |
+| 54. Character Selection and Ready Validation | 2/2 | Planned    | - |
 
 ---
 
