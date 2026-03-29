@@ -76,7 +76,7 @@ class BotCommands:
             return self._default_channel_guidance()
 
         lines = [
-            "本 Bot 采用五频道职责分离设计：",
+            "本 Bot 采用六频道职责分离设计：",
             "",
             "1. **#角色档案** - 档案管理命令",
             "   `/profiles`, `/profile_detail`, `/start_builder`, `/select_profile`",
@@ -93,14 +93,17 @@ class BotCommands:
             "5. **#玩家状态** - 玩家状态面板",
             "   `/status_overview`, `/status_me`",
             "",
+            "6. **#kp-ops** - KP 运维面板",
+            "   `/ops_status` (overview|detailed|routing)",
+            "",
         ]
 
-        # Show current bindings if available
         archive = self._session_store.archive_channel_for(guild_id)
         game = self._session_store.game_channel_for(guild_id)
         trace = self._session_store.trace_channel_for(guild_id)
         admin = self._session_store.admin_channel_for(guild_id)
         player_status = self._session_store.player_status_channel_for(guild_id)
+        ops = self._session_store.ops_channel_for(guild_id)
 
         bindings = []
         if archive:
@@ -113,6 +116,8 @@ class BotCommands:
             bindings.append(f"管理员: <#{admin}>")
         if player_status:
             bindings.append(f"玩家状态: <#{player_status}>")
+        if ops:
+            bindings.append(f"KP-ops: <#{ops}>")
 
         if bindings:
             lines.extend(["**当前绑定：**"])
@@ -129,13 +134,14 @@ class BotCommands:
                 "`/bind_trace_channel` - 在 KP-trace 频道执行",
                 "`/bind_admin_channel` - 在管理员频道执行",
                 "`/bind_player_status_channel` - 在玩家状态频道执行",
+                "`/bind_ops_channel` - 在 KP-ops 频道执行",
             ]
         )
 
         return "\n".join(lines)
 
     def _default_channel_guidance(self) -> str:
-        return """本 Bot 采用五频道职责分离设计：
+        return """本 Bot 采用六频道职责分离设计：
 
 1. **#角色档案** - 档案管理命令
    `/profiles`, `/profile_detail`, `/start_builder`, `/select_profile`
@@ -152,12 +158,16 @@ class BotCommands:
 5. **#玩家状态** - 玩家状态面板
    `/status_overview`, `/status_me`
 
+6. **#kp-ops** - KP 运维面板
+   `/ops_status` (overview|detailed|routing)
+
 绑定命令：
 `/bind_archive_channel` - 在角色档案频道执行
 `/bind_campaign` - 在游戏大厅执行
 `/bind_trace_channel` - 在 KP-trace 频道执行
 `/bind_admin_channel` - 在管理员频道执行
-`/bind_player_status_channel` - 在玩家状态频道执行"""
+`/bind_player_status_channel` - 在玩家状态频道执行
+`/bind_ops_channel` - 在 KP-ops 频道执行"""
 
     async def bind_campaign(self, interaction, *, campaign_id: str) -> None:
         self._session_store.bind_campaign(
@@ -207,6 +217,52 @@ class BotCommands:
         await interaction.response.send_message(
             "当前频道已绑定为玩家状态频道。", ephemeral=True
         )
+
+    async def bind_ops_channel(self, interaction) -> None:
+        self._session_store.bind_ops_channel(
+            guild_id=str(interaction.guild_id), channel_id=str(interaction.channel_id)
+        )
+        self._persist_sessions()
+        await interaction.response.send_message(
+            "当前频道已绑定为 KP 运维频道。", ephemeral=True
+        )
+
+    async def ops_status(self, interaction, *, mode: str = "overview") -> None:
+        """Show KP ops status overview, detailed, or routing history."""
+        if self._session_store is None:
+            await interaction.response.send_message(
+                "session store is not configured", ephemeral=True
+            )
+            return
+
+        guild_id = str(interaction.guild_id) if interaction.guild_id else ""
+        channel_id = str(interaction.channel_id) if interaction.channel_id else ""
+
+        session = self._session_store.get_by_channel(channel_id)
+        if session is None:
+            await interaction.response.send_message(
+                "当前频道没有绑定战役。请先使用 `/bind_campaign` 绑定战役。",
+                ephemeral=True,
+            )
+            return
+
+        self._load_campaign_state(session.campaign_id)
+
+        snapshot = self._build_visibility_snapshot(session)
+        from dm_bot.orchestrator.kp_ops_renderer import KPOpsRenderer
+
+        renderer = KPOpsRenderer(active_characters=session.active_characters)
+
+        if mode == "overview":
+            output = renderer.render_overview(snapshot)
+        elif mode == "detailed":
+            output = renderer.render_detailed(snapshot)
+        elif mode == "routing":
+            output = renderer.render_routing_history(snapshot)
+        else:
+            output = renderer.render_overview(snapshot)
+
+        await interaction.response.send_message(output, ephemeral=False)
 
     async def status_overview(self, interaction) -> None:
         """Show player status overview in the player status channel."""

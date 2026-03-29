@@ -38,6 +38,8 @@ class CampaignSession(BaseModel):
         default_factory=dict
     )  # user_id -> action text
     action_submitters: set[str] = Field(default_factory=set)  # users who have submitted
+    # Round tracking (Phase 54 - KP Ops Surfaces)
+    round_number: int | None = None
 
     def transition_to(self, new_phase: SessionPhase) -> None:
         self.session_phase = new_phase
@@ -128,6 +130,7 @@ class SessionStore:
         self._admin_channels: dict[str, str] = {}
         self._game_channels: dict[str, str] = {}
         self._player_status_channels: dict[str, str] = {}
+        self._ops_channels: dict[str, str] = {}
 
     def bind_campaign(
         self, *, campaign_id: str, channel_id: str, guild_id: str, owner_id: str
@@ -209,6 +212,12 @@ class SessionStore:
     def player_status_channel_for(self, guild_id: str) -> str | None:
         return self._player_status_channels.get(guild_id)
 
+    def bind_ops_channel(self, *, guild_id: str, channel_id: str) -> None:
+        self._ops_channels[guild_id] = channel_id
+
+    def ops_channel_for(self, guild_id: str) -> str | None:
+        return self._ops_channels.get(guild_id)
+
     def active_character_for(self, *, channel_id: str, user_id: str) -> str | None:
         session = self._sessions.get(channel_id)
         if session is None:
@@ -256,6 +265,7 @@ class SessionStore:
                 "onboarding_content": dict(session.onboarding_content),
                 "pending_actions": dict(session.pending_actions),
                 "action_submitters": sorted(session.action_submitters),
+                "round_number": session.round_number,
             }
             for channel_id, session in self._sessions.items()
         }
@@ -265,6 +275,7 @@ class SessionStore:
             "admin_channels": dict(self._admin_channels),
             "game_channels": dict(self._game_channels),
             "player_status_channels": dict(self._player_status_channels),
+            "ops_channels": dict(self._ops_channels),
         }
         return payload
 
@@ -276,6 +287,7 @@ class SessionStore:
         self._admin_channels = dict(meta.get("admin_channels", {}))
         self._game_channels = dict(meta.get("game_channels", {}))
         self._player_status_channels = dict(meta.get("player_status_channels", {}))
+        self._ops_channels = dict(meta.get("ops_channels", {}))
         for channel_id, raw in payload.items():
             if channel_id == "_meta":
                 continue
@@ -296,5 +308,6 @@ class SessionStore:
                 onboarding_content=dict(raw.get("onboarding_content", {})),
                 pending_actions=dict(raw.get("pending_actions", {})),
                 action_submitters=set(raw.get("action_submitters", [])),
+                round_number=raw.get("round_number"),
             )
             self._sessions[channel_id] = session

@@ -120,6 +120,23 @@ class DiscordDmBot(commands.Bot):
             await self.handlers.bind_player_status_channel(interaction)
 
         @self.tree.command(
+            name="bind_ops_channel",
+            description="Bind this channel as the KP ops channel",
+        )
+        async def bind_ops_channel(interaction: discord.Interaction) -> None:
+            await self.handlers.bind_ops_channel(interaction)
+
+        @self.tree.command(
+            name="ops_status",
+            description="Show KP ops status (overview, detailed, or routing)",
+        )
+        @app_commands.describe(mode="Display mode: overview, detailed, or routing")
+        async def ops_status(
+            interaction: discord.Interaction, mode: str = "overview"
+        ) -> None:
+            await self.handlers.ops_status(interaction, mode=mode)
+
+        @self.tree.command(
             name="status_overview",
             description="Show player status overview in the status channel",
         )
