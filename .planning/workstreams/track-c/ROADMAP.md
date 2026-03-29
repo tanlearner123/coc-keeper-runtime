@@ -47,47 +47,62 @@
 
 **Goal:** Make campaign/adventure/session state legible in Discord and make message handling reasons explicit to players and operators through logic-first visibility contracts and reusable surfaces.
 
-- [x] **Phase 51: Visibility Core Contracts** — 2026-03-29
-  - **Goal:** Define canonical visibility state for campaign, adventure, session, waiting reasons, routing outcomes, and existing player snapshot state.
-  - **Requirements:** SURF-01, SURF-02, SURF-03, SURF-04
-  - **Success criteria:**
-    1. Discord surfaces read from a shared visibility model instead of ad hoc string assembly
-    2. Waiting/blocker reasons are explicit and queryable
-    3. Routing outcomes carry a short explanation contract
-    4. Existing player snapshot state can be exposed without redefining character semantics
+### Phase 51: Visibility Core Contracts
+- Status: Complete
+- Plans: 1/1
+- Completed: 2026-03-29
+- Goal: Define canonical visibility state for campaign, adventure, session, waiting reasons, routing outcomes, and existing player snapshot state.
+- Requirements: SURF-01, SURF-02, SURF-03, SURF-04
+- Success Criteria:
+  1. Discord surfaces read from a shared visibility model instead of ad hoc string assembly
+  2. Waiting/blocker reasons are explicit and queryable
+  3. Routing outcomes carry a short explanation contract
+  4. Existing player snapshot state can be exposed without redefining character semantics
 
-- [ ] **Phase 52: Player Status Surfaces**
-  - **Goal:** Add player-facing shared status surfaces for current campaign/adventure/session identity and waiting state.
-  - **Requirements:** PLAY-01, PLAY-02, CURR-01, CURR-02
-  - **Success criteria:**
-    1. Players can see current campaign/adventure/session identity from Discord
-    2. Players can see what the table is waiting on and who is pending when relevant
-    3. Current-only visibility works without requiring broad browsing UI
-    4. Inactive or unloaded states are explained explicitly instead of failing silently
+### Phase 52: Player Status Surfaces
+- Status: Not Started
+- Plans: 0/0
+- Completed: -
+- Goal: Add player-facing shared status surfaces for current campaign/adventure/session identity and waiting state.
+- Requirements: PLAY-01, PLAY-02, CURR-01, CURR-02
+- Success Criteria:
+  1. Players can see current campaign/adventure/session identity from Discord
+  2. Players can see what the table is waiting on and who is pending when relevant
+  3. Current-only visibility works without requiring broad browsing UI
+  4. Inactive or unloaded states are explained explicitly instead of failing silently
 
-- [ ] **Phase 53: Handling Reason Surfaces**
-  - **Goal:** Add concise player-facing explanations for why messages were ignored, buffered, deferred, or otherwise routed differently.
-  - **Requirements:** PLAY-03, PLAY-04
-  - **Success criteria:**
-    1. Players receive short practical handling explanations at the right moments
-    2. Explanations are phase-aware and routing-aware
-    3. Explanations stay concise enough for ordinary play channels
+### Phase 53: Handling Reason Surfaces
+- Status: Not Started
+- Plans: 0/0
+- Completed: -
+- Goal: Add concise player-facing explanations for why messages were ignored, buffered, deferred, or otherwise routed differently.
+- Requirements: PLAY-03, PLAY-04
+- Success Criteria:
+  1. Players receive short practical handling explanations at the right moments
+  2. Explanations are phase-aware and routing-aware
+  3. Explanations stay concise enough for ordinary play channels
 
-- [ ] **Phase 54: KP Ops Surfaces**
-  - **Goal:** Add a separate KP/operator operational surface showing session ops, runtime state, player participation, and routing diagnostics.
-  - **Requirements:** OPS-01, OPS-02, OPS-03
-  - **Success criteria:**
-    1. KP/operators can see phase, round state, blockers, and current runtime state in one place
-    2. KP/operators can inspect per-player ready/submitted/pending style state
-    3. KP/operators can inspect routing outcomes without digging through raw logs
+### Phase 54: KP Ops Surfaces
+- Status: Not Started
+- Plans: 0/0
+- Completed: -
+- Goal: Add a separate KP/operator operational surface showing session ops, runtime state, player participation, and routing diagnostics.
+- Requirements: OPS-01, OPS-02, OPS-03
+- Success Criteria:
+  1. KP/operators can see phase, round state, blockers, and current runtime state in one place
+  2. KP/operators can inspect per-player ready/submitted/pending style state
+  3. KP/operators can inspect routing outcomes without digging through raw logs
 
-- [ ] **Phase 55: Activity-Ready Boundary Polish**
-  - **Goal:** Consolidate the visibility contracts and surfaces so future Discord Activity UI can reuse the same business logic without rewriting the model.
-  - **Requirements:** ACT-01, ACT-02
-  - **Success criteria:**
-    1. Visibility contracts are reusable beyond chat-only rendering
-    2. Surface implementations clearly separate canonical state from renderer logic
-    3. This milestone remains Activity-ready without implementing Activity UI itself
+### Phase 55: Activity-Ready Boundary Polish
+- Status: Not Started
+- Plans: 0/0
+- Completed: -
+- Goal: Consolidate the visibility contracts and surfaces so future Discord Activity UI can reuse the same business logic without rewriting the model.
+- Requirements: ACT-01, ACT-02
+- Success Criteria:
+  1. Visibility contracts are reusable beyond chat-only rendering
+  2. Surface implementations clearly separate canonical state from renderer logic
+  3. This milestone remains Activity-ready without implementing Activity UI itself
 
 ---
 
@@ -112,7 +127,7 @@
 | 48. Pre-Play Onboarding | 1/1 | ✅ Complete | 2026-03-28 |
 | 49. Scene Round Collection | 1/1 | ✅ Complete | 2026-03-28 |
 | 50. Message Intent Routing | 1/1 | ✅ Complete | 2026-03-28 |
-| 51. Visibility Core Contracts | 1/1 | ✅ Complete | 2026-03-29 |
+| 51. Visibility Core Contracts | 1/1 | Complete    | 2026-03-29 |
 | 52. Player Status Surfaces | - | ○ Not Started | - |
 | 53. Handling Reason Surfaces | - | ○ Not Started | - |
 | 54. KP Ops Surfaces | - | ○ Not Started | - |

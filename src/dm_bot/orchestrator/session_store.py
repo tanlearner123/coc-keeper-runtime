@@ -127,6 +127,7 @@ class SessionStore:
         self._trace_channels: dict[str, str] = {}
         self._admin_channels: dict[str, str] = {}
         self._game_channels: dict[str, str] = {}
+        self._player_status_channels: dict[str, str] = {}
 
     def bind_campaign(
         self, *, campaign_id: str, channel_id: str, guild_id: str, owner_id: str
@@ -202,6 +203,12 @@ class SessionStore:
     def game_channel_for(self, guild_id: str) -> str | None:
         return self._game_channels.get(guild_id)
 
+    def bind_player_status_channel(self, *, guild_id: str, channel_id: str) -> None:
+        self._player_status_channels[guild_id] = channel_id
+
+    def player_status_channel_for(self, guild_id: str) -> str | None:
+        return self._player_status_channels.get(guild_id)
+
     def active_character_for(self, *, channel_id: str, user_id: str) -> str | None:
         session = self._sessions.get(channel_id)
         if session is None:
@@ -257,6 +264,7 @@ class SessionStore:
             "trace_channels": dict(self._trace_channels),
             "admin_channels": dict(self._admin_channels),
             "game_channels": dict(self._game_channels),
+            "player_status_channels": dict(self._player_status_channels),
         }
         return payload
 
@@ -267,6 +275,7 @@ class SessionStore:
         self._trace_channels = dict(meta.get("trace_channels", {}))
         self._admin_channels = dict(meta.get("admin_channels", {}))
         self._game_channels = dict(meta.get("game_channels", {}))
+        self._player_status_channels = dict(meta.get("player_status_channels", {}))
         for channel_id, raw in payload.items():
             if channel_id == "_meta":
                 continue

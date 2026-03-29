@@ -12,6 +12,7 @@ class ChannelType(Enum):
     GAME = "game"
     ADMIN = "admin"
     TRACE = "trace"
+    PLAYER_STATUS = "player_status"
     GENERAL = "general"
 
 
@@ -65,6 +66,13 @@ class ChannelEnforcer:
         )
         self.register_policy(game_policy)
 
+        player_status_policy = ChannelPolicy(
+            command_names=["status_overview", "status_me"],
+            allowed_types={ChannelType.PLAYER_STATUS, ChannelType.GAME},
+            redirect_message="此命令可在 #玩家状态 或 #游戏大厅 频道使用",
+        )
+        self.register_policy(player_status_policy)
+
     def register_policy(self, policy: ChannelPolicy) -> None:
         for cmd_name in policy.command_names:
             self._policies[cmd_name] = policy
@@ -78,6 +86,8 @@ class ChannelEnforcer:
             return ChannelType.TRACE
         if self._session_store.game_channel_for(guild_id) == channel_id:
             return ChannelType.GAME
+        if self._session_store.player_status_channel_for(guild_id) == channel_id:
+            return ChannelType.PLAYER_STATUS
         return ChannelType.GENERAL
 
     def check_command(
@@ -97,14 +107,30 @@ class ChannelEnforcer:
 
         return False, policy.redirect_message
 
-    def _has_any_allowed_channel(self, guild_id: str, allowed_types: set[ChannelType]) -> bool:
-        if ChannelType.ARCHIVE in allowed_types and self._session_store.archive_channel_for(guild_id):
+    def _has_any_allowed_channel(
+        self, guild_id: str, allowed_types: set[ChannelType]
+    ) -> bool:
+        if (
+            ChannelType.ARCHIVE in allowed_types
+            and self._session_store.archive_channel_for(guild_id)
+        ):
             return True
-        if ChannelType.ADMIN in allowed_types and self._session_store.admin_channel_for(guild_id):
+        if ChannelType.ADMIN in allowed_types and self._session_store.admin_channel_for(
+            guild_id
+        ):
             return True
-        if ChannelType.TRACE in allowed_types and self._session_store.trace_channel_for(guild_id):
+        if ChannelType.TRACE in allowed_types and self._session_store.trace_channel_for(
+            guild_id
+        ):
             return True
-        if ChannelType.GAME in allowed_types and self._session_store.game_channel_for(guild_id):
+        if ChannelType.GAME in allowed_types and self._session_store.game_channel_for(
+            guild_id
+        ):
+            return True
+        if (
+            ChannelType.PLAYER_STATUS in allowed_types
+            and self._session_store.player_status_channel_for(guild_id)
+        ):
             return True
         if ChannelType.GENERAL in allowed_types:
             return True

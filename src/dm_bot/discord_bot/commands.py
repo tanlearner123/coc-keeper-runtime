@@ -72,7 +72,7 @@ class BotCommands:
             return self._default_channel_guidance()
 
         lines = [
-            "本 Bot 采用四频道职责分离设计：",
+            "本 Bot 采用五频道职责分离设计：",
             "",
             "1. **#角色档案** - 档案管理命令",
             "   `/profiles`, `/profile_detail`, `/start_builder`, `/select_profile`",
@@ -86,6 +86,9 @@ class BotCommands:
             "4. **#admin** - 管理员角色治理",
             "   `/admin_profiles`",
             "",
+            "5. **#玩家状态** - 玩家状态面板",
+            "   `/status_overview`, `/status_me`",
+            "",
         ]
 
         # Show current bindings if available
@@ -93,6 +96,7 @@ class BotCommands:
         game = self._session_store.game_channel_for(guild_id)
         trace = self._session_store.trace_channel_for(guild_id)
         admin = self._session_store.admin_channel_for(guild_id)
+        player_status = self._session_store.player_status_channel_for(guild_id)
 
         bindings = []
         if archive:
@@ -103,6 +107,8 @@ class BotCommands:
             bindings.append(f"KP-trace: <#{trace}>")
         if admin:
             bindings.append(f"管理员: <#{admin}>")
+        if player_status:
+            bindings.append(f"玩家状态: <#{player_status}>")
 
         if bindings:
             lines.extend(["**当前绑定：**"])
@@ -118,13 +124,14 @@ class BotCommands:
                 "`/bind_campaign` - 在游戏大厅执行",
                 "`/bind_trace_channel` - 在 KP-trace 频道执行",
                 "`/bind_admin_channel` - 在管理员频道执行",
+                "`/bind_player_status_channel` - 在玩家状态频道执行",
             ]
         )
 
         return "\n".join(lines)
 
     def _default_channel_guidance(self) -> str:
-        return """本 Bot 采用四频道职责分离设计：
+        return """本 Bot 采用五频道职责分离设计：
 
 1. **#角色档案** - 档案管理命令
    `/profiles`, `/profile_detail`, `/start_builder`, `/select_profile`
@@ -138,11 +145,15 @@ class BotCommands:
 4. **#admin** - 管理员角色治理
    `/admin_profiles`
 
+5. **#玩家状态** - 玩家状态面板
+   `/status_overview`, `/status_me`
+
 绑定命令：
 `/bind_archive_channel` - 在角色档案频道执行
 `/bind_campaign` - 在游戏大厅执行
 `/bind_trace_channel` - 在 KP-trace 频道执行
-`/bind_admin_channel` - 在管理员频道执行"""
+`/bind_admin_channel` - 在管理员频道执行
+`/bind_player_status_channel` - 在玩家状态频道执行"""
 
     async def bind_campaign(self, interaction, *, campaign_id: str) -> None:
         self._session_store.bind_campaign(
@@ -183,6 +194,88 @@ class BotCommands:
         await interaction.response.send_message(
             "当前频道已绑定为管理员角色管理频道。", ephemeral=True
         )
+
+    async def bind_player_status_channel(self, interaction) -> None:
+        self._session_store.bind_player_status_channel(
+            guild_id=str(interaction.guild_id), channel_id=str(interaction.channel_id)
+        )
+        self._persist_sessions()
+        await interaction.response.send_message(
+            "当前频道已绑定为玩家状态频道。", ephemeral=True
+        )
+
+    async def status_overview(self, interaction) -> None:
+        """Show player status overview in the player status channel."""
+        if self._session_store is None:
+            await interaction.response.send_message(
+                "session store is not configured", ephemeral=True
+            )
+            return
+
+        guild_id = str(interaction.guild_id) if interaction.guild_id else ""
+        channel_id = str(interaction.channel_id) if interaction.channel_id else ""
+
+        session = self._session_store.get_by_channel(channel_id)
+        if session is None:
+            await interaction.response.send_message(
+                "当前频道没有绑定战役。请先使用 `/bind_campaign` 绑定战役。",
+                ephemeral=True,
+            )
+            return
+
+        self._load_campaign_state(session.campaign_id)
+
+        snapshot = self._build_visibility_snapshot(session)
+        from dm_bot.orchestrator.player_status_renderer import PlayerStatusRenderer
+
+        renderer = PlayerStatusRenderer(active_characters=session.active_characters)
+        overview = renderer.render_overview(snapshot)
+
+        await interaction.response.send_message(overview, ephemeral=False)
+
+    async def status_me(self, interaction) -> None:
+        """Show personal character status privately."""
+        if self._session_store is None:
+            await interaction.response.send_message(
+                "session store is not configured", ephemeral=True
+            )
+            return
+
+        channel_id = str(interaction.channel_id) if interaction.channel_id else ""
+        user_id = str(interaction.user.id)
+
+        session = self._session_store.get_by_channel(channel_id)
+        if session is None:
+            await interaction.response.send_message(
+                "当前频道没有绑定战役。请先使用 `/bind_campaign` 绑定战役。",
+                ephemeral=True,
+            )
+            return
+
+        self._load_campaign_state(session.campaign_id)
+
+        snapshot = self._build_visibility_snapshot(session)
+        from dm_bot.orchestrator.player_status_renderer import PlayerStatusRenderer
+
+        renderer = PlayerStatusRenderer(active_characters=session.active_characters)
+        personal_detail = renderer.render_personal_detail(snapshot, user_id)
+
+        await interaction.response.send_message(personal_detail, ephemeral=True)
+
+    def _build_visibility_snapshot(self, session) -> "VisibilitySnapshot | None":
+        """Build visibility snapshot from session and gameplay state."""
+        if self._gameplay is None:
+            return None
+
+        from dm_bot.orchestrator.visibility import build_visibility_snapshot
+
+        panels = {}
+        for user_id in session.member_ids:
+            panel = self._gameplay.panels.get(user_id)
+            if panel:
+                panels[user_id] = panel
+
+        return build_visibility_snapshot(session, panels)
 
     async def join_campaign(self, interaction) -> None:
         session = self._session_store.join_campaign(

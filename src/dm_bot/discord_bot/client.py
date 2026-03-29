@@ -113,6 +113,27 @@ class DiscordDmBot(commands.Bot):
             await self.handlers.bind_admin_channel(interaction)
 
         @self.tree.command(
+            name="bind_player_status_channel",
+            description="Bind this channel as the player status/info channel",
+        )
+        async def bind_player_status_channel(interaction: discord.Interaction) -> None:
+            await self.handlers.bind_player_status_channel(interaction)
+
+        @self.tree.command(
+            name="status_overview",
+            description="Show player status overview in the status channel",
+        )
+        async def status_overview(interaction: discord.Interaction) -> None:
+            await self.handlers.status_overview(interaction)
+
+        @self.tree.command(
+            name="status_me",
+            description="Show your personal character status (private)",
+        )
+        async def status_me(interaction: discord.Interaction) -> None:
+            await self.handlers.status_me(interaction)
+
+        @self.tree.command(
             name="join_campaign",
             description="Join the campaign bound to this channel or thread",
         )
