@@ -4,8 +4,8 @@ from pathlib import Path
 
 
 class PersistenceStore:
-    def __init__(self, path: Path) -> None:
-        self._path = path
+    def __init__(self, path: str | Path) -> None:
+        self._path = Path(path)
         self._init_db()
 
     def _connect(self) -> sqlite3.Connection:
