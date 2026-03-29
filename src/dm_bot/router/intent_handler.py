@@ -121,7 +121,7 @@ class IntentHandlerRegistry:
                 "combat": "Social IC is limited during combat. Your message has been buffered.",
             },
             MessageIntent.PLAYER_ACTION: {
-                "scene_round_resolving": "Your action has been recorded and will be resolved shortly.",
+                "scene_round_resolving": "⏳ 行动已记录，将在结算后执行",
             },
             MessageIntent.RULES_QUERY: {
                 "scene_round_resolving": "📋 规则问题将在结算后回答",
