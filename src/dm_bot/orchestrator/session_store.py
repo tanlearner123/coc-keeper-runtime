@@ -3,6 +3,38 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
+class CampaignRole(str, Enum):
+    """Explicit campaign membership roles."""
+
+    OWNER = "owner"
+    ADMIN = "admin"
+    MEMBER = "member"
+
+
+class CampaignMember(BaseModel):
+    """Structured campaign membership replacing primitive set-of-strings."""
+
+    user_id: str
+    campaign_id: str
+    joined_at: datetime = Field(default_factory=datetime.now)
+    role: CampaignRole = CampaignRole.MEMBER
+    ready: bool = False
+    selected_profile_id: str | None = None
+    active_character_name: str | None = None
+
+
+class CampaignCharacterInstance(BaseModel):
+    """Active investigator projection for a player in a campaign."""
+
+    campaign_id: str
+    user_id: str
+    character_name: str
+    archive_profile_id: str | None = None
+    panel_id: str | None = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    source: str = "archive"
+
+
 class SessionPhase(str, Enum):
     """Explicit session phases for multiplayer campaigns."""
 
