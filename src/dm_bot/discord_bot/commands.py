@@ -7,6 +7,7 @@ from dm_bot.config import Settings, get_settings
 from dm_bot.discord_bot.channel_enforcer import ChannelEnforcer
 from dm_bot.discord_bot.streaming import StreamingMessageTransport
 from dm_bot.discord_bot.onboarding_views import OnboardingView
+from dm_bot.discord_bot.feedback import DiscordFeedbackService
 from dm_bot.orchestrator.message_filters import MessageDisposition, classify_message
 from dm_bot.router.intent import (
     MessageIntent,
@@ -32,6 +33,7 @@ class BotCommands:
         character_builder=None,
         intent_classifier=None,
         message_buffer=None,
+        intent_handler_registry=None,
     ) -> None:
         self._settings = settings or get_settings()
         self._session_store = session_store
@@ -45,6 +47,8 @@ class BotCommands:
         self._enforcer = ChannelEnforcer(session_store) if session_store else None
         self._intent_classifier = intent_classifier
         self._message_buffer = message_buffer
+        self._intent_handler_registry = intent_handler_registry
+        self._feedback_service = DiscordFeedbackService()
 
     def check_channel(self, command_name: str, interaction) -> tuple[bool, str | None]:
         if self._enforcer is None:

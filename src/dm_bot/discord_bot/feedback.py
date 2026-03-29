@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Callable, Awaitable
 import logging
 
 log = logging.getLogger(__name__)
@@ -14,8 +14,16 @@ class FeedbackSender(Protocol):
 
 
 class DiscordFeedbackService:
-    def __init__(self, bot_client) -> None:
-        self._bot = bot_client
+    def __init__(
+        self,
+        send_dm_callback: Callable[[str, str], Awaitable[bool]] | None = None,
+    ) -> None:
+        self._send_dm = send_dm_callback
+
+    def set_send_dm_callback(
+        self, callback: Callable[[str, str], Awaitable[bool]]
+    ) -> None:
+        self._send_dm = callback
 
     async def send_feedback(
         self,
@@ -23,11 +31,17 @@ class DiscordFeedbackService:
         user_id: str,
         message: str,
     ) -> bool:
+        if self._send_dm is None:
+            log.warning("No send_dm callback configured for feedback service")
+            return False
         try:
-            channel = self._bot.get_channel(int(channel_id))
-            if channel is None:
-                log.warning(f"Channel not found: {channel_id}")
-                return False
+            success = await self._send_dm(user_id, message)
+            if success:
+                log.info(f"Feedback sent to user {user_id}: {message[:50]}...")
+            return success
+        except Exception as e:
+            log.warning(f"Failed to send feedback: {e}")
+            return False
             user = self._bot.get_user(int(user_id))
             if user is None:
                 log.warning(f"User not found: {user_id}")
