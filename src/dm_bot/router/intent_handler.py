@@ -124,8 +124,15 @@ class IntentHandlerRegistry:
                 "scene_round_resolving": "Your action has been recorded and will be resolved shortly.",
             },
             MessageIntent.RULES_QUERY: {
-                "scene_round_resolving": "Rules questions are deferred until scene resolves.",
-                "combat": "Rules questions cannot be answered during combat. Please note for after.",
+                "scene_round_resolving": "📋 规则问题将在结算后回答",
+                "combat": "📋 规则问题将在战斗后回答",
+            },
+            # IGNORED cases - message not applicable in current phase
+            MessageIntent.UNKNOWN: {
+                "scene_round_open": "⏸️ 消息在当前阶段不适用",
+                "scene_round_resolving": "⏸️ 行动已结束，请等待下一轮",
+                "combat": "⏸️ 战斗中无法使用此指令",
+                "awaiting_ready": "⏸️ 请先完成就位",
             },
         }
 
