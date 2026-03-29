@@ -236,7 +236,7 @@
 ## vB.1.4 Phases
 
 - [x] **Phase 52: Foundational Identity Models** - Explicit CampaignMember and CampaignCharacterInstance models (completed 2026-03-29)
-- [ ] **Phase 53: Join Flow and Membership Gates** - Enforce channel binding and prevent duplicate joins
+- [x] **Phase 53: Join Flow and Membership Gates** - Enforce channel binding and prevent duplicate joins (completed 2026-03-29)
 - [ ] **Phase 54: Character Selection and Ready Validation** - Verify profile ownership and membership before ready
 
 ### Phase 52: Foundational Identity Models
@@ -295,8 +295,8 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 52. Foundational Identity Models | 1/1 | Complete   | 2026-03-29 |
-| 53. Join Flow and Membership Gates | 1/1 | Planned | - |
-| 54. Character Selection and Ready Validation | 0/1 | Planned | - |
+| 53. Join Flow and Membership Gates | 1/1 | Complete    | 2026-03-29 |
+| 54. Character Selection and Ready Validation | 1/2 | In Progress|  |
 
 ---
 
