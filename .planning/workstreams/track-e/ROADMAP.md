@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **vE.1.1** — Runtime Control Panel Foundations (completed)
-- 🔄 **vE.2.1** — 全流程交互验证框架 (in progress)
+- ✅ **vE.2.1** — 全流程交互验证框架 (completed)
+- 🔄 **vE.2.2** — 统一 Scenario-Driven E2E 验证框架 (in progress)
 
 ---
 
@@ -72,17 +73,17 @@
 
 ---
 
-## vE.2.1 Phases
+## vE.2.1 Phases (All Complete)
 
-- [ ] **Phase 60: Test Infrastructure & Process Health** — FakeInteraction factory, model mock fixtures, VCR.py setup, pytest-bdd scaffolding
+- [x] **Phase 60: Test Infrastructure & Process Health** — FakeInteraction factory, model mock fixtures, VCR.py setup, pytest-bdd scaffolding
 - [x] **Phase 61: Discord Command/Adapter Layer** — Command handlers, channel enforcement, session binding gates
 - [x] **Phase 62: Session / Orchestrator Layer** — Campaign lifecycle, join/ready/leave, multi-user state sync
-- [ ] **Phase 63: Adventure Runtime** — fuzhe_mini load, trigger chains, room transitions, reveal gates, consequence verification
-- [ ] **Phase 64: Rules Engine Flow** — COC checks, SAN rolls, combat resolution, pushed rolls
+- [x] **Phase 63: Adventure Runtime** — fuzhe_mini load, trigger chains, room transitions, reveal gates, consequence verification
+- [x] **Phase 64: Rules Engine Flow** — COC checks, SAN rolls, combat resolution, pushed rolls
 - [x] **Phase 65: Character / Archive Flow** — Character creation, profile projection, archive persistence
-- [ ] **Phase 66: Model / Router Flow** — Intent classification, turn plan generation, buffering, multi-user routing
-- [ ] **Phase 67: Narration Pipeline Flow** — Prompt construction, streaming output, KP/player visibility separation
-- [ ] **Phase 68: Persistence + End-to-End Integration** — DB recovery, full 15-turn scenario, Chaos lobby stress test
+- [x] **Phase 66: Model / Router Flow** — Intent classification, turn plan generation, buffering, multi-user routing
+- [x] **Phase 67: Narration Pipeline Flow** — Prompt construction, streaming output, KP/player visibility separation
+- [x] **Phase 68: Persistence + End-to-End Integration** — DB recovery, full 15-turn scenario, Chaos lobby stress test
 
 ### Phase 60: Test Infrastructure & Process Health
 
@@ -160,16 +161,89 @@
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
+| **vE.2.1** | | | |
 | 60. Test Infrastructure & Process Health | 1/1 | ✓ Complete | 2026-03-30 |
 | 61. Discord Command/Adapter Layer | 1/1 | ✓ Complete | — |
 | 62. Session / Orchestrator Layer | 1/1 | ✓ Complete | — |
-| 63. Adventure Runtime | 0/1 | Planned | — |
-| 64. Rules Engine Flow | 0/1 | Planned | — |
+| 63. Adventure Runtime | 1/1 | ✓ Complete | — |
+| 64. Rules Engine Flow | 1/1 | ✓ Complete | — |
 | 65. Character / Archive Flow | 1/1 | ✓ Complete | 2026-03-29 |
-| 66. Model / Router Flow | 0/1 | Planned | — |
-| 67. Narration Pipeline Flow | 0/1 | Planned | — |
-| 68. Persistence + End-to-End Integration | 0/1 | Planned | — |
+| 66. Model / Router Flow | 1/1 | ✓ Complete | — |
+| 67. Narration Pipeline Flow | 1/1 | ✓ Complete | — |
+| 68. Persistence + End-to-End Integration | 1/1 | ✓ Complete | — |
+| **vE.2.2** | | | |
+| 69. Scenario Runner + RuntimeTestDriver | 0/1 | Planned | — |
+| 70. Scenario DSL + Artifact Writer | 0/1 | Planned | — |
+| 71. Failure Taxonomy + Contract Scenarios | 0/1 | Planned | — |
+| 72. Acceptance Scenarios (Happy Path + Chaos) | 0/1 | Planned | — |
 
 ---
 
-*Last updated: 2026-03-29 for milestone vE.2.1*
+## vE.2.2 Summary
+
+**Goal:** Build a unified scenario-driven E2E verification framework with replayable artifacts and standardized failure taxonomy.
+
+**Planned Phases:**
+- Phase E69: Scenario Runner + RuntimeTestDriver
+- Phase E70: Scenario DSL + Artifact Writer
+- Phase E71: Failure Taxonomy + Contract Scenarios
+- Phase E72: Acceptance Scenarios (Happy Path + Chaos)
+
+**Scenario Suites:**
+- `acceptance/` — full session lifecycle, crash recovery, chaos lobby
+- `contract/` — router/narrator AI contracts, visibility leak, reveal policy
+- `chaos/` — concurrency stress, duplicate members, mid-session crash
+- `recovery/` — stream interrupt resume, restart recovery
+
+**Depends on:** vE.2.1 (E60-E68) complete
+
+---
+
+## vE.2.2 Phases
+
+- [ ] **Phase 69: Scenario Runner + RuntimeTestDriver** — Unified driver interface decoupled from Discord, deterministic dice, fake clock, step result contracts
+- [ ] **Phase 70: Scenario DSL + Artifact Writer** — YAML scenario format, artifact output (json/md), scenario registry
+- [ ] **Phase 71: Failure Taxonomy + Contract Scenarios** — FailureCode enum, visibility leak tests, reveal policy tests, AI contract tests
+- [ ] **Phase 72: Acceptance Scenarios** — Happy path session, crash recovery, chaos lobby, 15-turn fuzhe_mini
+
+### Phase 69: Scenario Runner + RuntimeTestDriver
+
+**Goal:** Create `RuntimeTestDriver` — a unified, Discord-free interface for driving runtime scenarios — and `ScenarioRunner` that executes YAML scenario scripts against it.
+
+**Depends on:** Nothing (first phase of vE.2.2)
+
+**Plans:** `69-01`
+
+---
+
+### Phase 70: Scenario DSL + Artifact Writer
+
+**Goal:** Define structured YAML scenario format and implement `ArtifactWriter` that produces human-readable + machine-parseable run records.
+
+**Depends on:** E69
+
+**Plans:** `70-01`
+
+---
+
+### Phase 71: Failure Taxonomy + Contract Scenarios
+
+**Goal:** Establish `FailureCode` taxonomy and write contract-level scenarios for visibility, reveal policy, and AI packet structure.
+
+**Depends on:** E70
+
+**Plans:** `71-01`
+
+---
+
+### Phase 72: Acceptance Scenarios
+
+**Goal:** Write and run acceptance scenarios that prove the system can complete a full session lifecycle, recover from crashes, and handle chaos load.
+
+**Depends on:** E71
+
+**Plans:** `72-01`
+
+---
+
+*Last updated: 2026-03-30 for milestone vE.2.2*
