@@ -2,19 +2,34 @@
 
 ## Completed Milestones
 
+**vB.1.4** - B4 Identity Projection And Character Ownership
+- **Primary Track:** Track B - 人物构建与管理层
+- **Goal:** Strengthen identity chain so multiplayer sessions have deterministic ownership, ready gates, and admin separation
+- **Status:** Completed ✓
+
+**vB.1.3** - B3 Interview Planner And Portrait Synthesis
+- **Primary Track:** Track B - 人物构建与管理层
+- **Goal:** Two-stage builder: adaptive interview then COC-bounded sheet finalization
+- **Status:** Completed ✓
+
+**vB.1.2** - B2 Archive Card Schema Expansion
+- **Primary Track:** Track B - 人物构建与管理层
+- **Goal:** Richer long-lived archive card schema with clearer COC section mapping
+- **Status:** Completed ✓
+
 **vB.1.1** - B1 Archive And Builder Normalization
 - **Primary Track:** Track B - 人物构建与管理层
 - **Goal:** Tighten archive-builder mapping with better AI summarization during builder flow, aligned with standard COC character sheet sections
-- **Status:** Completed
+- **Status:** Completed ✓
 
 ---
 
 ## Active Milestone
 
-**vB.1.4** - B4 Identity Projection And Character Ownership
+**vB.1.5** - Character Lifecycle And Governance Surface
 - **Primary Track:** Track B - 人物构建与管理层
-- **Goal:** Strengthen Discord-user-to-character ownership so multiplayer campaign membership and role projection stay explicit, auditable, and immune to admin/owner identity bleed
-- **Status:** Complete ✓
+- **Goal:** Build player and admin governance layer so active, archived, replaced, and deleted character states are manageable, reviewable, and understandable
+- **Status:** Planned ✓
 
 ---
 
@@ -305,18 +320,135 @@
 
 ---
 
+## vB.1.5 Phases
+
+- [ ] **Phase 55: Profile List And Event Logging Foundation** — Profile listing, status display, event log foundation
+  (planned)
+- [ ] **Phase 56: Archive Lifecycle Operations** — Activate, archive, replace operations with audit logging
+  (planned)
+- [ ] **Phase 57: Delete And Recovery Operations** — Permanent delete, grace-period recovery, instance lifecycle
+  (planned)
+- [ ] **Phase 58: Instance Management** — Campaign instance archival, profile re-selection
+  (planned)
+- [ ] **Phase 59: Admin Visibility Surfaces** — Admin profile listing, ownership chain, instance overview
+  (planned)
+- [ ] **Phase 60: Admin Governance Actions** — Force-archive, ownership reassignment, governance event display
+  (planned)
+- [ ] **Phase 61: Integration And Polish** — End-to-end integration, presentation polish, tests
+  (planned)
+
+### Phase 55: Profile List And Event Logging Foundation
+
+**Goal:** Establish the foundation for profile lifecycle visibility and event logging.
+
+**Depends on:** vB.1.4 completion
+
+**Requirements:** PLC-01, ILC-01, ILC-04, PV-01, AV-01, AUD-01
+
+**Success Criteria** (what must be TRUE):
+  1. `/profiles` shows all profiles for a user with their current status (active, archived)
+  2. All lifecycle operations write events to the event log with timestamp and operation type
+  3. Users cannot have more than one active campaign instance per campaign (enforced)
+  4. Admin can list all player profiles via `/admin_profiles`
+
+### Phase 56: Archive Lifecycle Operations
+
+**Goal:** Implement activate, archive, and replace operations for profiles with full audit trail.
+
+**Depends on:** Phase 55
+
+**Requirements:** PLC-02, PLC-03, PV-03, AUD-02
+
+**Success Criteria** (what must be TRUE):
+  1. User can activate an archived profile, making it available for campaign selection
+  2. User can archive their active profile (soft-delete), moving it to archived state
+  3. User sees clear transition messages confirming each operation
+  4. All operations are logged with full context
+
+### Phase 57: Delete And Recovery Operations
+
+**Goal:** Implement permanent delete and grace-period recovery for profiles.
+
+**Depends on:** Phase 56
+
+**Requirements:** PLC-04, PLC-05, PLC-06
+
+**Success Criteria** (what must be TRUE):
+  1. User can permanently delete an archived profile (not an active one)
+  2. Deleted profiles enter a grace period before permanent erasure
+  3. User can recover a recently deleted profile within the grace period
+  4. Replacing an active profile moves the old one to archived state
+
+### Phase 58: Instance Management
+
+**Goal:** Manage campaign character instances including archival and re-selection.
+
+**Depends on:** Phase 57
+
+**Requirements:** ILC-02, ILC-03
+
+**Success Criteria** (what must be TRUE):
+  1. User can archive their active campaign character instance (retire from campaign)
+  2. User can select a different archive profile to project as a new campaign instance
+  3. Instance transitions are logged and visible in audit trail
+
+### Phase 59: Admin Visibility Surfaces
+
+**Goal:** Build admin-facing visibility into all player profiles and ownership chains.
+
+**Depends on:** Phase 55
+
+**Requirements:** AV-02, AV-03, AV-04
+
+**Success Criteria** (what must be TRUE):
+  1. Admin can view any player's archive profile in detail
+  2. Admin can view the full ownership chain: Discord user → archive profile → campaign member → campaign instance
+  3. Admin can view all active campaign character instances across all players
+
+### Phase 60: Admin Governance Actions
+
+**Goal:** Implement admin governance actions with full audit logging.
+
+**Depends on:** Phase 59
+
+**Requirements:** AV-05, AV-06, AV-07, AV-08, AUD-03
+
+**Success Criteria** (what must be TRUE):
+  1. Admin can force-archive a player's active profile with required audit reason
+  2. Admin can force-archive a player's campaign character instance with required audit reason
+  3. Admin can reassign campaign ownership to a different player
+  4. All admin actions are logged with timestamp, admin ID, target ID, and reason
+  5. `/debug_status` shows recent governance events for a campaign
+
+### Phase 61: Integration And Polish
+
+**Goal:** End-to-end integration testing and presentation polish.
+
+**Depends on:** Phase 60
+
+**Requirements:** PV-02, PV-04
+
+**Success Criteria** (what must be TRUE):
+  1. Full lifecycle flow works end-to-end: create → archive → activate → select → ready
+  2. `/profile_detail` shows profile with correct lifecycle status
+  3. User cannot ready without a valid active character instance
+  4. All 24 requirements are tested and passing
+
+## Progress Table (vB.1.5)
+
+| Phase | Requirements | Status |
+|-------|--------------|--------|
+| 55. Profile List And Event Logging Foundation | PLC-01, ILC-01, ILC-04, PV-01, AV-01, AUD-01 | Planned |
+| 56. Archive Lifecycle Operations | PLC-02, PLC-03, PV-03, AUD-02 | Planned |
+| 57. Delete And Recovery Operations | PLC-04, PLC-05, PLC-06 | Planned |
+| 58. Instance Management | ILC-02, ILC-03 | Planned |
+| 59. Admin Visibility Surfaces | AV-02, AV-03, AV-04 | Planned |
+| 60. Admin Governance Actions | AV-05, AV-06, AV-07, AV-08, AUD-03 | Planned |
+| 61. Integration And Polish | PV-02, PV-04 | Planned |
+
+---
+
 ## Queued Milestone
-
-**vB.1.5** - Character Lifecycle And Governance Surface
-- **Primary Track:** Track B - 人物构建与管理层
-- **Goal:** Build clearer player/admin governance around active, archived, replaced, and deleted characters once identity ownership is hardened
-- **Status:** Queued after vB.1.4
-
-**Planned focus:**
-- profile lifecycle clarity
-- admin governance surfaces
-- ownership visibility and auditability
-- archive/campaign instance management UX
 
 **vB.1.6** - COC-Legal Character Finalization And New-Player Modes
 - **Primary Track:** Track B - 人物构建与管理层
@@ -331,4 +463,4 @@
 
 ---
 
-*Last updated: 2026-03-28 for milestones vB.1.1, vB.1.2, vB.1.3, and planned vB.1.4*
+*Last updated: 2026-03-31 for milestone vB.1.5 Character Lifecycle And Governance Surface*
