@@ -3,6 +3,8 @@ from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field
 
+from dm_bot.orchestrator.governance_event_log import GovernanceEventLog, GovernanceEvent
+
 
 class SelectProfileError(str, Enum):
     NO_SESSION = "no_session"
@@ -230,6 +232,33 @@ class SessionStore:
         self._game_channels: dict[str, str] = {}
         self._player_status_channels: dict[str, str] = {}
         self._ops_channels: dict[str, str] = {}
+        self.event_log = GovernanceEventLog()
+
+    def append_event(
+        self,
+        *,
+        operation: str,
+        user_id: str,
+        profile_id: str | None = None,
+        campaign_id: str | None = None,
+        operator_id: str,
+        before_state: dict | None = None,
+        after_state: dict | None = None,
+        reason: str | None = None,
+    ) -> None:
+        """Append a governance event to the audit log."""
+        event = GovernanceEvent(
+            timestamp=datetime.now(),
+            operation=operation,
+            user_id=user_id,
+            profile_id=profile_id,
+            campaign_id=campaign_id,
+            operator_id=operator_id,
+            before_state=before_state,
+            after_state=after_state,
+            reason=reason,
+        )
+        self.event_log.append_event(event)
 
     def bind_campaign(
         self, *, campaign_id: str, channel_id: str, guild_id: str, owner_id: str
@@ -271,10 +300,27 @@ class SessionStore:
             character_name="",
         )
 
+        self.append_event(
+            operation="member_join",
+            user_id=user_id,
+            campaign_id=session.campaign_id,
+            operator_id=user_id,
+            before_state=None,
+            after_state={"status": "joined"},
+        )
+
         return session
 
     def leave_campaign(self, *, channel_id: str, user_id: str) -> CampaignSession:
         session = self._sessions[channel_id]
+        self.append_event(
+            operation="member_leave",
+            user_id=user_id,
+            campaign_id=session.campaign_id,
+            operator_id=user_id,
+            before_state={"status": "member"},
+            after_state={"status": "left"},
+        )
         session.member_ids.discard(user_id)
         session.active_characters.pop(user_id, None)
         session.members.pop(user_id, None)
